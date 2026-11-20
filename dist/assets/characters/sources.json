@@ -1,0 +1,219 @@
+[
+  {
+    "name": "elmo",
+    "file": "elmo.png",
+    "source": "https://sesameworkshop.org/wp-content/uploads/2023/03/el-p013-sst-370x500.png?theia_smart_thumbnails_file_version=2",
+    "size": [
+      370,
+      500
+    ],
+    "mode": "RGBA",
+    "alpha": [
+      0,
+      255
+    ]
+  },
+  {
+    "name": "elmo-wave",
+    "file": "elmo-wave.png",
+    "source": "https://sesameworkshop.org/wp-content/uploads/2023/03/el-p023-sst-415x500.png?theia_smart_thumbnails_file_version=2",
+    "size": [
+      415,
+      500
+    ],
+    "mode": "RGBA",
+    "alpha": [
+      0,
+      255
+    ]
+  },
+  {
+    "name": "elmo-joy",
+    "file": "elmo-joy.png",
+    "source": "https://sesameworkshop.org/wp-content/uploads/2023/03/el-p025-sst-433x500.png?theia_smart_thumbnails_file_version=2",
+    "size": [
+      433,
+      500
+    ],
+    "mode": "RGBA",
+    "alpha": [
+      0,
+      255
+    ]
+  },
+  {
+    "name": "cookie-monster",
+    "file": "cookie-monster.png",
+    "source": "https://sesameworkshop.org/wp-content/uploads/2023/03/cm-p010-sst-361x500.png?theia_smart_thumbnails_file_version=2",
+    "size": [
+      361,
+      500
+    ],
+    "mode": "RGBA",
+    "alpha": [
+      0,
+      255
+    ]
+  },
+  {
+    "name": "cookie-wave",
+    "file": "cookie-wave.png",
+    "source": "https://sesameworkshop.org/wp-content/uploads/2023/03/cm-p006-sst-469x500.png?theia_smart_thumbnails_file_version=2",
+    "size": [
+      469,
+      500
+    ],
+    "mode": "RGBA",
+    "alpha": [
+      0,
+      255
+    ]
+  },
+  {
+    "name": "grover",
+    "file": "grover.png",
+    "source": "https://sesameworkshop.org/wp-content/uploads/2023/03/gr-031-sst-383x500.png?theia_smart_thumbnails_file_version=2",
+    "size": [
+      383,
+      500
+    ],
+    "mode": "RGBA",
+    "alpha": [
+      0,
+      255
+    ]
+  },
+  {
+    "name": "rosita",
+    "file": "rosita.png",
+    "source": "https://sesameworkshop.org/wp-content/uploads/2023/03/ro-p015-sst-413x500.png?theia_smart_thumbnails_file_version=2",
+    "size": [
+      413,
+      500
+    ],
+    "mode": "RGBA",
+    "alpha": [
+      0,
+      255
+    ]
+  },
+  {
+    "name": "rosita-joy",
+    "file": "rosita-joy.png",
+    "source": "https://sesameworkshop.org/wp-content/uploads/2023/03/ro-p014-sst-516x500.png?theia_smart_thumbnails_file_version=2",
+    "size": [
+      516,
+      500
+    ],
+    "mode": "RGBA",
+    "alpha": [
+      0,
+      255
+    ]
+  },
+  {
+    "name": "zoe",
+    "file": "zoe.png",
+    "source": "https://sesameworkshop.org/wp-content/uploads/2023/03/zo-p023-sst-339x500.png?theia_smart_thumbnails_file_version=2",
+    "size": [
+      339,
+      500
+    ],
+    "mode": "RGBA",
+    "alpha": [
+      0,
+      255
+    ]
+  },
+  {
+    "name": "bert",
+    "file": "bert.png",
+    "source": "https://sesameworkshop.org/wp-content/uploads/2023/03/bt-p003-sst-188x500.png?theia_smart_thumbnails_file_version=2",
+    "size": [
+      188,
+      500
+    ],
+    "mode": "RGBA",
+    "alpha": [
+      0,
+      255
+    ]
+  },
+  {
+    "name": "ernie",
+    "file": "ernie.png",
+    "source": "https://sesameworkshop.org/wp-content/uploads/2023/03/er-p024-sst-323x500.png?theia_smart_thumbnails_file_version=2",
+    "size": [
+      323,
+      500
+    ],
+    "mode": "RGBA",
+    "alpha": [
+      0,
+      255
+    ]
+  },
+  {
+    "name": "oscar",
+    "file": "oscar.png",
+    "source": "https://sesameworkshop.org/wp-content/uploads/2023/03/og-p018-sst-267x500.png?theia_smart_thumbnails_file_version=2",
+    "size": [
+      267,
+      500
+    ],
+    "mode": "RGBA",
+    "alpha": [
+      0,
+      255
+    ]
+  },
+  {
+    "name": "snuffleupagus",
+    "file": "snuffleupagus.png",
+    "source": "https://sesameworkshop.org/wp-content/uploads/2023/03/sn-p009-sst-744x500.png",
+    "size": [
+      744,
+      500
+    ],
+    "mode": "RGBA",
+    "alpha": [
+      0,
+      255
+    ]
+  },
+  {
+    "name": "julia",
+    "file": "julia.png",
+    "source": "https://sesameworkshop.org/wp-content/uploads/2023/03/presskit_ss_bio_julia-750x416.png",
+    "size": [
+      750,
+      416
+    ],
+    "mode": "RGBA",
+    "alpha": [
+      255,
+      255
+    ]
+  },
+  {
+    "name": "group",
+    "file": "group.jpg",
+    "source": "https://sesameworkshop.org/wp-content/uploads/2025/07/GRP-p041-SST_sized.jpg",
+    "size": [
+      1333,
+      865
+    ],
+    "mode": "RGB",
+    "alpha": null
+  },
+  {
+    "name": "tamir",
+    "file": "tamir.jpg",
+    "source": "https://sesameworkshop.org/wp-content/uploads/2023/02/Tamir-667x500.jpg"
+  },
+  {
+    "name": "ji-young",
+    "file": "ji-young.jpg",
+    "source": "https://sesameworkshop.org/wp-content/uploads/2023/03/Ji-Young.Character-750x416.jpeg"
+  }
+]

@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import * as THREE from './dist/assets/three.module.js';
+import {LivingEnvironment,surfaceTexture} from './dist/environment.js';
+const scene=new THREE.Scene(),env=new LivingEnvironment(scene),base=new THREE.MeshStandardMaterial({color:0xc59c64}),floor=new THREE.Mesh(new THREE.BoxGeometry(20,.2,16),base),actor=new THREE.Group();actor.userData.spec={name:'Elmo'};const body=new THREE.Mesh(new THREE.BoxGeometry(1,1,1),base);actor.add(body);const old=new THREE.Group();old.add(floor,actor);scene.add(old);
+for(const kind of ['wood','fabric','stone','grass','bark','water','plaster']){const t=surfaceTexture(kind);assert.equal(t.image.data.length,256*256*4);assert.equal(t,surfaceTexture(kind));}
+for(const name of ['ball','letters','wants','body','phonics','trailer']){env.setLesson(name,[old]);assert.equal([...env.sets.values()].filter(s=>s.root.visible).length,1);assert.equal(env.sky.visible,!['ball','wants'].includes(name));scene.updateMatrixWorld(true);scene.traverse(o=>assert(o.matrixWorld.elements.every(Number.isFinite)));}
+assert(!base.map,'shared character material remains unchanged');assert.equal(body.material,base);assert(floor.material.map,'wood has texture');const count=env.root.children.length;for(let i=0;i<12;i++)env.setLesson('phonics',[old]);assert.equal(env.root.children.length,count,'switching reuses scene resources');
+const s=env.active;assert(s.sways.length>=14);assert.equal(s.clouds.length,6);assert.equal(s.birds.length,4);assert(s.water.length>=6);env.tick(0);for(let i=1;i<60;i++)env.tick(i/20);const before=s.sways[0].node.rotation.z;for(let i=60;i<100;i++)env.tick(i/20,{paused:true});assert.equal(s.sways[0].node.rotation.z,before);for(let i=100;i<160;i++)env.tick(i/20);assert.notEqual(s.sways[0].node.rotation.z,before);env.reduced=true;const elapsed=env.elapsed;env.tick(10);assert.equal(env.elapsed,elapsed);
+// Sky directives stand alone so the WebGL preprocessor can resolve them.
+assert(env.sky.material.fragmentShader.includes('\n #include <tonemapping_fragment>\n'));
+console.log('PASS: six scenery sets, procedural material textures, actor material isolation, finite transforms, reusable chapter switching, real ambient movement, pause/reduced motion, and valid shader include placement.');

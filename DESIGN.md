@@ -1,0 +1,235 @@
+# Letter Garden Delivery
+
+Rosita has four surprises to deliver to two garden houses: A/a and B/b. The child chooses her own unlocked character, then helps each item find its letter family.
+
+| Round | Hear and recognise | Find in the 3D garden | Speaking target |
+| --- | --- | --- | --- |
+| 1 | Capital A among A, a, B, b | Apple | Capital A. Apple. |
+| 2 | Small a among A, a, B, b | Ant | Small a. Ant. |
+| 3 | Capital B among A, a, B, b | Ball | Capital B. Ball. |
+| 4 | Small b among A, a, B, b | Butterfly | Small b. Butterfly. |
+
+Letter choices change position on each round. Each successful recognition opens a short walk to the corresponding 3D object. The child tries the speaking task before hearing a model. A parent confirms her response or chooses a shorter practice phrase. Speaking never times out. A successful delivery makes the object disappear from its pedestal.
+
+After all four deliveries, the game revises the words in order: apple, ant, ball, butterfly. A picture is shown and a voice pronounces the word. The child chooses among four written words. The distractors are not any of the other learning targets:
+
+| Picture / spoken word | Same-initial distractor | Two unrelated distractors |
+| --- | --- | --- |
+| apple | airplane | cat, sun |
+| ant | alligator | fish, moon |
+| ball | banana | dog, hat |
+| butterfly | boat | car, tree |
+
+Choices are shuffled on each question. A wrong answer stays on the same picture and offers another listen. A correct answer receives a short confirmation before moving on. This chapter is classified as a vocabulary game; the earlier capital/lowercase tasks remain its lead-in.
+
+After the parent confirms notes and XP, the child sees one memory card at a time. “I know this word — save it!” explicitly adds that word to the vocabulary bank as learnt/remembered, attributed to the child's own action. A practice button repeats the word; a Save later action leaves the remainder queued. Saved words are unique, repeat saves update the existing entry, and the save queue survives reloads. The bank offers pictures, pronunciation, and checkboxes for named reusable word sets. The bank and word sets are browser-local; a new game generator from those sets is not included yet.
+
+Rosita stays at a marked yellow side station during gameplay. Two tiny robot helpers remain at the edges and cheer on successful actions. NPCs fade if the dragged camera puts them across the sightline to the player or task target. A fuller, louder original soundtrack plays on the welcome page and trailer. Gameplay music is softer and ducks further during narration and child speaking turns. The planned adventure remains short, with unlimited speaking time; saving words is a separate closing activity.
+
+Progression adds surprise without failure: on each level-up, choose one of three mystery boxes, every one containing a still-locked friend. Only one opens and is claimed; the other candidates remain available for later levels. Unopened rewards and the generated choices are persistent, so leaving the page cannot lose a reward or reroll its choices.
+
+## 3D park trailer and varied vocabulary rounds
+The front page is a 40-second cinematic montage: 20 two-second solo scenes, using exactly four random friends selected from the full 19-character roster per page arrival/restart. Every character has five distinct authored actions in `CHARACTER_ANIMATIONS`; every selected friend gets five appearances. Clips combine character rigs with props (cookies, guitar, flowers, kite, cooking pan, juggling balls, bubbles and magic sparkles). Tango and Snuffy have body-motion adaptations; Oscar stays grounded in his can. Five exclusive park decoration groups, changing sky palettes, camera angles, subtle dolly movement and short shaded dissolves distinguish the cuts. Captions and cast names remain below the canvas. Pause, reduced motion, visibility and parent-panel behaviour are preserved. The story is general playful fun, independent of the lessons. Navigation works with a labelled still-photo fallback without WebGL. Trailer casting does not unlock gameplay friends.
+
+Vocabulary world placements, guided practice order, final review order and four-choice answer positions are randomized independently. All four letter forms and words are still covered exactly once; matching letter/word targets and parent speaking gates stay intact. The guide remains at the side.
+
+## Stickers and one-item outfits
+Completing any adventure earns three golden stickers bearing Elmo's smiling face. The celebration shows all three arriving and the updated wallet. Replays keep the full sticker reward; XP still follows its existing rules. The sticker shop contains eight visible, fixed-price items at 1–3 stickers. Each bought item is owned permanently in the wardrobe; a child chooses whether to equip it. A single equipped-item ID guarantees only one item is worn/carried at a time. Equipment is visible on the 3D playable character and survives switching friends. No default character choice is introduced. Clear prices, affordability states and ownership labels avoid duplicate or unaffordable transactions. The shop returns to the same celebration so learning-word saves and earned character reveals can continue.
+
+## Chapter 03 — What do you want?
+Source learning targets from the supplied book: cookies, bread, rice, ice cream, juice and milk, and the six food questions “Do you want …?” The new story features Rosita and a baby brother in a cozy pretend kitchen/nursery. The guide stays at the existing side station. The grown-up puppet helps with milk at the ending; the player handles pretend props on low stands.
+
+The opening invites “What do you want?” Then each of the six food rounds combines a spoken/picture match, a short walk to a randomized prop position, and a parent-confirmed question. The baby politely declines the first five and accepts milk. The child next makes a free choice and says “I want [choice].” A final “The baby wants milk” turn supports show-and-tell. There are nine speaking turns, each with optional full/short pronunciation models, unlimited response time and direct parent acceptance in the speaking dock. Roughly five minutes is a pacing target, never a cutoff. Three stickers and the usual XP are granted once at parent-confirmed completion. Six words can be explicitly saved one by one; memory-card batches now support varying lesson sizes and preserve earlier unsaved words.
+
+## Baby, Mama and house label refinement
+Replace the initial simplified family meshes with dedicated, proportioned models. Facial detail is positioned on each ellipsoidal head. Mouths are closed three-dimensional curves with positive surface clearance; expression changes switch stable frown/smile geometry, never distort an oval mouth. Mama has a warm closed smile, soft bob hairstyle, collar, dress, shaped arms/hands and shoes. Baby wears a cotton-coloured romper and white bib, with seated limbs and soft brown curls. The high-chair back sits below the head.
+
+All nine house labels have high-resolution text fitted to the available texture width, matched texture/board aspect ratios, generous padding and 11.3:1 ink/background contrast. Raised food labels remain above their props, and separate Baby/Mama name cards identify the family. Labels face the camera with bounded distance-aware scaling; depth testing remains enabled so they do not appear through furniture or walls.
+
+## Manual pronunciation and nearby parent approval
+Automatic microphone detection is removed. Every speaking turn presents Try first, Hear pronunciation, Shorter phrase, and Parent: accept answer in a fixed dock below the 3D scene. The complete model is optional and never auto-advances or reduces XP. Parent approval is direct, without opening a menu or waiting for detected sound. Parent approval stays available during narration/model playback; accepting stops that playback. Rapid duplicate parent taps cannot skip the following turn. American-English model playback honours an explicit request even when automatic story voice is muted.
+
+The welcome/trailer soundtrack cycles four melodies with bass, chords and light percussion, using a louder front mix and a quieter gameplay mix. Music ducks during all speech and child speaking turns, has an independent mute button, and starts from a visible Play music or navigation gesture. No autoplay or microphone permission is requested.
+
+
+## Standing design direction — immersive story missions
+Every future learning story must fit the master game: keep tasks in the shared 3D world and use movement, characters, objects and missions. Do not open a separate learning window, worksheet panel, or full-screen task card to carry out a mission. Parents may use setup/review panels; gameplay prompts, pronunciation and parent approval remain in the existing dock below the scene. Include meaningful walking between objectives and direct interaction with the actual characters/objects. Retain engaging story motivation, animation and mission progress rather than a succession of vocabulary exercises.
+
+Chapter 04 replaces its human-figure window with a park detective mission. Rosita asks for a part; the player walks to Bert or Ernie, uses the existing proximity action, and taps the part on the actual 3D puppet. Small features use a closer camera in that same scene. Left/right means the friend’s anatomical side, with optional parent setup to omit directional language. A second relay revisits selected words on the opposite side when paired. The player must walk to the dance stage before celebrating. Standard speaking practice waits for nearby parent approval, and the full pronunciation model remains optional. Word selection, notes, stickers and vocabulary saving persist.
+
+## Phonics proposal and character casting
+See PHONICS_DESIGN.md for the implemented Sound Safari Parade chapter based on the family's A–H worksheets. It is the fifth playable chapter. Use two distinct random parent-enabled letters and four source words, with all missions in the master 3D world.
+
+Story guides rotate among suitable friends and must differ from the player. In particular, choosing Rosita must never leave a Rosita story NPC. Apply guide names consistently to the 3D actor, portrait, dialogue, narration and parent previews. Bert has a substantial upright black tuft; Ernie has a fuller tousled black hairstyle. Their shared 3D puppet builder carries this design into gameplay, mission NPCs, and the trailer. Keep the body-part hair target aligned with the larger geometry.
+
+## Phonics open-park revision
+The current Chapter 05 is the two-round open-space search documented in PHONICS_DESIGN.md. Round 1 accepts either not-yet-found word for the requested sound and covers all four school words. Round 2 uses two or three words on large NPC-held spelling cards with a coloured initial. Four slowly roaming park companions include one Sesame Street guide distinct from the player. NPCs wait eight seconds before searching and never claim an answer. Animals wander, fish stay in the pond, and static objects sit on furniture or ground. Keep fish/fin on the same model and preserve the card if the player switches character mid-game.
+
+## Version 19 — living environments
+All five chapters and the trailer use a shared LivingEnvironment layer. Preserve the existing game actors, task coordinates, raycast targets, movement and parent controls. This is environment art, never a new task window.
+
+Locally generated wood grain, woven cloth, masonry, bark, grass and water textures add surface detail and bump response without external asset requests. Outdoor scenes have a gradient sky, an extended terrain skirt, a distant residential streetscape, branching trees with instanced leaves, a bandstand, slatted benches, flower borders and a decorative pond. Existing large green sphere tree crowns are replaced with leaf clusters. Clouds drift, birds circle, leaves sway and pond rings expand. Indoor chapters receive pleated fabric curtains, wall joinery, cornices, ceiling pendants and woven storage seats. Lighting has lower ambient fill for clearer modelling and shadows.
+
+Scenery is cached per chapter, with only the active set visible. Decorative movement pauses with parent panels and honours reduced motion; objects remain in the world and out of mission routes. Learning meshes, cards, actors and shared actor materials are excluded from material changes. No changes to progression or saved data. Browser preview infrastructure was unavailable for this release, so actual tablet appearance and frame rate require device review; scene assembly, material isolation, motion, all phonics walking routes, trailer casting and existing learning controls have automated coverage.
+
+## Chapter 07 — Comparison: Abby’s Toy Parade
+Abby hosts in her home toy theatre, or Grover hosts if Abby is the player. Each two-visit cycle covers the four acts in randomized order, with both slots eligible for any act on the first visit. Each session features two pairs. Children open the toy chest, start the act, identify both toys in the world, and say one adjective sentence per toy. A favorite toy is carried to the stage for a fifth speaking turn and a victory lap. Optional models, parent confirmation, a free-text note and ordinary chapter rewards use the shared controls.
+
+## Family picture stories
+A Mac LaunchAgent turns settled photo batches into validated story data with a local vision model. Each chapter uses the shared 3D game, a character choice, a parent preview, physical stops, optional pronunciation and parent approval. The Mac builds a local play page. Paired browsers can read an optional encrypted chapter catalog; an unpaired browser can import an individual generated JSON. Picture data and GitHub write credentials are kept off the hosted site.
+
+## Version 37 — Little Rabbit, the whole book
+
+The chosen Sesame Street character helps a separate Little Rabbit actor. Direct inspection of all 15 source photographs establishes 14 story spreads after the cover. `rabbit-delivery.js` maps every spread to 22 ordered events, 38 physical actions, and 16 short parent-approved speaking turns. The intended session is 5–10 minutes with unlimited speaking time.
+
+Events: water and pull the family's carrot; admire it; accept Mum's errand; tie the bow; carry it out; march left/right; rest on the hot hill and answer Cat; drink by the stream and answer Fish; rest and let Rabbit nibble grass in the forest, then answer Bird; arrive at Grandma's tree house; knock and see Grandma at the window; welcome/hug; deliver the intact carrot; make music/dance together; wave goodbye; return past the animal friends; greet the waiting parents; report that Grandma is happy. The hungry Rabbit never eats Grandma's carrot. No child is instructed to eat wild grass or mushrooms.
+
+Nine scenery groups change with the story, keeping master-world movement and camera controls. Water droplets/growth, rising carrot, bow, carried gift, fish motion, bird motion, opening door, Grandma's appearance, actual gift transfer and interactive musical notes provide visible consequences. Missions require proximity to their physical destination and repeated actions have a cooldown. Parent panels pause animations; speech waits for manual acceptance. Character selection, wardrobe, XP, replay accounting, notes and three-sticker completion remain shared.
+
+This authored chapter replaces the earlier generic five-marker chapter at its existing ID. It is included in the game itself so ordinary game links show it; paired feed refreshes cannot overwrite the authored reconstruction. Other generated chapters still use the existing generic renderer. Source photographs are not published. `verify-rabbit.mjs` exercises the complete sequence, page coverage, gift continuity, proximity/duplicate guards, pause, replay reset and reachable destinations.
+
+## Little Street town
+
+The trailer leads to character selection inside the player's house. The same
+chosen character explores the house and streets, travels to each destination,
+and plays the existing 3D story. The house has three landmarks: the front
+door, the Activity Corner, and the bedroom. The street connects two rows of
+destinations with a main path, a fountain, benches and flower beds.
+
+| Destination | Adventure | Landmark |
+| --- | --- | --- |
+| Discovery Playroom | Can you find the ball? | Red ball over the door |
+| Letter Garden | Letter Garden Delivery | A and B planter blocks |
+| Sound Safari Park | Sound Safari Parade | Rainbow chimes |
+| Boogie Bandstand | Body Boogie | Drums at the entrance |
+| Cat’s Hideaway | Can you see the cat? | Paw-print door decorations |
+| Little Playhouse | What do you want? | Striped awning |
+| Toy Theatre | Abby’s Toy Parade | Marquee and curtains |
+| Rabbit’s Farm | Little Rabbit’s Special Delivery | Carrot planters |
+| Story Cottages | Imported family picture stories | Individual doors in the north extension |
+
+Walk with the keyboard, touch pad or joystick. The map shows the player’s
+position and lets the player place a gold marker at a destination. Use the
+hand or Space near a door to enter. The Activity Corner also lists every
+story and takes the player there along the town paths. Both entry routes use
+a three-second travel scene before the destination’s existing parent preview.
+Closing a preview returns the player to the door. Completing a story brings
+the player back outside after notes, rewards and optional word saves.
+
+Each day has 10 minutes of active play, including walking and travel. Parent
+panels, background tabs, and the story’s wrap-up pause the clock. On expiry,
+a story in progress can finish with its existing parent controls. Outside a
+story, expiry immediately starts the bedtime sequence. The character goes
+back to the house, walks to the bed, and lies down. The allowance persists
+in the browser and renews at 06:00 Hong Kong time. Learning records, stickers,
+and outfits are independent of the daily allowance.
+
+## Sesame Street Town expansion
+
+The house opens onto an original theme-park town inspired by the family's
+reference photos. The rainbow gateway opens onto Welcome Plaza and its
+fountain. A central promenade and two outer walks connect Main Street,
+Wonder Park, and Adventure Gardens. Imported family stories extend the north
+end at Storybook Lane. The streetscape uses curved pavilions, striped
+awnings, painted marquees, park lamps, and the glass-roofed Rainbow Arcade.
+
+| District | Adventure entrances | Walk-up attractions |
+| --- | --- | --- |
+| Welcome Plaza | My House and the Activity Corner | Rainbow Carousel, Cookie Café, Bubble Bay |
+| Main Street | Discovery Playroom, Cat’s Hideaway, Little Playhouse | Storybook Library |
+| Wonder Park | Letter Garden, Abby’s Toy Theatre | Starlight Dome, Skywheel |
+| Adventure Gardens | Sound Safari Park, Boogie Bandstand, Rabbit’s Farm | Rainbow Station |
+| Storybook Lane | One signed cottage per imported story | |
+
+Approach an attraction and use the hand or Space to activate its in-world
+effect. The map and nearby HUD use the same full names as the high-contrast
+entrance signs. Family cottage signs wrap from the full story title. The
+map lists attractions and stories by district, and the house’s Activity
+Corner continues to launch stories with the three-second trip.
+
+## The player’s house
+
+The player selects a character immediately after pressing START, then enters
+the house. The low, unlabelled main entrance is centred in the foreground exterior wall.
+The house and town map can guide the player to the door. The Activity Corner
+still starts the three-second journey, showing the route through the house.
+The white play fence has clear gates. The wardrobe stands along the left
+wall with its doors facing right, leaving a straight aisle to the bed.
+The house legend and shortcuts sit in a strip above the 3D view.
+
+The plain padded play mat has a toy kitchen, a vehicle and a small piano.
+The house has cartoon clouds, scalloped trim, a wall rainbow and two framed posters picked
+from the ten supplied images on every entry. Consecutive visits do not show
+the same pair. The glass-front cabinet draws eight collectibles from the existing
+Sesame Street character roster. Figurines, standees and portrait medallions
+use different scales and display bases.
+The bedroom's bed and bedside lamp are part of the bedtime sequence.
+
+| Station | Interaction |
+| --- | --- |
+| Parent Notes | Read the existing parent journal from the desktop computer. |
+| Wardrobe | Equip or remove an owned accessory. |
+| Word Library | View saved words and hear their pronunciation. The shelf shows 24 named books at a time, with pages available in the library. |
+| Figure Cabinet | Choose an unlocked character using the existing picker. |
+| Activity Corner | Choose a story and travel from home. |
+| Main Door | Leave the house for Welcome Plaza. |
+
+## Home storage and the Sticker Shop
+
+The house has four full-height walls and a high ceiling. The camera
+stays inside that shell, including when the player drags, zooms, or
+changes the house view. The camera starts at half optical magnification
+so more of the interior fits. The plain play mat has no sign and sits
+against the rear wall. The front door transitions directly to town.
+
+The toy cupboard displays bought toys on its shelves. The separate
+walk-in Store Room holds furniture and decorations and provides access to
+bedding. Furnishing spots line the perimeter walls and turn each piece
+toward the open floor. Existing saved pieces carry over to those spots
+and automatically face inward. Returning a piece to storage frees the
+spot. The central floor stays open, with clear routes to the interactive
+stations and the bedside.
+Bedsheets and one plush can be displayed together.
+
+The Sticker Shop has departments for accessories, clothes, furniture,
+toys, decorations, and bedding and teddies. Existing stickers and
+purchases carry over. Purchases and house arrangements use the same
+browser-local save. Clothes and accessories use the existing single-item
+wardrobe, toys go straight to the cupboard, and other home goods go to
+storage until placed.
+
+
+## Town access and attraction scenery
+
+The Main Door shortcut leaves the house directly. On foot, the house
+entrance accepts the hand action from a wider approach area. The house
+path is wider and marked by two lights. The town camera frames more of
+the street.
+
+Only the player's house and story destinations accept entry actions.
+Other landmarks appear as scenery on the map. Bubble Bay has a complete
+perimeter, a filled ball basin, and a continuous slide connected to a
+supported platform and steps. Flower planters add colour at the street
+edges.
+
+
+## Shared depth and surface rendering
+
+The house, town and story scenes share a directional key light,
+hemisphere fill, cool rim light and a soft ground contact shadow under
+the player. The house key stays below the ceiling. The outdoor shadow
+camera follows the player to preserve nearby depth while walking
+through town. Night uses a reduced exposure.
+
+Painted scenery gains a subtle procedural bump finish. Low furniture
+surfaces use a fine grain, and the bed quilt has woven surface detail.
+Town domes and rounded props use smoother geometry. Building entrances
+have layered base trim and pilasters, with individual paving blocks
+on their approach paths. The material cache excludes actor rigs,
+existing textured surfaces, signs and learning targets.
+
+
+## Build 50: street reference and house gallery
+The town now uses continuous blue-grey roads with cream raised sidewalks, marked zebra crossings, corner traffic signals and dashed lane markings. Colourful pitched roofs, flower boxes, mixed pink/green/conifer trees, a distant neighbourhood skyline and rounded hills reinforce the playful 3D street direction of the supplied references. The following camera is lower (6.8 world units) and looks farther ahead; the town fog recedes to preserve the streetscape. Main Street remains open overhead. The home access lane sits at z38 so its pavement clears the home footprint. Street and backdrop meshes are instanced in their own groups.
+The house displays six distinct random posters from the existing ten uploaded images: four on the back wall and two high on inward-facing side walls. Portrait and landscape artwork remains contained without cropping. Furniture functions and house navigation are retained.
+Validation: house geometry/navigation and all poster draws; town geometry/navigation, destination entry rules, travel timing and daily budget; front flow. Rendered browser verification could not run because the preview relay was unavailable.
