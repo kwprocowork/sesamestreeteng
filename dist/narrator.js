@@ -20,7 +20,7 @@ export class StoryNarrator {
   this.delay=delay;this.clearDelay=clearDelay;this.serial=0;this.clips={};this.failed=new Set();this.current=null;
   this.audio&&(this.audio.preload='auto');
   const get=fetcher??globalThis.fetch?.bind(globalThis);
-  this.ready=get?Promise.resolve().then(()=>get(new URL('./narration-manifest.json?v=64',import.meta.url))).then(r=>{if(!r.ok)throw Error('Voice library unavailable');return r.json();}).then(m=>{this.clips=m.clips||{};}).catch(()=>{}):Promise.resolve();
+  this.ready=get?Promise.resolve().then(()=>get(new URL('./narration-manifest.json',import.meta.url),{cache:'no-cache'})).then(r=>{if(!r.ok)throw Error('Voice library unavailable');return r.json();}).then(m=>{this.clips=m.clips||{};}).catch(()=>{}):Promise.resolve();
  }
  unlock(){
   if(!this.audio||this.unlocked||this.current)return;
