@@ -288,3 +288,12 @@ House, town-building and Rabbit-story entrances now provide 4.4 units of headroo
 During active exploration the camera gently returns its manual orbit and zoom to the follow view every five seconds. Pointer/pinch/wheel input restarts that interval. Parent panels, hidden tabs, speaking turns, learning detail views and authored cinematic shots reset the interval and remain steady. Reduced-motion users receive a direct adjustment instead of a sweep. The camera continues following the character between adjustments. Story exploration defaults to a 1.26 distance multiplier (about 10.5% farther than 1.14); detailed task and portrait views retain their previous distance. Town/house framing retains its existing safe camera bounds.
 
 Validation: actual character/door clearance, house shell and routes, town navigation/scenery, story gameplay and camera timing/protection regressions. Private runtime data and player saves are untouched.
+
+
+## Build 64 — Warm American-English narration
+
+Mac-local Kokoro-82M (af_heart) prepares cached 24 kHz neural speech for public game dialogue. Warm narration, curious questions, gentle concern and bright encouragement use punctuation-aware delivery and modest speed variation, without imitating a Sesame Street actor. Recordings are AAC in M4A containers for iPad playback, fetched on demand through a sentence manifest. No speech API key, microphone, inference server or running Mac is required while playing the published game. Narration is AI-generated; the parent panel states this.
+
+The shared narrator handles every normal `speak` call. Uncached/dynamic sentences and failed downloads fall back to the best available US-English device voice, preferring enhanced/natural voices. Native delivery also varies naturally rather than using the old uniform 0.85 speed. Speaking models remain optional; nearby parent acceptance stops playback immediately. New speech, muted voice, page exit and hidden tabs cancel old audio/callbacks. Music retains its speech ducking. Isolated phonemes continue using checked clips or parent modelling, not text-to-speech letter names.
+
+`tools/bake_voices.py` reads only public source literals and reusable sentence patterns. Cache signatures include voice/model, wording and delivery speed. Models, Python environments and OCR/source material remain Mac-local. Browser audio failures cannot block gameplay; cancellation and exactly-once completion are tested alongside speaking controls and chapter regressions.
