@@ -1,3 +1,4 @@
+import {TaskCamera} from './task-camera.js?v=66';
 import {StoryNarrator} from './narrator.js?v=65';
 import {AutoCamera,STORY_DISTANCE,DETAIL_DISTANCE} from './camera-rig.js?v=62';
 import {atlasSVG,atlasProject} from './town-atlas.js?v=61';
@@ -32,7 +33,7 @@ import {GardenMusic} from './music.js?v=21';
 import {SHOP_ITEMS,isWearable,normalizeShop,awardStickers,buyItem,equipItem,stickerSVG,itemSVG,attachAccessory,clearAccessory,updateAccessoryPose} from './shop.js?v=49';
 import {ParkTrailer,TRAILER_DURATION,parkShotAt,ACTION_TITLES} from './park-trailer.js?v=31';
 import {createVocabularyRound} from './learning.js?v=49';
-import {WANT_ITEMS,wantQuestion,wantOptions,wantAnswer,createWantRound,WantWorld} from './wants.js?v=60';
+import {WANT_ITEMS,wantQuestion,wantOptions,wantAnswer,createWantRound,WantWorld} from './wants.js?v=66';
 const $=id=>document.getElementById(id);
 const narrator=new StoryNarrator();
 window.addEventListener('pointerdown',()=>narrator.unlock(),{once:true});
@@ -54,6 +55,7 @@ let cameraDrag=null;
 let graphics;
 const cameraOrbit={yaw:0,pitch:0,zoom:1};
 const autoCamera=new AutoCamera();
+const taskCamera=new TaskCamera();
 let introElapsed=0,wideView=false,speechSerial=0,speechFinish=null;
 let bodyWords=validBodyWords(data.bodyWords||BODY_START),bodyOrder=[],bodyIndex=0,bodyResults={},bodyWorld=null,bodyCloseView=false,bodyReturning=false;
 let phonicsPool=validPhonicsPool(data.phonicsPool||PHONICS_LETTERS),phonicsPair=[],phonicsTasks=[],phonicsIndex=0,phonicsWorld=null,phonicsResults={},phonicsAudio=null,phonicsIntroTime=0,phonicsFocusEntity=null,phonicsFound=[],phonicsCardViewing=false;
@@ -251,6 +253,7 @@ function animate(){
  if(typeof syncSpeakingBanner==='function')syncSpeakingBanner();
  if(lesson!=='phonics'||!['explore','phonics-detail'].includes(phase))$('soundLetterBanner').hidden=true;
  if(['landing','chapter'].includes(phase)){clock.getDelta();return}const elapsed=clock.getDelta(),dt=Math.min(elapsed,.05),t=clock.elapsedTime,portrait=innerWidth<741;
+ if(typeof taskCamera!=='undefined'&&townView)taskCamera.active=false;
  if(typeof tickAutoCamera==='function')tickAutoCamera(dt);
  if(townSession){tickTownBudget();if(townView){animateTown(dt,elapsed,t);return;}}
  const galleryActive=lesson.startsWith('mac-')&&lesson===FAMILY_GALLERY.id;
@@ -259,6 +262,7 @@ function animate(){
  const galleryFinale=galleryActive&&phase==='family-end';
  const stationeryShot=lesson===STATIONERY.id&&['family-action','family-say'].includes(phase);
  const transportationShot=lesson===TRANSPORTATION.id&&(phase==='family-action'||phase==='family-say'&&transportationWorld.picked);
+ const taskFocus=typeof storyTaskFocus==='function'?storyTaskFocus():null;let taskShot=false;
  if(phase==='home'){aimTownCamera('house',false,1-Math.exp(-dt*3));graphics?.update(townView==='house'?(phase==='town-night'?'night':'house'):townView==='town'?'town':lesson,player);renderer.render(scene,camera);return;}
  else if(phase==='chapter-intro'){lookGoal.set(0,1.2,2);cameraGoal.set(.3,3,2+Math.max(7,5.6/camera.aspect));}
  else if(phase==='family-gallery-intro')aimFamilyGalleryIntro();
@@ -298,7 +302,9 @@ function animate(){
  camera.position.copy(cameraGoal);lookCurrent.copy(lookGoal);
  }else{
  if(!galleryPortrait&&!galleryFinale&&!stationeryShot&&phase!=='intro'&&phase!=='chapter-intro'&&phase!=='family-gallery-intro')applyCameraOrbit(cameraGoal,lookGoal,cameraOrbit);
- camera.position.lerp(cameraGoal,1-Math.exp(-dt*2.4));lookCurrent.lerp(lookGoal,1-Math.exp(-dt*3));
+ if(typeof frameStoryTask==='function')taskShot=frameStoryTask(dt,taskFocus);
+ if(taskShot&&(reducedTownMotion.matches||taskCamera.walking)){camera.position.copy(cameraGoal);lookCurrent.copy(lookGoal);}
+ else{camera.position.lerp(cameraGoal,1-Math.exp(-dt*(taskShot?4:2.4)));lookCurrent.lerp(lookGoal,1-Math.exp(-dt*(taskShot?4:3)));}
  }
  camera.lookAt(lookCurrent);
  if(phase==='chapter-intro'){tickChapterIntro(dt);renderer.render(scene,camera);return;}
@@ -366,7 +372,7 @@ function animate(){
   const playerWasVisible=player.visible;
   player.visible=false;
   try{renderer.render(scene,camera);}finally{player.visible=playerWasVisible;}
- }else renderer.render(scene,camera);
+ }else if(typeof renderStoryTask==='function')renderStoryTask(taskFocus);else renderer.render(scene,camera);
 }
 let worldInitialized=false,worldFailed=false;
 function ensureWorld(){if(worldInitialized)return true;if(worldFailed)return false;try{initWorld();worldInitialized=true;return true}catch(err){console.error(err);worldFailed=true;$('loadError').hidden=false;$('startButton').disabled=true;$('startButton').textContent='3D unavailable';return false}}
@@ -463,8 +469,104 @@ for(const button of document.querySelectorAll('[data-trailer-jump]'))button.oncl
 paintTrailer();requestAnimationFrame(trailerTick);
 
 function applyCameraOrbit(position,target,orbit){const offset=position.clone().sub(target),spherical=new THREE.Spherical().setFromVector3(offset);spherical.radius*=orbit.zoom??1;spherical.theta+=orbit.yaw;spherical.phi=THREE.MathUtils.clamp(spherical.phi+orbit.pitch,.34,1.38);position.copy(target).add(new THREE.Vector3().setFromSpherical(spherical));return position;}
+function storyTaskFocus(){
+ if(townView||['landing','chapter','home','intro','chapter-intro','family-gallery-intro','family-end','town-travel','rating','reward','body-show','parade-watch','parade-finale'].includes(phase))return null;
+ const make=(key,point,approach,options={})=>({key:lesson+':'+key,point:point.clone(),approach:approach?.clone(),width:1.7,height:2,force:phase!=='explore',...options});
+ const objectPoint=(object,y=0)=>object.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0,y,0));
+ if(workshop?.active&&workshopToken===sessionToken){
+  const approach=workshop.target(),object=workshop.index===0?workshop.tool:workshop.index===1?workshop.station:workshop.pip;
+  return make('workshop-'+workshop.index,object?objectPoint(object,workshop.index===2?1.3:.8):approach.clone().setY(1.1),approach,{width:2.8,height:2.8,subjects:workshop.index===2?[workshop.pip]:[]});
+ }
+ if(lesson==='wants'&&['explore','want-say','want-response','want-preference'].includes(phase)){
+  if(phase==='explore'&&wantMode==='choose'){
+   const approach=wantTarget(),fridge=approach.x>0;
+   return make(fridge?'fridge':'table',new THREE.Vector3(fridge?3.1:-3.6,fridge?1.8:1.35,fridge?-4.5:.35),approach,{width:fridge?3.2:5.2,height:fridge?3.6:1.5,indoor:true,maxAngle:fridge?.35:1.12,elevation:fridge?1.1:undefined});
+  }
+  if(phase==='want-say'&&wantStage==='name')return make('picked-'+wantPicked,player.position.clone().add(new THREE.Vector3(.5,1.4,.3)),player.position,{width:1.5,height:1.5,indoor:true});
+  return make('baby',new THREE.Vector3(4.9,2,.9),new THREE.Vector3(4.7,0,2.5),{width:3.4,height:3,indoor:true,subjects:[wantWorld.baby]});
+ }
+ if(lesson===STATIONERY.id&&['explore','family-action','family-say'].includes(phase)){
+  const station=stationeryWorld.current.station,object=stationeryWorld.hitObjects[station]?.[0];
+  return make('stationery-'+station,object?objectPoint(object,.35):stationeryWorld.target().setY(1.2),stationeryWorld.target(),{authored:phase!=='explore',indoor:true,width:station.startsWith('sticker-')?5.5:2.5,height:station.startsWith('sticker-')?3.4:2.4,maxAngle:.7,subjects:[station==='rug'||station==='show'?stationeryWorld.pip.node:['teacher','student'].includes(station)?stationeryWorld.clover.node:null]});
+ }
+ if(lesson===TRANSPORTATION.id){
+  if(phase!=='explore')return null;
+  const toy=transportationWorld.nearestPickup(player.position);
+  return toy?make('vehicle-'+toy.word,new THREE.Vector3(toy.x,.9,toy.z),new THREE.Vector3(toy.x,0,toy.z+1.26),{width:2.6,height:2}):null;
+ }
+ if(lesson===FAMILY_GALLERY.id){
+  if(phase!=='explore')return null;
+  return make('gallery-'+familyIndex,familyGalleryWorld.target().add(new THREE.Vector3(0,1.8,-.6)),familyGalleryWorld.target(),{width:2.8,height:3.5});
+ }
+ if(lesson==='body'&&['explore','body-find','body-say'].includes(phase)){
+  if(bodyReturning)return null;
+  const m=currentBodyMission(),a=bodyWorld.stations[m.actorIndex].actor,detail=phase!=='explore';
+  return make('body-'+bodyIndex+(detail?'-detail':''),detail?bodyWorld.cameraPose(m,bodyCloseView).target:objectPoint(a,1.6),bodyMissionTarget(),{authored:detail,width:bodyCloseView?.4:1.7,height:bodyCloseView?.4:2.5,maxAngle:.65,subjects:[a]});
+ }
+ if(lesson==='phonics'&&['explore','phonics-detail','phonics-say'].includes(phase)){
+  if(phonicsCardViewing&&phonicsWorld.life.holder)return make('card',objectPoint(phonicsWorld.life.card||phonicsWorld.life.holder.actor,phonicsWorld.life.card?0:2.7),null,{force:true,authored:true,exactFocus:true,width:3,height:1.3,maxAngle:.45,subjects:[phonicsWorld.life.holder.actor]});
+  const candidates=phonicsWorld.eligible(currentPhonicsTask()),nearest=candidates.reduce((a,e)=>!a||player.position.distanceTo(e.approach)<player.position.distanceTo(a.approach)?e:a,null);
+  const entity=phonicsFocusEntity||nearest;if(!entity)return null;
+  return make('phonics-'+entity.word,objectPoint(entity.root,.85),entity.approach,{authored:phase==='phonics-detail',width:1.3,height:1.6,maxAngle:.8});
+ }
+ if(lesson==='letters'&&['explore','alpha-say'].includes(phase)){
+  const item=alphaSteps[alphaIndex],target=alphaDelivering?new THREE.Vector3(['apple','ant'].includes(item.word)?-3:3,1.4,-4):new THREE.Vector3(item.x,1.3,item.z);
+  return make('letter-'+alphaIndex+'-'+alphaDelivering,target,alphaTarget(),{width:2,height:2.4});
+ }
+ if(lesson==='cat'&&['explore','cat-search','cat-say'].includes(phase)){
+  const target=catTarget(),place=CAT_TURNS[catIndex]?.place,point=catWorld.revealed&&catWorld.cat.visible?objectPoint(catWorld.cat,.55):target.clone().add(new THREE.Vector3(0,place==='bed'?.3:.85,-.35));return make('cat-'+catIndex,point,target,{indoor:true,width:2.6,height:2.2,elevation:place==='bed'?.8:undefined,subjects:phase==='cat-search'?[catWorld.dog]:[]});
+ }
+ if(lesson==='comparison'&&['explore','parade-say'].includes(phase)){
+  const target=paradeTarget();return make('toy-'+paradeMode+'-'+paradeTurn,target.clone().add(new THREE.Vector3(0,1,-.5)),target,{indoor:true,width:3,height:2.8});
+ }
+ if(lesson===RABBIT_STORY.id&&['explore','family-action','family-say'].includes(phase)){
+  const target=rabbitWorld.target(),index=familyIndex;
+  let point=target.clone().add(new THREE.Vector3(0,1,-.5)),width=3,height=2.8;
+  const object=index<=2?rabbitWorld.plant:index<=5?rabbitWorld.tableGift:[7,9].includes(index)?rabbitWorld.rabbit:index===8?rabbitWorld.cat:index===10?rabbitWorld.fish:index===11?rabbitWorld.grass:index===12?rabbitWorld.bird:[15,16].includes(index)?rabbitWorld.grandma:index===18?rabbitWorld.grandmaInside:null;
+  if(object)point=objectPoint(object,[7,9,15,16,18].includes(index)?1.1:.5);
+  if([13,14].includes(index)){point.set(0,2.2,-.45);width=3.8;height=4.6;}
+  if(index===20){point.set(3,1.25,0);width=4.6;}
+  if(index===21){point.set(2,1.2,-1);width=6;}
+  return make('rabbit-'+index,point,target,{width,height,indoor:['home','inside'].includes(rabbitWorld.current.scene),subjects:[object,...([15,16,17,18,20,21].includes(index)?[rabbitWorld.rabbit,rabbitWorld.grandma,rabbitWorld.grandmaInside]:[])]});
+ }
+ if(lesson.startsWith('mac-')&&['explore','family-say'].includes(phase)){
+  const target=familyTarget();return make('story-'+familyIndex,target.clone().add(new THREE.Vector3(0,1,-.4)),target,{width:2.8,height:2.8});
+ }
+ if(lesson==='ball'&&['explore','found','answer'].includes(phase)){
+  const key=phase==='explore'?order[step]:place,item=places[key];if(!item)return null;
+  return make('ball-'+key,item.ball.clone(),item.target,{width:1.8,height:1.8,indoor:true,elevation:item.prep==='under'?.7:undefined});
+ }
+ return null;
+}
+function frameStoryTask(dt,focus){
+ if(!$('modalShade').hidden||document.hidden){cameraGoal.copy(camera.position);lookGoal.copy(lookCurrent);return false;}
+ const moving=Math.hypot(joy.x,joy.y)>.1||['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].some(key=>keys.has(key));
+ return taskCamera.frame(dt,{focus,player,camera,position:cameraGoal,look:lookGoal,moving,dragging:!!cameraDrag,paused:!$('modalShade').hidden||document.hidden,occluders:taskObstructors(focus),currentLook:lookCurrent});
+}
+function taskObstructors(focus){
+ if(!focus)return [];
+ const actors=[player,rosita,...ambientHelpers];
+ if(workshop?.active&&workshopToken===sessionToken)actors.push(workshop.pip);
+ if(lesson==='cat')actors.push(catWorld.dog);
+ if(lesson==='wants')actors.push(wantWorld.baby,wantWorld.caregiver);
+ if(lesson==='body')actors.push(...bodyWorld.stations.map(s=>s.actor));
+ if(lesson==='phonics')actors.push(...(phonicsWorld.life.agents||[]).map(a=>a.actor));
+ if(lesson===STATIONERY.id)actors.push(stationeryWorld.pip.node,stationeryWorld.clover.node);
+ if(lesson===RABBIT_STORY.id)actors.push(rabbitWorld.rabbit,rabbitWorld.grandma,rabbitWorld.grandmaInside,rabbitWorld.cat,rabbitWorld.fish,rabbitWorld.bird);
+ return [...new Set(actors)].filter(actor=>{
+  if(!actor||focus.subjects?.includes(actor))return false;
+  for(let node=actor;node;node=node.parent)if(!node.visible)return false;
+  return true;
+ });
+}
+function renderStoryTask(focus){
+ const actors=typeof taskObstructors==='function'?taskObstructors(focus):[player];
+ const hidden=focus?actors.filter(actor=>taskCamera.obstructs(camera,actor,focus)):[];
+ for(const actor of hidden)actor.visible=false;
+ try{renderer.render(scene,camera);}finally{for(const actor of hidden)actor.visible=true;}
+}
 function tickAutoCamera(dt){
- const protectedView=speakingPhase()||!['town-free','explore','family-action','cat-find'].includes(phase)||
+ const protectedView=(typeof taskCamera!=='undefined'&&taskCamera.active)||speakingPhase()||!['town-free','explore','family-action','cat-find'].includes(phase)||
   ((lesson===TRANSPORTATION.id||lesson===STATIONERY.id)&&phase==='family-action')||
   (lesson===FAMILY_GALLERY.id&&phase==='family-action')||
   (lesson==='phonics'&&phonicsCardViewing);
@@ -478,10 +580,10 @@ function setupCameraDrag(){
  canvas.style.touchAction='none';
  canvas.style.cursor='grab';
  const span=()=>{const [a,b]=touches.values();return Math.max(1,Math.hypot(a.x-b.x,a.y-b.y));};
- const zoomBy=ratio=>{autoCamera.manual();cameraOrbit.zoom=THREE.MathUtils.clamp(cameraOrbit.zoom*ratio,.55,1.65);};
+ const zoomBy=ratio=>{autoCamera.manual();taskCamera.manual();cameraOrbit.zoom=THREE.MathUtils.clamp(cameraOrbit.zoom*ratio,.55,1.65);};
  canvas.addEventListener('pointerdown',event=>{
   if(event.button!==0||!$('modalShade').hidden||['intro','family-gallery-intro','town-travel','town-night'].includes(phase))return;
-  autoCamera.manual();
+  autoCamera.manual();taskCamera.manual();
   if(!cameraDrag){touches.clear();pinched=false;}
   if(touches.size>=2)return;
   const point={x:event.clientX,y:event.clientY};
@@ -1840,7 +1942,7 @@ function workshopAnswer(){workshopSpeak(workshop.config.answer,'Tell Pip what ch
 function workshopTalk(){workshop.index=3;workshopSpeak(workshop.config.talk,'Free talk: tell your adventure in 2–3 simple sentences. You can use your own words.');}
 function acceptWorkshop(){if(phase!=='workshop-say'||workshopToken!==sessionToken)return;stopSpeech();$('listening').hidden=true;document.body.classList.remove('speaking-turn');if(workshop.index===3){workshopDone=sessionToken;workshop.stop();phase='rating';ratePanel();return;}routeWorkshop();}
 
-function playChapterIntro(key,after){if(!chapterIntro)chapterIntro=new ChapterIntro(scene,{orb,cube,cyl,rod});stopSpeech();stopInput();clearLearningTray();const priorPhase=phase;introToken=sessionToken;introContinue=after;introSaved={phase:priorPhase,position:player.position.clone(),rotation:player.rotation.clone(),guide:rosita.visible,ball:ball.visible};const fallback={title:familyStory?.title||'A new adventure',lines:[familyStory?.intro||'A new story is waiting for you.','Explore together, help your friends, and tell your story.'],toy:'toy-blocks',kind:'garden'};const visual=key==='cat'?catWorld?.cat.clone(true):key==='wants'?wantWorld?.baby.clone(true):key===RABBIT_STORY.id?rabbitWorld?.rabbit.clone(true):key==='phonics'?phonicsWorld?.entities[0]?.root.clone(true):null;chapterIntro.start(key,fallback,visual);phase='chapter-intro';ball.visible=false;player.position.set(-2.3,0,2.6);player.rotation.y=.5;rosita.visible=false;beacon.visible=false;$('playControls').hidden=true;$('targetLabel').hidden=true;$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('speakerName').textContent='STORYTIME';dialogue(chapterIntro.spec.title,chapterIntro.spec.lines[0]);bodyTools('<button id="skipChapterIntro">Skip intro →</button>');$('skipChapterIntro').onclick=finishChapterIntro;speak(chapterIntro.spec.lines[0]);resize();lookCurrent.set(0,1.2,2);camera.position.set(.3,3,2+Math.max(7,5.6/camera.aspect));camera.lookAt(lookCurrent);}
+function playChapterIntro(key,after){if(!chapterIntro)chapterIntro=new ChapterIntro(scene,{orb,cube,cyl,rod});stopSpeech();stopInput();clearLearningTray();const priorPhase=phase;introToken=sessionToken;introContinue=after;introSaved={phase:priorPhase,position:player.position.clone(),rotation:player.rotation.clone(),guide:rosita.visible,ball:ball.visible};const fallback={title:familyStory?.title||'A new adventure',lines:[familyStory?.intro||'A new story is waiting for you.','Explore together, help your friends, and tell your story.'],toy:'toy-blocks',kind:'garden'};const visual=key==='cat'?catWorld?.cat.clone(true):key==='wants'?wantWorld?.baby.clone(true):key===RABBIT_STORY.id?rabbitWorld?.rabbit.clone(true):key==='phonics'?phonicsWorld?.entities[0]?.model.clone(true):null;chapterIntro.start(key,fallback,visual);phase='chapter-intro';ball.visible=false;player.position.set(-2.3,0,2.6);player.rotation.y=.5;rosita.visible=false;beacon.visible=false;$('playControls').hidden=true;$('targetLabel').hidden=true;$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('speakerName').textContent='STORYTIME';dialogue(chapterIntro.spec.title,chapterIntro.spec.lines[0]);bodyTools('<button id="skipChapterIntro">Skip intro →</button>');$('skipChapterIntro').onclick=finishChapterIntro;speak(chapterIntro.spec.lines[0]);resize();lookCurrent.set(0,1.2,2);camera.position.set(.3,3,2+Math.max(7,5.6/camera.aspect));camera.lookAt(lookCurrent);}
 function tickChapterIntro(dt){if(!chapterIntro?.active||introToken!==sessionToken)return;const before=chapterIntro.line,done=chapterIntro.tick(dt,{paused:!$('modalShade').hidden||document.hidden,reduced:reducedTownMotion.matches});if(before!==chapterIntro.line){dialogue(chapterIntro.spec.title,chapterIntro.spec.lines[chapterIntro.line]);speak(chapterIntro.spec.lines[chapterIntro.line]);}if(!$('modalShade').hidden||document.hidden)return;updateCharacter(player,chapterIntro.elapsed,!reducedTownMotion.matches);if(done)finishChapterIntro();}
 function finishChapterIntro(){if(phase!=='chapter-intro'||introToken!==sessionToken||!introContinue)return;const next=introContinue;introContinue=null;chapterIntro.stop();stopSpeech();bodyTools();player.position.copy(introSaved.position);player.rotation.copy(introSaved.rotation);rosita.visible=introSaved.guide;ball.visible=introSaved.ball;phase=introSaved.phase;next();}
 function syncToyPlay(){if(!townWorld)return;normalizeToyPlay(data);if(!toyPlayWorld)toyPlayWorld=new ToyPlayWorld(townWorld.house,{cube,cyl,orb});toyPlayWorld.sync(data);townWorld.syncHomeItems(data);}

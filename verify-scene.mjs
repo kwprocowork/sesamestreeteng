@@ -8,7 +8,7 @@ import {PhonicsWorld} from './dist/phonics-world.js';
 import {choosePhonicsPair} from './dist/phonics.js';
 import {addSignatureHair} from './dist/character-design.js';
 import {BodyMissionWorld} from './dist/body-world.js';
-import {WantWorld} from './dist/wants.js';
+import {WantWorld,createWantRound} from './dist/wants.js';
 import * as THREE from './dist/assets/three.module.js';
 import fs from 'node:fs';
 import vm from 'node:vm';
@@ -48,3 +48,36 @@ vm.runInContext("lesson='phonics';setLessonWorld();scene.updateMatrixWorld(true)
 const clearance=vm.runInContext(`CHARACTERS.map(c=>{const actor=puppet(c);const b=new THREE.Box3().setFromObject(actor);return {name:c.name,height:b.max.y,width:b.max.x-b.min.x};})`,ctx);
 for(const actor of clearance){assert(actor.height+.5<HOUSE_DOOR.height,actor.name+' headroom including accessory allowance');assert(actor.width+.3<HOUSE_DOOR.width,actor.name+' shoulder clearance');}
 console.log('PASS: all selectable characters fit the enlarged entrance with head and shoulder clearance.',clearance);
+
+// Real character rigs, including Snuffy's trunk, hair and Abby's wings, against task views.
+const {TaskCamera}=await import('./dist/task-camera.js');
+let taskChecks=0;
+for(const name of vm.runInContext('CHARACTERS.map(c=>c.name)',ctx)){
+ ctx.name=name;const actor=vm.runInContext('puppet(CHARACTERS.find(c=>c.name===name))',ctx);
+ actor.position.set(0,0,1.8);
+ for(const aspect of [.6,1.6])for(const y of [.4,1.3,2.5]){
+  const camera=new THREE.PerspectiveCamera(48,aspect,.1,100),goal=new THREE.Vector3(0,5,10),look=new THREE.Vector3(0,y,0);
+  const rig=new TaskCamera(),focus={key:name+y,point:look.clone(),width:1.8,height:1.8,force:true};
+  assert(rig.frame(.05,{focus,player:actor,camera,position:goal,look}));camera.position.copy(goal);camera.lookAt(look);camera.updateMatrixWorld(true);
+  const hide=rig.obstructs(camera,actor,focus);assert(typeof hide==='boolean');assert(goal.toArray().every(Number.isFinite));
+  const projected=focus.point.clone().project(camera);assert(Math.abs(projected.x)<.01&&Math.abs(projected.y)<.01,'task stays centred');taskChecks++;
+ }
+}
+console.log('PASS: '+taskChecks+' close-task compositions with all actual selectable character rigs in portrait and landscape.');
+
+const kitchen=vm.runInContext('wantWorld',ctx);kitchen.root.visible=true;kitchen.fridgeOpen=true;kitchen.door.rotation.y=-2.65;
+let shelfChecks=0;
+for(let run=0;run<12;run++){
+ const round=createWantRound();kitchen.reset(round);kitchen.door.rotation.y=-2.65;kitchen.root.updateMatrixWorld(true);
+ const view=new THREE.PerspectiveCamera(48,1.6,.1,100);view.position.set(.9,2.9,1.5);view.lookAt(3.1,1.8,-4.5);view.updateMatrixWorld(true);
+ for(const item of round.filter(item=>item.location==='fridge')){
+  const food=kitchen.stations.get(item.word).food,bounds=new THREE.Box3().setFromObject(food);
+  const row=[.14,1.08,2.03].indexOf(item.y),top=[.97,1.92,3.55][row];
+  assert(bounds.max.y<top-.01,item.word+' fits below the shelf above');
+  const centre=bounds.getCenter(new THREE.Vector3()),ndc=centre.clone().project(view),ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2(ndc.x,ndc.y),view);
+  assert.equal(kitchen.pick(ray),item.word,'each visible food remains selectable');
+  const hit=ray.intersectObject(kitchen.root,true).find(hit=>hit.object.isMesh);
+  assert.equal(hit?.object.userData.foodWord,item.word,item.word+' is not hidden by a shelf, door or label');shelfChecks++;
+ }
+}
+console.log('PASS: '+shelfChecks+' actual fridge food bounds, direct visible rays and food selection across randomized layouts.');
