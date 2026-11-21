@@ -164,7 +164,7 @@ const cameraStart=clampHouseCamera(new THREE.Vector3(sx*.69+2.05,8.9,sz*.63+13))
   playerHead=new THREE.Vector3(sx,2.6,sz);
 const sight=new THREE.Raycaster(cameraStart,playerHead.clone().sub(cameraStart).normalize(),0,cameraStart.distanceTo(playerHead));
 assert.equal(sight.intersectObject(world.mainDoor,true).length,0,'the foreground door does not cover the player');
-assert(HOUSE_DOOR.height<2.8);
+assert(HOUSE_DOOR.height>=4.4&&HOUSE_DOOR.width>=3.4,'entrance clears tall friends and their accessories');
 assert.equal(world.mainDoor.rotation.y,0);
 world.show('house',true);
 assert(world.night.visible);
@@ -174,7 +174,7 @@ const source=fs.readFileSync('dist/game.js','utf8');
 const start=source.indexOf('function interactTown()');
 const calls=[];
 const state=vm.createContext({
-  HOME:{id:'house'},$(){return {hidden:true};},
+  townView:'house',data:{carriedToy:null},toast(){},HOME:{id:'house'},$(){return {hidden:true};},
   exploreStreet:()=>calls.push('exit'),openTownActivities:()=>calls.push('stories'),
   friends:()=>calls.push('characters'),openShop:view=>calls.push(view),
   vocabularyBank:source=>calls.push(source),journal:()=>calls.push('notes'),

@@ -1,34 +1,35 @@
 import {placedHouseBlocks} from './home-goods.js?v=46';
 import * as THREE from './assets/three.module.js';
 
-import {buildHouseInterior,canWalkInHouse} from './town-house.js?v=50';
-export {ROOM} from './town-house.js?v=50';
-import {buildTownscape} from './town-architecture.js?v=50';
+import {buildHouseInterior,canWalkInHouse} from './town-house.js?v=62';
+export {ROOM} from './town-house.js?v=62';
+import {buildFantasyTown,townWaterBlocked} from './fantasy-town.js?v=62';
+import {findWorldRoute} from './town-navigation.js?v=61';
 
 export const TOWN_NAME = 'Sesame Street Town';
-export const TOWN_LOOP = [-51,51];
-export const HOME = {id:'house',name:'My House',icon:'🏠',swatch:'#ffca60',x:0,z:27.4,lane:38,
-  doorZ:32.2,color:0xe85459,width:10,depth:8.8,district:'Welcome Plaza'};
+export const TOWN_LOOP = [-110,110];
+export const HOME = {id:'house',name:'My House',icon:'🏠',swatch:'#ffca60',x:28,z:68,lane:84,
+  doorZ:72.8,color:0xe85459,width:10,depth:8.8,district:'Friendship Harbour'};
 const districts = [
-  ['ball','Discovery Playroom','🔴','#ff995d',-24,-12,0xef654f,'rotunda','Main Street'],
-  ['letters','Letter Garden','🌼','#fadc6c',-40,-35,0x73ae67,'garden','Wonder Park'],
-  ['phonics','Sound Safari Park','🎵','#70d59e',-22,-58,0x50a496,'garden','Adventure Gardens'],
-  ['body','Boogie Bandstand','🥁','#9bd6ff',20,-58,0x4389c9,'stage','Adventure Gardens'],
-  ['cat','Cat’s Hideaway','🐈','#eba7e9',-41,-12,0xb165aa,'rowhouse','Main Street'],
-  ['wants','Little Playhouse','🍼','#ffb994',13,-12,0xf79353,'rowhouse','Main Street'],
-  ['comparison','Abby’s Toy Theatre','🎠','#f3b0fc',32,-35,0xc852a2,'theatre','Wonder Park'],
-  ['mac-c9e229cf29d0c0d0','Rabbit’s Farm','🥕','#fdd26d',42,-58,0xe18a45,'barn','Adventure Gardens'],
+  ['ball','Discovery Playroom','🔴','#ff995d',-48,-8,0xef654f,'rotunda','Discovery Quarter'],
+  ['letters','Letter Garden','🌼','#fadc6c',-76,-65,0x73ae67,'garden','Enchanted Gardens'],
+  ['phonics','Sound Safari Park','🎵','#70d59e',-42,-123,0x50a496,'garden','Adventure Heights'],
+  ['body','Boogie Bandstand','🥁','#9bd6ff',38,-123,0x4389c9,'stage','Adventure Heights'],
+  ['cat','Cat’s Hideaway','🐈','#eba7e9',-87,-8,0xb165aa,'rowhouse','Discovery Quarter'],
+  ['wants','Little Playhouse','🍼','#ffb994',31,-8,0xf79353,'rowhouse','Discovery Quarter'],
+  ['comparison','Abby’s Toy Theatre','🎠','#f3b0fc',58,-65,0xc852a2,'theatre','Enchanted Gardens'],
+  ['mac-c9e229cf29d0c0d0','Rabbit’s Farm','🥕','#fdd26d',88,-123,0xe18a45,'barn','Adventure Heights'],
 ];
 const facilities = [
-  ['carousel','Rainbow Carousel','🎠','#ffc667',-34,12,0xe56e71,'carousel','Welcome Plaza','Spin the carousel'],
-  ['cafe','Cookie Café','🍪','#ffb266',-15,12,0x427fc2,'cafe','Welcome Plaza','Ring the café bell'],
-  ['bubble','Bubble Bay','🫧','#7ae1f5',33,12,0x4bbccc,'bubble','Welcome Plaza','Make bubbles'],
-  ['library','Storybook Library','📚','#a9dfaa',40,-12,0x6c9b78,'library','Main Street','Open the storybook'],
-  ['star','Starlight Dome','⭐','#e6bbff',-20,-35,0xa65bc6,'dome','Wonder Park','Light the stars'],
-  ['wheel','Skywheel','🎡','#a6e9ff',13,-35,0x4b97bb,'wheel','Wonder Park','Spin the Skywheel'],
-  ['train','Rainbow Station','🚂','#ffd88c',-43,-58,0xdd7970,'station','Adventure Gardens','Send off the train'],
+  ['carousel','Rainbow Carousel','🎠','#ffc667',-62,38,0xe56e71,'carousel','Friendship Harbour','Spin the carousel'],
+  ['cafe','Cookie Café','🍪','#ffb266',-29,38,0x427fc2,'cafe','Friendship Harbour','Ring the café bell'],
+  ['bubble','Bubble Bay','🫧','#7ae1f5',65,38,0x4bbccc,'bubble','Friendship Harbour','Make bubbles'],
+  ['library','Storybook Library','📚','#a9dfaa',82,-8,0x6c9b78,'library','Discovery Quarter','Open the storybook'],
+  ['star','Starlight Dome','⭐','#e6bbff',-36,-65,0xa65bc6,'dome','Enchanted Gardens','Light the stars'],
+  ['wheel','Skywheel','🎡','#a6e9ff',24,-65,0x4b97bb,'wheel','Enchanted Gardens','Spin the Skywheel'],
+  ['train','Rainbow Station','🚂','#ffd88c',-88,-123,0xdd7970,'station','Adventure Heights','Send off the train'],
 ];
-export const TOWN_SPINE = 5.55;
+export const TOWN_SPINE = 10;
 export const PLAY_LIMIT = 600000;
 export const TRAVEL_TIME = 3000;
 const dayFormat = new Intl.DateTimeFormat('en-CA',{
@@ -46,17 +47,17 @@ export function playBudget(record, now = Date.now()) {
 export function townDestinations(lessons) {
   const fixed = [...districts,...facilities].map(([id,name,icon,swatch,x,z,color,style,district,action])=>{
     const depth=style==='wheel'?7:9.4;
-    return {id,name,icon,swatch,x,z,color,style,district,action,width:13.8,depth,lane:z+10,doorZ:z+depth/2+.55};
+    return {id,name,icon,swatch,x,z,color,style,district,action,width:13.8,depth,lane:z+16,doorZ:z+depth/2+.55};
   });
   const extras = Object.keys(lessons).filter(id=>id.startsWith('mac-') && !fixed.some(place=>place.id===id));
   return [HOME,...fixed.filter(place=>place.action||lessons[place.id]),...extras.map((id,index)=>{
-    const x = [-42,-24,-10,15,31,44][index%6], z = -81 - 21*Math.floor(index/6);
-    return {id,name:lessons[id].title,icon:'📚',swatch:'#e6b6f8',x,z,lane:z+10,doorZ:z+5.25,
-      color:0xaf7ac6,style:'rowhouse',district:'Storybook Lane',width:11,depth:9.4};
+    const x = [-88,-55,-25,25,55,88][index%6], z = -180 - 36*Math.floor(index/6);
+    return {id,name:lessons[id].title,icon:'📚',swatch:'#e6b6f8',x,z,lane:z+16,doorZ:z+5.25,
+      color:0xaf7ac6,style:'rowhouse',district:'Storybook Village',width:11,depth:9.4};
   })];
 }
 export function townBounds(places) {
-  return {left:-55,right:55,top:Math.min(-66,...places.map(p=>p.z-8)),bottom:43};
+  return {left:-118,right:118,top:Math.min(-145,...places.map(p=>p.z-18)),bottom:104};
 }
 export function routeTo(start, destination, fromHome = false) {
   const end = [destination.x,destination.doorZ];
@@ -112,8 +113,10 @@ export class TownWorld {
     this.water=[];this.kites=[];this.blocks=[];
     this.facilityEffects=new Map();
     this.bounds=townBounds(places);
-    buildTownscape(this,places,g,{spine:TOWN_SPINE,loop:TOWN_LOOP});
+    this.places=places;this.waterLanes=[...new Set(places.map(p=>p.lane))];this.routeCache=new Map();buildFantasyTown(this,places,g,{spine:TOWN_SPINE,loop:TOWN_LOOP});
+    this.blockGrid=new Map();for(const block of this.blocks){for(let x=Math.floor(block[0]/12);x<=Math.floor(block[1]/12);x++)for(let z=Math.floor(block[2]/12);z<=Math.floor(block[3]/12);z++){const key=x+','+z;if(!this.blockGrid.has(key))this.blockGrid.set(key,[]);this.blockGrid.get(key).push(block);}}
   }
+  findRoute(start,destination){const key=start.join(',')+':'+destination.id;if(this.routeCache?.has(key))return this.routeCache.get(key);const route=findWorldRoute(start,[destination.x,destination.doorZ],this.bounds,(x,z)=>this.canWalk(x,z,'town'));if(this.routeCache){if(this.routeCache.size>=32)this.routeCache.delete(this.routeCache.keys().next().value);this.routeCache.set(key,route);}return route;}
   useFacility(id, seconds) {
     const effect=this.facilityEffects.get(id);
     if(effect)effect.started=seconds;
@@ -158,6 +161,7 @@ export class TownWorld {
         bead.castShadow=false;
       }
     }
+    this.batchStreet(this.route);
   }
   show(view,night=false) {
     this.house.visible=view==='house';
@@ -167,17 +171,19 @@ export class TownWorld {
     this.window.material=night?this.nightWindowMaterial:this.dayWindowMaterial;
     this.scene.background.set(night?0x414265:view==='house'?0xd4edf4:0x9edbf2);
     this.scene.fog.color.copy(this.scene.background);
-    this.scene.fog.near=view==='house'?38:55;
-    this.scene.fog.far=view==='house'?77:155;
+    this.scene.fog.near=view==='house'?38:105;
+    this.scene.fog.far=view==='house'?77:470;
   }
   hide() {this.house.visible=false;this.street.visible=false;}
   canWalk(x,z,view) {
     if(view==='house')return canWalkInHouse(x,z,this.houseObstacles);
-    const b=this.bounds;
+    const b=this.bounds,blockers=this.blockGrid?(this.blockGrid.get(Math.floor(x/12)+','+Math.floor(z/12))||[]):this.blocks;
     return x>b.left&&x<b.right&&z>b.top&&z<b.bottom
-      && !this.blocks.some(([l,r,t,d])=>x>l&&x<r&&z>t&&z<d);
+      && !townWaterBlocked(x,z,this.places||[],this.waterLanes)
+      && !blockers.some(([l,r,t,d])=>x>l&&x<r&&z>t&&z<d);
   }
   tick(seconds,reduced) {
+    this.fantasyTick?.(seconds,reduced);
     for(const effect of this.facilityEffects.values()){
       const elapsed=seconds-effect.started;
       const progress=Math.min(1,Math.max(0,elapsed/effect.duration));

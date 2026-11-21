@@ -113,9 +113,9 @@ console.log('PASS: expanded town, seven attractions, full signs, collision-free 
 
 const interactionStart=source.indexOf('function interactTown()');
 const interactionEnd=source.indexOf('function markTownDestination(',interactionStart);
-let entries=0;
+let entries=0,activations=0;
 const sceneryGate=vm.createContext({
- $:()=>({hidden:true}),HOME,LESSONS:lessons,
+ $:()=>({hidden:true}),HOME,LESSONS:lessons,townView:'town',clock:{elapsedTime:5},townWorld:{useFacility(){activations++;}},toast(){},
  travelToStory:()=>entries++,showTownView:()=>entries++,
 });
 vm.runInContext(source.slice(interactionStart,interactionEnd),sceneryGate);
@@ -123,7 +123,7 @@ for(const place of facilities){
  sceneryGate.townNear=place;
  vm.runInContext('interactTown()',sceneryGate);
 }
-assert.equal(entries,0,'scenery facilities cannot be entered or activated');
+assert.equal(entries,0,'facilities play in the world without entering a story');assert.equal(activations,7);
 sceneryGate.townNear=places.find(p=>p.id==='ball');
 vm.runInContext('interactTown()',sceneryGate);
 assert.equal(entries,1,'story entrances remain playable');

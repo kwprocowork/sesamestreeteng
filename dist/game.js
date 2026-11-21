@@ -1,15 +1,24 @@
+import {AutoCamera,STORY_DISTANCE,DETAIL_DISTANCE} from './camera-rig.js?v=62';
+import {atlasSVG,atlasProject} from './town-atlas.js?v=61';
+import {ChapterIntro,CHAPTER_INTROS} from './chapter-intros.js?v=63';
+import {ToyPlayWorld,normalizeToyPlay,takeShelfToy,placeMatToy,putAwayToy} from './toy-play.js?v=59';
+import {DiscoveryRoom,EXTRA_PLACES} from './discovery-room.js?v=58';
+import {AdventureWorkshop,WORKSHOPS} from './adventure-workshop.js?v=58';
 import {SceneGraphics} from './graphics.js?v=49';
 import {HOME_GOODS, HOUSE_SLOTS, HOME_ITEM, canPlaceOnFloor, placeHouseItem, chooseBedItem} from './home-goods.js?v=49';
-import {HOUSE_STATIONS, HOUSE_CAMERA_ZOOM, clampHouseCamera, houseRoute, shelfPageCount, shelfPageWords} from './town-house.js?v=50';
-import {TownWorld, HOME, ROOM, TOWN_SPINE, TOWN_LOOP, TOWN_NAME, PLAY_LIMIT, TRAVEL_TIME, playBudget, townDestinations, townBounds, routeTo, routePoint} from './town.js?v=50';
+import {HOUSE_STATIONS, HOUSE_CAMERA_ZOOM, clampHouseCamera, houseRoute, shelfPageCount, shelfPageWords} from './town-house.js?v=62';
+import {TownWorld, HOME, ROOM, TOWN_SPINE, TOWN_LOOP, TOWN_NAME, PLAY_LIMIT, TRAVEL_TIME, playBudget, townDestinations, townBounds, routeTo, routePoint} from './town.js?v=62';
 import {loadFamilyStories,pairMac,syncFamilyStories,readFamilyStory} from './family-stories.js?v=36';
+import {STATIONERY,StationeryWorld} from './stationery.js?v=63';
 import {TRANSPORTATION,TransportationWorld} from './transportation.js';
-import {RABBIT_STORY,DELIVERY_STEPS,RabbitDeliveryWorld} from './rabbit-delivery.js?v=37';
+import {FAMILY_GALLERY,FAMILY_GALLERY_INTRO,VENUE_BOUNDS,createFamilyGalleryRound,FamilyGalleryWorld} from './family-gallery.js?v=57-four';
+import {createHouseLabel} from './playhouse-design.js?v=60';
+import {RABBIT_STORY,DELIVERY_STEPS,createRabbitRoute,RabbitDeliveryWorld} from './rabbit-delivery.js?v=62';
 import {PARADES,ParadeHome,visitParades} from './comparison.js?v=35';
-import {CatStoryWorld,CAT_TURNS} from './cat-story.js?v=28';
+import {CatStoryWorld,CAT_TURNS} from './cat-story.js?v=58';
 import {SOUND_MODELS} from './sound-models.js?v=20';
 import {LivingEnvironment} from './environment.js?v=24';
-import {PHONICS,PHONICS_LETTERS,PHONICS_WORDS,PHONICS_TAGS,validPhonicsPool,choosePhonicsPair,phonicsWords,createPhonicsTasks,phonicsMatches,phonicsSpeakingTarget} from './phonics.js?v=18';
+import {PHONICS,PHONICS_LETTERS,PHONICS_WORDS,PHONICS_TAGS,validPhonicsPool,choosePhonicsPair,phonicsWords,createPhonicsTasks,phonicsMatches,phonicsSpeakingTarget} from './phonics.js?v=58';
 import {PhonicsWorld} from './phonics-world.js?v=23';
 import {addSignatureHair,chooseGuideName,replaceGuideText} from './character-design.js?v=34';
 import {BODY_GROUPS,BODY_WORDS,BODY_START,validBodyWords,NOTE_CATEGORIES,noteMatches,reviewTags} from './body.js?v=21';
@@ -22,7 +31,7 @@ import {GardenMusic} from './music.js?v=21';
 import {SHOP_ITEMS,isWearable,normalizeShop,awardStickers,buyItem,equipItem,stickerSVG,itemSVG,attachAccessory,clearAccessory,updateAccessoryPose} from './shop.js?v=49';
 import {ParkTrailer,TRAILER_DURATION,parkShotAt,ACTION_TITLES} from './park-trailer.js?v=31';
 import {createVocabularyRound} from './learning.js?v=49';
-import {WANT_ITEMS,wantQuestion,wantOptions,wantAnswer,createWantRound,WantWorld} from './wants.js?v=11';
+import {WANT_ITEMS,wantQuestion,wantOptions,wantAnswer,createWantRound,WantWorld} from './wants.js?v=60';
 const $=id=>document.getElementById(id);
 const CHARACTERS=[{name:'Elmo',color:0xd51b2d,nose:0xf18a22},{name:'Cookie Monster',color:0x155fac,nose:null},{name:'Grover',color:0x417eb4,nose:0xe48ca3},{name:'Rosita',color:0x41aea1,nose:0xebb45a},{name:'Zoe',color:0xf6ae32,nose:0xf07bab},{name:'Bert',color:0xe7c962,nose:0xe79a52},{name:'Ernie',color:0xe8a261,nose:0xe86346},{name:'Julia',color:0xf5d43c,nose:0xe8a13d},{name:'Oscar',color:0x7d9760,nose:null},{name:'Snuffleupagus',color:0x947154,nose:0x947154},{name:'Tamir',color:0xbb7a43,nose:0xee779c},{name:'Ji-Young',color:0xe4ae7d,nose:0xe46ba1},{name:'Baby Bear',color:0x995529,nose:0x352820},{name:'Abby Cadabby',color:0xf19ac2,nose:0xe96894}];
 const DEFAULT={xp:0,level:1,unlocked:['Elmo','Cookie Monster','Rosita','Tamir','Grover'],journal:[],plays:{},lastPlace:'chair',pendingRewards:0,rewardChoices:null,musicEnabled:true,vocabulary:{},vocabularySets:[],pendingWordSaves:[],stickers:0,ownedItems:['bow','wand','hat'],equippedItem:null,wordSaveBatch:[]};
@@ -31,33 +40,37 @@ if(!data.vocabulary||typeof data.vocabulary!=='object'||Array.isArray(data.vocab
 if(!Array.isArray(data.wordSaveBatch))data.wordSaveBatch=[];
 data.unlocked=[...new Set([...data.unlocked,'Elmo','Cookie Monster','Rosita','Tamir','Grover'])];
 data.ownedItems=[...new Set([...(data.ownedItems||[]),'bow','wand','hat'])];
-normalizeShop(data);
+normalizeShop(data);normalizeToyPlay(data);
 let shopReturn='',shopView='shop',shopCategory='all';
 let houseItemSelection='';
+let chapterIntro=null,introContinue=null,introSaved=null,introToken=-1,toyPlayWorld=null,rabbitRoute=[],rabbitStop=0;
 let storageOK=true;function save(){try{localStorage.setItem('littleStreet.v1',JSON.stringify(data));}catch{storageOK=false;toast('Progress could not be saved on this browser.')}}
 let guideName='Rosita';
 let selected=null,phase='landing',step=0,order=[],place='chair',helpCount=0,sound=true,modalKind='',rating=40,sessionToken=0,completed=false,newXP=0;
 let cameraDrag=null;
 let graphics;
 const cameraOrbit={yaw:0,pitch:0,zoom:1};
+const autoCamera=new AutoCamera();
 let introElapsed=0,wideView=false,speechSerial=0,speechFinish=null;
 let bodyWords=validBodyWords(data.bodyWords||BODY_START),bodyOrder=[],bodyIndex=0,bodyResults={},bodyWorld=null,bodyCloseView=false,bodyReturning=false;
 let phonicsPool=validPhonicsPool(data.phonicsPool||PHONICS_LETTERS),phonicsPair=[],phonicsTasks=[],phonicsIndex=0,phonicsWorld=null,phonicsResults={},phonicsAudio=null,phonicsIntroTime=0,phonicsFocusEntity=null,phonicsFound=[],phonicsCardViewing=false;
 let lesson='ball',alphaIndex=0,letterCorrect=false,xpUndo=null;
 let alphaSteps=ALPHABET_STEPS.map(item=>({...item,z:-1.35}));
 let wantWorld=null,wantRound=[],wantIndex=0,wantStage='opening',wantChoice='milk';
+let wantMode='choose',wantPicked='',wantUsed=new Set(),workshop=null,workshopToken=-1,workshopDone=-1,workshopSpeaking='';
+let discoveryRoom=null,alphaCarried=null,alphaDelivering=false;
 let garden,roomNodes=[],gardenItems=[],butterflyWings=[];
 const INTRO_SECONDS=10;
 const OPENING_PROMPT='Little child, seems that you could not find your ball. What should you ask?';
 const music=new GardenMusic(()=>speechActive||speakingPhase());music.enabled=data.musicEnabled!==false;
 let helperCast,guideSpot,ambientHelpers=[],reviewIndex=0,reviewOrder=[],bankSelection=new Set();
 let speechActive=false,audioUnlocked=false,parentApprovalReady=false,lastApprovalAt=-Infinity;
-const places={box:{name:'box',prep:'in',target:new THREE.Vector3(-4,0,1.1),ball:new THREE.Vector3(-4,.7,-1)},table:{name:'table',prep:'on',target:new THREE.Vector3(0,0,1.25),ball:new THREE.Vector3(0,2.05,-1.2)},chair:{name:'chair',prep:'under',target:new THREE.Vector3(4,0,1.05),ball:new THREE.Vector3(4,.36,-1.2)}};
+const places={...EXTRA_PLACES,box:{name:'box',prep:'in',target:new THREE.Vector3(-4,0,1.1),ball:new THREE.Vector3(-4,.7,-1)},table:{name:'table',prep:'on',target:new THREE.Vector3(0,0,1.25),ball:new THREE.Vector3(0,2.05,-1.2)},chair:{name:'chair',prep:'under',target:new THREE.Vector3(4,0,1.05),ball:new THREE.Vector3(4,.36,-1.2)}};
 const targetSentence=()=>`The ball is ${places[place].prep} the ${place}.`;
 function need(level=data.level){return 180}
 function lessonSummary(){if(lesson.startsWith('mac-'))return familyStory.title+' · '+familyStory.beats.map(b=>b.sentence).join(' ');if(lesson==='comparison')return 'Abby’s Toy Parade · '+paradeRounds.map(k=>PARADES[k].animals.map((n,i)=>'The '+n+' is '+PARADES[k].words[i]+'.').join(' ')).join(' ');if(lesson==='cat')return 'Can you see the cat? · '+CAT_TURNS.map(t=>t.sentence).join(' ');if(lesson==='phonics')return 'Sound Safari Phonics · '+phonicsPair.map(l=>l+' '+l.toLowerCase()+' /'+PHONICS[l].sound+'/').join(' · ')+' · '+phonicsWords(phonicsPair).join(', ');if(lesson==='body')return 'Body Boogie park missions · '+bodyWords.join(', ')+' · '+bodyOrder.map(missionSentence).join(' ');if(lesson==='wants')return 'What do you want? · Do you want cookies / bread / rice / ice cream / juice / milk? · I want '+wantChoice+'. · The baby wants milk.';return lesson==='letters'?'Vocabulary: apple, ant, ball, butterfly · A / a and B / b':targetSentence()}
-function speakingPhase(){return ['family-say','parade-say','cat-say','ask','answer','alpha-say','want-say','body-say','phonics-say'].includes(phase)}
-function speakingTarget(){if(phase==='family-say'&&lesson===TRANSPORTATION.id&&transportationWorld.picked)return transportationWorld.picked.description;if(phase==='family-say')return familyStory.beats[familyIndex].sentence;if(phase==='parade-say')return paradeSaid;if(phase==='cat-say')return CAT_TURNS[catIndex].sentence;if(phase==='phonics-say')return phonicsSpeakingTarget(currentPhonicsTask());if(phase==='body-say')return missionSentence(currentBodyMission());if(phase==='want-say')return wantSpeakingTarget();return phase==='alpha-say'?`${['apple','ant'].includes(alphaSteps[alphaIndex].word)?'An':'A'} ${alphaSteps[alphaIndex].word}.`:phase==='ask'?'Where is the ball?':targetSentence()}
+function speakingPhase(){return phase==='workshop-say'||['family-say','parade-say','cat-say','ask','answer','alpha-say','want-say','body-say','phonics-say'].includes(phase)}
+function speakingTarget(){if(phase==='workshop-say')return workshopSpeaking;if(phase==='family-say'&&lesson===TRANSPORTATION.id&&transportationWorld.picked)return transportationWorld.picked.description;if(phase==='family-say')return familyStory.beats[familyIndex].sentence;if(phase==='parade-say')return paradeSaid;if(phase==='cat-say')return CAT_TURNS[catIndex].sentence;if(phase==='phonics-say')return phonicsSpeakingTarget(currentPhonicsTask());if(phase==='body-say')return missionSentence(currentBodyMission());if(phase==='want-say')return wantSpeakingTarget();return phase==='alpha-say'?`This is ${['apple','ant'].includes(alphaSteps[alphaIndex].word)?'an':'a'} ${alphaSteps[alphaIndex].word}.`:phase==='ask'?'Where is the ball?':targetSentence()}
 function updateProgress(){$('levelLabel').textContent=`Level ${data.level}`;$('xpLabel').textContent=`${data.xp} / ${need()} XP`;$('xpFill').style.width=`${Math.min(data.xp/need()*100,100)}%`;$('friendCount').textContent=data.unlocked.length;$('bankCount').textContent=Object.keys(data.vocabulary||{}).length;$('frontBankCount').textContent=Object.keys(data.vocabulary||{}).length;$('musicButton').textContent=data.musicEnabled!==false?'♫ Music on':'♫ Music off';$('frontMusic').textContent=data.musicEnabled===false?'♫ Music off':audioUnlocked?'♫ Music on':'♫ Play music';$('frontMusic').setAttribute('aria-pressed',String(data.musicEnabled!==false&&audioUnlocked));$('frontStickerCount').textContent=data.stickers;$('navStickerCount').textContent=data.stickers;}
 function toast(text){$('toast').textContent=text;$('toast').classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').classList.remove('show'),3300)}
 function showModal(kind,html,wide=false){if(['plan','parent','body-plan','reward'].includes(kind))html=storyText(html);modalKind=kind;$('modal').className='modal'+(wide?' wide':'');$('modal').innerHTML=html;$('modalShade').hidden=false;stopInput();requestAnimationFrame(()=>{$('modal').querySelector('button')?.focus()})}
@@ -79,7 +92,8 @@ function stopSpeech(complete=false){stopPhonicsAudio();const finish=speechFinish
 function escapeHTML(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 // Sculpted 3D puppet-style actors, with photographic references retained for the gallery.
 const familyShelf=new Map();let familyProps=null,familyStops=[],familyIndex=0,familyStory=null;
-let rabbitWorld=null,transportationWorld=null;
+let rabbitWorld=null,transportationWorld=null,familyGalleryWorld=null,stationeryWorld=null;
+let galleryIntroLine=0,galleryIntroElapsed=0,galleryIntroSpoken=false;
 let paradeWorld,paradeRounds=[],paradeRound=0,paradeTurn=0,paradeMode='',paradePrompt='',paradeWord='',paradeSaid='',paradeFavorite=null;
 let catWorld,catIndex=0,environment,scene,camera,renderer,player,rosita,ball,beacon,boxLid,door,portraits=Object.fromEntries(CHARACTERS.map(c=>[c.name,artPath(ART[c.name].file)])),clock=new THREE.Clock(),walkT=0;
 const cameraGoal=new THREE.Vector3(),lookGoal=new THREE.Vector3(),lookCurrent=new THREE.Vector3(0,1,0);
@@ -199,6 +213,7 @@ beacon=new THREE.Group();const base=mesh(new THREE.TorusGeometry(.73,.035,7,48),
 player=puppet(CHARACTERS[0]);player.visible=false;player.position.set(-1,0,2);scene.add(player);rosita=puppet(CHARACTERS[3]);scene.add(rosita);buildSupportCast();parkGuide();
 // Portraits use the same actual character artwork, without generating substitute faces.
 CHARACTERS.forEach(spec=>loadArt(spec.name).then(art=>{portraits[spec.name]=art.portrait;if(phase==='home')renderChoices()}).catch(console.error));
+discoveryRoom=new DiscoveryRoom(scene,{orb,cube,cyl,rod});
 roomNodes=scene.children.filter(o=>!o.isLight&&o!==player&&o!==rosita&&o!==ball&&o!==beacon&&o!==helperCast);buildGarden();wantWorld=new WantWorld(scene,{orb,cube,cyl,rod,labelBoard});if(typeof LivingEnvironment!=='undefined')environment=new LivingEnvironment(scene);setLessonWorld();setupCameraDrag();
 graphics=new SceneGraphics(scene,renderer);
 resize();window.addEventListener('resize',resize);camera.position.set(9,6.5,14);lookCurrent.set(0,1,0);animate();}
@@ -236,28 +251,57 @@ function animate(){
  if(typeof syncSpeakingBanner==='function')syncSpeakingBanner();
  if(lesson!=='phonics'||!['explore','phonics-detail'].includes(phase))$('soundLetterBanner').hidden=true;
  if(['landing','chapter'].includes(phase)){clock.getDelta();return}const elapsed=clock.getDelta(),dt=Math.min(elapsed,.05),t=clock.elapsedTime,portrait=innerWidth<741;
+ if(typeof tickAutoCamera==='function')tickAutoCamera(dt);
  if(townSession){tickTownBudget();if(townView){animateTown(dt,elapsed,t);return;}}
+ const galleryActive=lesson.startsWith('mac-')&&lesson===FAMILY_GALLERY.id;
+ const galleryPortrait=galleryActive&&['family-action','family-say'].includes(phase)&&
+  familyGalleryWorld.cameraFocus(phase==='family-say');
+ const galleryFinale=galleryActive&&phase==='family-end';
+ const stationeryShot=lesson===STATIONERY.id&&['family-action','family-say'].includes(phase);
  const transportationShot=lesson===TRANSPORTATION.id&&(phase==='family-action'||phase==='family-say'&&transportationWorld.picked);
  if(phase==='home'){aimTownCamera('house',false,1-Math.exp(-dt*3));graphics?.update(townView==='house'?(phase==='town-night'?'night':'house'):townView==='town'?'town':lesson,player);renderer.render(scene,camera);return;}
+ else if(phase==='chapter-intro'){lookGoal.set(0,1.2,2);cameraGoal.set(.3,3,2+Math.max(7,5.6/camera.aspect));}
+ else if(phase==='family-gallery-intro')aimFamilyGalleryIntro();
+ else if(galleryPortrait){
+  lookGoal.copy(galleryPortrait);
+  lookGoal.y-=.16;
+  cameraGoal.copy(lookGoal).add(new THREE.Vector3(.14,.46,Math.max(3.65,2.0/camera.aspect)));
+ }
+ else if(galleryFinale){
+  lookGoal.set(0,2.90,-7.45);
+  cameraGoal.set(0,4.55,-7.45+Math.max(12.5,12.6/camera.aspect));
+ }
+ else if(stationeryShot)stationeryWorld.frame(camera.aspect,cameraGoal,lookGoal);
  else if(transportationShot)transportationWorld.frame(camera,cameraGoal,lookGoal);
  else if(lesson==='comparison'&&['parade-watch','parade-finale'].includes(phase)){const finale=phase==='parade-finale',z=finale?-4:0;lookGoal.set(0,finale?2.25:1,z);cameraGoal.set(0,finale?3.7:4,z+Math.max(finale?8.9:8,(finale?11.8:6)/camera.aspect));}
  else if(lesson==='phonics'&&phase==='explore'&&phonicsCardViewing&&phonicsWorld.life.holder){const a=phonicsWorld.life.holder.actor,cardDistance=Math.max(6.5,2.25/(Math.tan(THREE.MathUtils.degToRad(camera.fov)/2)*camera.aspect));cameraGoal.set(a.position.x,3,a.position.z+cardDistance);lookGoal.set(a.position.x,2.7,a.position.z)}
  else if(lesson==='phonics'&&phase==='phonics-detail'){const e=phonicsFocusEntity||phonicsWorld.expected(currentPhonicsTask());cameraGoal.set(e.root.position.x,2.0,e.root.position.z+4.3);lookGoal.set(e.root.position.x,1,e.root.position.z)}
  else if(lesson==='body'&&['body-find','body-say','phonics-say'].includes(phase)){const pose=bodyWorld.cameraPose(currentBodyMission(),bodyCloseView);cameraGoal.copy(pose.position);lookGoal.copy(pose.target)}
  else if(phase==='intro'){cameraGoal.set(4.2,3.8,12);lookGoal.set(.2,1.5,1.3)}
+ else if(galleryActive){
+  if(wideView){
+   lookGoal.set(0,1.30,0);
+   cameraGoal.set(2.55,12,Math.max(19,17/camera.aspect));
+  }else{
+   lookGoal.set(player.position.x*.94,1.3,player.position.z-1.25);
+   cameraGoal.set(player.position.x+2.7,6.1,player.position.z+(portrait?12.7:9.15));
+  }
+ }
  else if(wideView){cameraGoal.set(5,8,16);lookGoal.set(0,1.1,0)}
  else{const distance=portrait?12.3:8.8;cameraGoal.set(player.position.x*.85+3,5,player.position.z*.5+distance);lookGoal.set(player.position.x*.8,1.35,player.position.z*.3-.65)}
- if(!transportationShot&&!['landing','chapter','home'].includes(phase)){
+ if(!transportationShot&&!stationeryShot&&!['landing','chapter','home'].includes(phase)){
  const offset=cameraGoal.clone().sub(lookGoal);
- cameraGoal.copy(lookGoal).addScaledVector(offset,1.14);
+ const detail=galleryPortrait||galleryFinale||['intro','chapter-intro','family-gallery-intro','phonics-detail','body-find','body-say','parade-watch','parade-finale'].includes(phase)||(lesson==='phonics'&&phonicsCardViewing);
+ cameraGoal.copy(lookGoal).addScaledVector(offset,typeof STORY_DISTANCE==='undefined'?1.14:detail?DETAIL_DISTANCE:STORY_DISTANCE);
 }
  if(transportationShot){
  camera.position.copy(cameraGoal);lookCurrent.copy(lookGoal);
  }else{
- if(phase!=='intro')applyCameraOrbit(cameraGoal,lookGoal,cameraOrbit);
+ if(!galleryPortrait&&!galleryFinale&&!stationeryShot&&phase!=='intro'&&phase!=='chapter-intro'&&phase!=='family-gallery-intro')applyCameraOrbit(cameraGoal,lookGoal,cameraOrbit);
  camera.position.lerp(cameraGoal,1-Math.exp(-dt*2.4));lookCurrent.lerp(lookGoal,1-Math.exp(-dt*3));
  }
  camera.lookAt(lookCurrent);
+ if(phase==='chapter-intro'){tickChapterIntro(dt);renderer.render(scene,camera);return;}
  let moving=false;if(lesson==='phonics'&&phase==='phonics-intro'&&$('modalShade').hidden&&!document.hidden){phonicsIntroTime+=dt;phonicsWorld.windIntro(phonicsIntroTime);if(phonicsIntroTime>=10)startPhonicsMissions();}
  if(phase==='intro'&&$('modalShade').hidden&&!document.hidden){introElapsed+=dt;const pose=introPose(introElapsed,places[place].ball);ball.position.set(pose.x,pose.y,pose.z);ball.rotation.x+=dt*5;ball.rotation.z+=dt*3;
  player.position.y=Math.max(0,Math.sin(t*4))*.065;rosita.position.y=Math.max(0,Math.sin(t*4+1))*.065;
@@ -268,24 +312,29 @@ function animate(){
  if(phase==='explore'&&$('modalShade').hidden){
  let x=joy.x+(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),z=joy.y+(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);const len=Math.hypot(x,z);
  if(len>.1){if(lesson==='phonics')phonicsCardViewing=false;x/=Math.max(len,1);z/=Math.max(len,1);const forward=new THREE.Vector3();camera.getWorldDirection(forward);forward.y=0;forward.normalize();const right=new THREE.Vector3().crossVectors(forward,new THREE.Vector3(0,1,0));const movement=right.multiplyScalar(x).addScaledVector(forward,-z);
- const previous=player.position.clone(),nx=THREE.MathUtils.clamp(previous.x+movement.x*dt*3.6,-8.8,8.8),nz=THREE.MathUtils.clamp(previous.z+movement.z*dt*3.6,-4.3,7.4);
- player.position.set(nx,0,nz);for(const o of (lesson==='ball'?obstacles:[])){if(nx>o.x-o.w&&nx<o.x+o.w&&nz>o.z-o.d&&nz<o.z+o.d){player.position.copy(previous);break}}
+ const previous=player.position.clone();
+ const nx=THREE.MathUtils.clamp(previous.x+movement.x*dt*3.6,galleryActive?VENUE_BOUNDS.minX:-8.8,galleryActive?VENUE_BOUNDS.maxX:lesson==='ball'?10.8:8.8);
+ const nz=THREE.MathUtils.clamp(previous.z+movement.z*dt*3.6,galleryActive?VENUE_BOUNDS.minZ:-4.3,galleryActive?VENUE_BOUNDS.maxZ:lesson==='ball'?10.5:7.4);
+ if(lesson!==STATIONERY.id||stationeryWorld.canWalk(nx,nz))player.position.set(nx,0,nz);for(const o of (lesson==='ball'?obstacles:[])){if(nx>o.x-o.w&&nx<o.x+o.w&&nz>o.z-o.d&&nz<o.z+o.d){player.position.copy(previous);break}}
  const angle=Math.atan2(movement.x,movement.z);player.rotation.y+=Math.atan2(Math.sin(angle-player.rotation.y),Math.cos(angle-player.rotation.y))*Math.min(dt*12,1);moving=player.position.distanceTo(previous)>.001;walkT+=dt*9;}
  const transportationPickup=lesson===TRANSPORTATION.id&&transportationWorld.choosing;
- if(transportationPickup){
+ if(workshop?.active&&workshopToken===sessionToken){const near=player.position.clone().setY(0).distanceTo(workshop.target())<1.75;const label=workshop.index===0?'Pick up '+workshop.config.tool:workshop.index===1?workshop.config.action+' · '+workshop.taps+'/3':'Talk to Pip';$('actionButton').disabled=!near||workshop.effect>0;$('actionLabel').textContent=near?label:'Walk closer';$('targetLabel').textContent=near?label:'Follow the gold marker';}
+ else if(lesson==='wants'){const near=player.position.clone().setY(0).distanceTo(wantTarget())<1.75;const label=wantMode==='deliver'?'Offer '+wantPicked:wantTarget().x>0?(wantWorld.fridgeOpen?'Close fridge':'Open fridge'):'Choose table food';$('actionButton').disabled=!near;$('actionLabel').textContent=near?label:'Walk closer';$('targetLabel').textContent=wantMode==='deliver'?'Carry your food to Baby':'Walk to the fridge or table · tap a food';}
+ else if(galleryActive){updateFamilyGalleryAction();}
+ else if(transportationPickup){
  const toy=transportationWorld.nearestPickup(player.position);
  $('actionButton').disabled=!toy;
  $('actionLabel').textContent=toy?'Pick up '+toy.word:'Come closer';
  $('targetLabel').textContent=toy?'Tap the hand or press Space':'Walk to any gold ring';
  }else{
- const p=lesson.startsWith('mac-')?{target:familyTarget()}:lesson==='comparison'?{target:paradeTarget()}:lesson==='cat'?{target:catTarget()}:lesson==='phonics'?{target:phonicsTarget()}:lesson==='body'?{target:bodyMissionTarget()}:lesson==='wants'?{target:wantTarget()}:lesson==='letters'?{target:new THREE.Vector3(alphaSteps[alphaIndex].x,0,alphaSteps[alphaIndex].z+1.25)}:places[order[step]],near=lesson==='phonics'?!!phonicsWorld.nearest(player.position,currentPhonicsTask()):player.position.clone().setY(0).distanceTo(p.target)<1.75;
+ const p=lesson.startsWith('mac-')?{target:familyTarget()}:lesson==='comparison'?{target:paradeTarget()}:lesson==='cat'?{target:catTarget()}:lesson==='phonics'?{target:phonicsTarget()}:lesson==='body'?{target:bodyMissionTarget()}:lesson==='wants'?{target:wantTarget()}:lesson==='letters'?{target:alphaTarget()}:places[order[step]],near=lesson==='phonics'?!!phonicsWorld.nearest(player.position,currentPhonicsTask()):player.position.clone().setY(0).distanceTo(p.target)<1.75;
  if(lesson==='cat'){
  $('playControls').hidden=false;
  const lookButton=$('catLookButton');
  if(lookButton){lookButton.disabled=!near;lookButton.textContent=near?catActionLabel():'Walk to the marker';}
 }
  if(lesson.startsWith('mac-')){
- const actionWorld=lesson===TRANSPORTATION.id?transportationWorld:familyStory?.adventure?rabbitWorld:null;
+ const actionWorld=lesson===STATIONERY.id?stationeryWorld:lesson===TRANSPORTATION.id?transportationWorld:familyStory?.adventure?rabbitWorld:null;
  $('actionButton').disabled=!near||!!actionWorld?.effectTime;
  $('actionLabel').textContent=near?(actionWorld? actionWorld.current.action+(actionWorld.progress?.()||''):'Collect'):'Come closer';$('targetLabel').textContent=near?'Tap the hand or press Space':'Follow the gold spot';}
  else if(lesson==='comparison'){const label=near?paradeAction():'Walk closer';$('actionButton').disabled=!near;$('actionLabel').textContent=label;const hand=$('paradeHand');if(hand){hand.disabled=!near;hand.textContent=label;}$('targetLabel').textContent=near?'Tap the hand or press Space':beacon.visible?'Follow the gold spot':'Walk to either toy';}
@@ -293,12 +342,18 @@ function animate(){
  }
  }
  if(phase!=='intro'){player.position.y=moving?Math.abs(Math.sin(walkT))*.07:Math.sin(t*2)*.016;rosita.position.y=Math.sin(t*1.8)*.016;}
- updateCharacter(player,t,moving||phase==='intro');updateAccessoryPose(player,t,moving);if(lesson!=='phonics')updateCharacter(rosita,t+.7,phase==='intro');
+ updateCharacter(player,t,moving||phase==='intro');if(lesson==='body'&&phase==='body-show'&&$('modalShade').hidden&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){player.userData.arms?.forEach((arm,i)=>arm.rotation.z=(i?-1:1)*(.8+Math.sin(t*6)*.55));player.userData.legs?.forEach((leg,i)=>leg.rotation.x=Math.sin(t*6+i*Math.PI)*.35);player.position.y=Math.abs(Math.sin(t*6))*.12;}updateAccessoryPose(player,t,moving);if(lesson!=='phonics')updateCharacter(rosita,t+.7,phase==='intro');
  butterflyWings.forEach((wing,i)=>wing.rotation.y=Math.sin(t*4)*(i%2?1:-1)*.5);
  if(beacon.visible){beacon.userData.arrow.position.y=3.1+Math.sin(t*3)*.16;beacon.rotation.y=t*.4}
  if(lesson==='comparison'&&paradeWorld&&$('modalShade').hidden&&!document.hidden){paradeWorld.tick(dt,player);if(phase==='parade-watch'&&!paradeWorld.demo)paradePick();}
+ if(lesson===STATIONERY.id&&['explore','family-action','family-say'].includes(phase)&&stationeryWorld.tick(dt,player,{paused:!$('modalShade').hidden||document.hidden,reduced:reducedTownMotion.matches}))stationerySpeak();
  if(lesson===TRANSPORTATION.id&&phase==='family-action'&&transportationWorld.tick(dt,!$('modalShade').hidden||document.hidden))transportationActionDone();
- if(lesson===RABBIT_STORY.id&&rabbitWorld?.tick(dt,player,!$('modalShade').hidden||document.hidden)){rabbitActionDone();}if(lesson==='cat')catWorld?.tick(t,dt,player);if(lesson==='phonics')phonicsWorld?.tick(t,{paused:!$('modalShade').hidden||speechActive||phase==='phonics-say'||phase==='phonics-detail',playing:phase==='explore',camera,player});if(lesson==='phonics'&&guideSpot)guideSpot.position.set(rosita.position.x,.035,rosita.position.z);if(lesson==='body')bodyWorld?.tick(t,phase==='body-show');if(lesson==='wants')wantWorld?.tick(t,camera,$('world').clientHeight||600);if(phase==='found')ball.rotation.y+=dt;updateSupportCast(t,dt);if(typeof environment!=='undefined')environment?.tick(t,{paused:!$('modalShade').hidden||document.hidden});if(typeof environment!=='undefined'&&environment&&phase!=='home')environment.clearView(camera,player,lookCurrent);graphics?.update(townView==='house'?(phase==='town-night'?'night':'house'):townView==='town'?'town':lesson,player);if(transportationShot){
+ if(phase==='family-gallery-intro'&&$('modalShade').hidden&&!document.hidden)tickFamilyGalleryIntro(dt);
+ if(galleryActive&&familyGalleryWorld){
+  const effect=familyGalleryWorld.tick(dt,player,!$('modalShade').hidden||document.hidden,reducedTownMotion.matches);
+  if(effect)familyGalleryActionDone(effect);
+ }
+ if(workshop?.active&&workshopToken===sessionToken&&workshop.tick(dt,player,{paused:!$('modalShade').hidden||document.hidden,reduced:window.matchMedia('(prefers-reduced-motion: reduce)').matches})){workshopAnswer();}if(lesson===RABBIT_STORY.id&&rabbitWorld?.tick(dt,player,!$('modalShade').hidden||document.hidden)){rabbitActionDone();}if(lesson==='cat')catWorld?.tick(t,dt,player);if(lesson==='phonics')phonicsWorld?.tick(t,{paused:!$('modalShade').hidden||speechActive||phase==='phonics-say'||phase==='phonics-detail',playing:phase==='explore',camera,player});if(lesson==='phonics'&&guideSpot)guideSpot.position.set(rosita.position.x,.035,rosita.position.z);if(lesson==='body')bodyWorld?.tick(t,phase==='body-show');if(lesson==='wants')wantWorld?.tick(t,camera,$('world').clientHeight||600,player,!$('modalShade').hidden||document.hidden,window.matchMedia('(prefers-reduced-motion: reduce)').matches,$('world').clientWidth||0);if(lesson==='ball')discoveryRoom?.tick(dt,{paused:!$('modalShade').hidden||document.hidden,reduced:window.matchMedia('(prefers-reduced-motion: reduce)').matches});if(phase==='found'){ball.rotation.y+=dt;ball.position.y=places[place].ball.y+Math.abs(Math.sin(t*4))*.35;}if(alphaCarried){alphaCarried.position.copy(player.position).add(new THREE.Vector3(.5,1,.35));alphaCarried.rotation.y=t*.5;}updateSupportCast(t,dt);if(typeof environment!=='undefined')environment?.tick(t,{paused:!$('modalShade').hidden||document.hidden});if(typeof environment!=='undefined'&&environment&&phase!=='home')environment.clearView(camera,player,lookCurrent);graphics?.update(townView==='house'?(phase==='town-night'?'night':'house'):townView==='town'?'town':lesson,player);if(transportationShot){
  const actors=[player,rosita,helperCast,guideSpot].filter(actor=>actor?.visible);
  for(const actor of actors)actor.visible=false;
  const nearFog=scene.fog.near;
@@ -307,6 +362,10 @@ function animate(){
  scene.fog.near=nearFog;
  for(const actor of actors)actor.visible=true;
  }
+ }else if(galleryPortrait||galleryFinale){
+  const playerWasVisible=player.visible;
+  player.visible=false;
+  try{renderer.render(scene,camera);}finally{player.visible=playerWasVisible;}
  }else renderer.render(scene,camera);
 }
 let worldInitialized=false,worldFailed=false;
@@ -318,27 +377,27 @@ function renderPlan(){showModal('plan',`${closeHTML}<div class="eyebrow">PARENT 
 
 
 async function begin(){
- if(!selected){friends();return}if(lesson.startsWith('mac-')){beginFamily();return;}if(lesson==='comparison'){beginParade();return}if(lesson==='cat'){beginCat();return}if(lesson==='phonics'){beginPhonics();return}if(lesson==='body'){beginBody();return}if(lesson==='wants'){beginWants();return}if(lesson==='letters'){beginAlphabet();return}if(!startTownStory())return;audioUnlocked=true;music.start('game');closeModal();const token=++sessionToken;phase='preparing';completed=false;helpCount=0;newXP=0;data.lastPlace=place;save();order=Object.keys(places).filter(k=>k!==place).concat(place);step=0;boxLid.rotation.x=0;ball.position.copy(places[place].ball);ball.visible=false;
+ if(!selected){friends();return}if(lesson.startsWith('mac-')){beginFamily();return;}if(lesson==='comparison'){beginParade();return}if(lesson==='cat'){beginCat();return}if(lesson==='phonics'){beginPhonics();return}if(lesson==='body'){beginBody();return}if(lesson==='wants'){beginWants();return}if(lesson==='letters'){beginAlphabet();return}if(!startTownStory())return;audioUnlocked=true;music.start('game');closeModal();const token=++sessionToken;phase='preparing';completed=false;helpCount=0;newXP=0;data.lastPlace=place;save();order=shuffled(Object.keys(places).filter(k=>k!==place)).slice(0,3).concat(place);step=0;discoveryRoom?.reset();boxLid.rotation.x=0;ball.position.copy(places[place].ball);ball.visible=false;
  $('welcome').hidden=true;$('roomTag').hidden=true;$('quest').hidden=false;$('sceneTools').hidden=false;document.body.classList.add('playing');$('playNav').classList.add('active');
  dialogue('An afternoon in the playroom…','Getting ready to play together.');
  await Promise.all([player.userData.ready,rosita.userData.ready]);if(token!==sessionToken||phase!=='preparing')return;
  phase='intro';introElapsed=0;wideView=false;cameraOrbit.yaw=0;cameraOrbit.pitch=0;setCharacterPose(player,'pose');setCharacterPose(rosita,'joy');player.position.set(-1.8,0,2.3);rosita.position.set(1.8,0,2.3);player.rotation.y=Math.PI/2;rosita.rotation.y=-Math.PI/2;ball.visible=true;drawSteps(0);
- $('playControls').hidden=true;$('targetLabel').hidden=true;$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('speakerName').textContent='STORYTIME';dialogue('An afternoon in the playroom…',`${selected} and Rosita are playing catch.`);resize();
+ $('playControls').hidden=true;$('targetLabel').hidden=true;$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('speakerName').textContent='STORYTIME';dialogue('An afternoon in the playroom…',`${selected} and Rosita are playing catch.`);resize();if(typeof playChapterIntro==='function')playChapterIntro('ball',()=>{ball.visible=false;ball.position.copy(places[place].ball);startSpeaking('question');});
 }
 function storyText(text){return replaceGuideText(text,guideName);}
 function dialogue(title,instruction){$('dialogue').textContent=storyText(title);$('instruction').textContent=storyText(instruction);if($('speakerName').textContent==='ROSITA')$('speakerName').textContent=guideName.toUpperCase();}
 function drawSteps(count){$('steps').innerHTML=Array.from({length:lesson==='cat'?CAT_TURNS.length:lesson==='wants'?9:lesson==='letters'?4:5},(_,i)=>`<i class="${i<count?'done':''}"></i>`).join('')}
 function startSpeaking(kind){parkGuide();phase=kind==='question'?'ask':'answer';stopInput();beacon.visible=false;$('playControls').hidden=true;$('targetLabel').hidden=true;$('listening').hidden=false;$('parentDot').hidden=true;drawSteps(kind==='question'?0:4);$('speakerName').textContent=kind==='question'?'STORYTELLER':'ROSITA';dialogue(kind==='question'?OPENING_PROMPT:'Where is the ball?',kind==='question'?'Your turn. Ask Rosita for help.':'Tell Rosita where you found it. Take your time.');const token=sessionToken;updateSpeakingControls('Listen to the story…');speak(kind==='question'?OPENING_PROMPT:'You found it! Where is the ball?',()=>{if(token!==sessionToken||!speakingPhase())return;updateSpeakingControls();});}
-function updateSpeakingControls(override){if(!speakingPhase())return;if(typeof syncSpeakingBanner==='function')syncSpeakingBanner();parentApprovalReady=true;$('pronunciationButton').textContent='▶ Hear pronunciation';$('shortPhraseButton').textContent='Shorter phrase';$('nearbyApprove').textContent='Parent: accept answer →';$('listening').hidden=false;$('listenTitle').textContent=override||'Your turn — try first';$('listenDetail').textContent=override?'Listen, then have a try.':'After your try, hear the pronunciation. Your parent can accept your answer here.';$('nearbyApprove').disabled=false;$('pronunciationButton').disabled=!!override;$('shortPhraseButton').disabled=!!override;if(override){$('modelSentence').hidden=true;$('modelSentence').textContent='';}document.body.classList.add('speaking-turn');if(phase==='phonics-say')updatePhonicsSpeakingUI();}
+function updateSpeakingControls(override){if(!speakingPhase())return;if(typeof syncSpeakingBanner==='function')syncSpeakingBanner();parentApprovalReady=true;$('pronunciationButton').textContent='▶ Hear pronunciation';$('shortPhraseButton').textContent='Shorter phrase';$('nearbyApprove').textContent='Parent: accept answer →';$('listening').hidden=false;$('listenTitle').textContent=override||'Your turn — try first';$('listenDetail').textContent=override?'Listen, then have a try.':'After your try, hear the pronunciation. Your parent can accept your answer here.';$('nearbyApprove').disabled=false;$('pronunciationButton').disabled=!!override;$('shortPhraseButton').disabled=!!override;if(override){$('modelSentence').hidden=true;$('modelSentence').textContent='';}document.body.classList.add('speaking-turn');if(phase==='phonics-say')updatePhonicsSpeakingUI();if(phase==='family-say'&&(lesson===STATIONERY.id&&stationeryWorld.current.freeTalk||lesson===FAMILY_GALLERY.id&&familyGalleryWorld.current.station==='pippaStage')){$('shortPhraseButton').textContent='Two-sentence example';$('nearbyApprove').textContent='Parent: accept show-and-tell';}}
 
 function startExplore(){phase='explore';$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('playControls').hidden=false;$('targetLabel').hidden=false;$('parentDot').hidden=true;lastNear=true;const p=places[order[step]];beacon.position.copy(p.target);beacon.visible=true;drawSteps(step+1);$('speakerName').textContent='ROSITA';dialogue(`Let’s look ${p.prep} the ${p.name}!`,'Use the arrow keys or movement pad. Space or the hand to look.');$('targetLabel').textContent=`Walk to the ${p.name} ↓`;parkGuide();speak(`Let's look ${p.prep} the ${p.name}!`)}
-function interact(){if(phase==='town-free'){interactTown();return;}if(lesson.startsWith('mac-')){familyInteract();return;}if(lesson==='comparison'){interactParade();return;}if(lesson==='cat'){interactCat();return;}if(lesson==='phonics'){interactPhonics();return}if(lesson==='body'){interactBody();return}if(lesson==='wants'){collectWant();return}if(lesson==='letters'){collectAlphabet();return}if(phase!=='explore'||!$('modalShade').hidden||player.position.distanceTo(places[order[step]].target)>=1.75)return;phase='searching';stopInput();$('playControls').hidden=true;$('targetLabel').hidden=true;beacon.visible=false;const k=order[step];if(k==='box')boxLid.rotation.x=-1.55;const token=sessionToken;if(step<2){dialogue('Not here. Let’s keep looking!',`We looked ${places[k].prep} the ${k}.`);speak(`The ball is not ${places[k].prep} the ${k}. Let's keep looking!`,()=>{if(sessionToken!==token||phase!=='searching')return;step++;startExplore()})}else{ball.visible=true;phase='found';cheerHelpers();setCharacterPose(player,'joy');setCharacterPose(rosita,'joy');dialogue('You found the ball!','Now tell Rosita where it is.');speak('You found the ball! Thank you!',()=>{if(sessionToken===token&&phase==='found')startSpeaking('answer')})}}
+function interact(){if(workshop?.active&&workshopToken===sessionToken){interactWorkshop();return;}if(phase==='town-free'){interactTown();return;}if(lesson.startsWith('mac-')){familyInteract();return;}if(lesson==='comparison'){interactParade();return;}if(lesson==='cat'){interactCat();return;}if(lesson==='phonics'){interactPhonics();return}if(lesson==='body'){interactBody();return}if(lesson==='wants'){collectWant();return}if(lesson==='letters'){collectAlphabet();return}if(phase!=='explore'||!$('modalShade').hidden||player.position.distanceTo(places[order[step]].target)>=1.75)return;phase='searching';stopInput();$('playControls').hidden=true;$('targetLabel').hidden=true;beacon.visible=false;const k=order[step];if(k==='box')boxLid.rotation.x=-1.55;const token=sessionToken;discoveryRoom?.search(k,places[k].target);if(step<order.length-1){dialogue('Not here. Let’s keep looking!',`We looked ${places[k].prep} the ${k}.`);speak(`The ball is not ${places[k].prep} the ${k}. Let's keep looking!`,()=>{if(sessionToken!==token||phase!=='searching')return;step++;startExplore()})}else{ball.visible=true;phase='found';cheerHelpers();setCharacterPose(player,'joy');setCharacterPose(rosita,'joy');dialogue('You found the ball!','Now tell Rosita where it is.');speak('You found the ball! Thank you!',()=>{if(sessionToken===token&&phase==='found')startSpeaking('answer')})}}
 function parentPanel(){stopInput();let body='';if(speakingPhase()){const expected=speakingTarget();body=`<div class="learning-card"><small>TARGET SENTENCE</small><strong>${expected}</strong></div><p>Your child can try, then tap Hear pronunciation below the scene. Accept her answer with the nearby parent button whenever she is ready.</p><button id="acceptAnswer" class="primary">Parent: accept answer & continue →</button><div class="hint-list"><button id="model" class="secondary">Hear pronunciation</button><button id="shorter" class="secondary">Practise a shorter phrase</button></div>`}else if((townSession&&townView)||phase==='home'){body='<p>Your child gets 10 minutes of active play each day. Play renews at 6:00 a.m. Hong Kong time. A story already in progress can be finished.</p><button id="openJournal" class="secondary">Read my notes</button>';}else if(['landing','chapter'].includes(phase)){body=`<p>Today’s adventure practises <strong>${lesson==='phonics'?'two letter forms, initial sounds and four words':lesson==='body'?'your chosen body-part words':lesson==='wants'?'What do you want? and six food words':lesson==='letters'?'A, a, B, b and four words':'in, on, under'}</strong>. You approve learning targets before each play.</p><button id="openPlan" class="primary">Review today’s adventure →</button><button id="openJournal" class="secondary">Read my notes</button><div class="status-box">Five guided adventures are available. Worksheet uploads and automatic scene creation are not available yet.</div>`}else if(['intro','preparing'].includes(phase)){body=`<p>${lesson==='letters'?'Rosita introduces the four garden deliveries. Your child will identify each letter form, say each word with a or an, and review four words with pictures and spoken prompts.':`The ten-second opening shows ${selected} and Rosita playing catch. When the ball rolls away, the storyteller invites her to ask for help.`}</p>`}else{body=`<p>Help her follow Rosita’s clues. Move using the movement pad, joystick, or arrow keys, then use the hand button near the golden marker.</p><button id="parentHint" class="secondary">Repeat the current clue</button>`}showModal('parent',`${closeHTML}<div class="eyebrow">A MOMENT FOR THE GROWN-UP</div><h2 id="modalTitle">Playing together</h2>${body}<button id="parentShop" class="secondary">Sticker shop & wardrobe</button><button id="parentVocabulary" class="secondary">Vocabulary bank & word sets</button><button id="experienceSettings" class="secondary">Experience & surprise rewards</button><p class="note-caption">${storageOK?'Notes and progress stay in this browser.':'Browser storage unavailable: progress is temporary.'} No microphone access is needed.</p>${(!townSession||!townView)&&!['home','landing','chapter'].includes(phase)?'<button id="exitAdventure" class="text-button">Leave this adventure</button>':''}`);wireClose();$('parentShop').onclick=()=>openShop('shop');$('parentVocabulary').onclick=vocabularyBank;$('experienceSettings').onclick=experiencePanel;$('acceptAnswer')?.addEventListener('click',approveSpeaking);$('model')?.addEventListener('click',()=>giveHint(false));$('shorter')?.addEventListener('click',()=>giveHint(true));$('openPlan')?.addEventListener('click',plan);$('openJournal')?.addEventListener('click',journal);$('parentHint')?.addEventListener('click',()=>{helpCount++;closeModal();repeat()});$('exitAdventure')?.addEventListener('click',()=>{showModal('exit',`${closeHTML}<h2 id="modalTitle">Leave the adventure?</h2><p>XP is awarded when the adventure is finished. Her previous progress will stay safe.</p><button class="primary" id="stay">Keep playing</button><button class="secondary" id="leave">Leave for now</button>`);wireClose();$('stay').onclick=closeModal;$('leave').onclick=home})}
 function giveHint(short){demonstratePronunciation(short)}
-function acceptAnswer(){if(phase==='family-say'){familyAccept();return;}if(phase==='parade-say'){acceptParade();return;}if(phase==='cat-say'){catIndex++;routeCat();return;}if(phase==='phonics-say'){acceptPhonics();return}if(phase==='body-say'){acceptBody();return}if(phase==='want-say'){acceptWant();return}if(phase==='alpha-say'){acceptAlphabet();return}if(!speakingPhase())return;const previous=phase;closeModal();$('parentDot').hidden=true;if(previous==='ask'){startExplore()}else{phase='rating';$('listening').hidden=true;document.body.classList.remove('speaking-turn');drawSteps(5);dialogue('You did it. Thank you, friend!','A little adventure, a growing voice.');stopSpeech();rating=helpCount>=3?30:helpCount>0?40:50;ratePanel()}}
-function ratePanel(){const day=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Hong_Kong',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());const playKey=day+':'+lesson;const replay=!!data.plays[playKey]||(lesson==='ball'&&!!data.plays[day]);showModal('rating',`<div class="eyebrow">ADVENTURE COMPLETE</div><h2 id="modalTitle">A little moment of progress</h2><p>Confirm today’s suggested rating. It uses in-game help only; adjust it for any support you gave. Pronunciation is not scored.</p><div class="choice-row">${[[30,'With help'],[40,'Some help'],[50,'Mostly independent']].map(([v,l])=>`<button data-rating="${v}" class="${rating===v?'selected':''}">${l}<br><strong>${v} XP</strong></button>`).join('')}</div>${replay?'<div class="status-box">A lovely bit of extra practice! Replays today earn half XP, rounded up.</div>':''}<label for="parentNote">My note <span style="font-weight:normal">(optional)</span></label><textarea id="parentNote" placeholder="What did she try? What felt easier today?" maxlength="3000"></textarea><p class="note-caption">Notes, chosen words, character, date, and game progress are saved in this browser. Export your notes from the journal to keep a backup.</p><button id="confirmXP" class="primary">Confirm & celebrate · ${Math.ceil(rating*(replay?.5:1))} XP ✦</button>`);document.querySelectorAll('[data-rating]').forEach(b=>b.onclick=()=>{rating=Number(b.dataset.rating);document.querySelectorAll('[data-rating]').forEach(btn=>btn.classList.toggle('selected',btn===b));$('confirmXP').textContent=`Confirm & celebrate · ${Math.ceil(rating*(replay?.5:1))} XP ✦`});$('confirmXP').onclick=()=>finish(playKey,replay)}
+function acceptAnswer(){if(phase==='workshop-say'){acceptWorkshop();return;}if(phase==='family-say'){familyAccept();return;}if(phase==='parade-say'){acceptParade();return;}if(phase==='cat-say'){catIndex++;routeCat();return;}if(phase==='phonics-say'){acceptPhonics();return}if(phase==='body-say'){acceptBody();return}if(phase==='want-say'){acceptWant();return}if(phase==='alpha-say'){acceptAlphabet();return}if(!speakingPhase())return;const previous=phase;closeModal();$('parentDot').hidden=true;if(previous==='ask'){startExplore()}else{phase='rating';$('listening').hidden=true;document.body.classList.remove('speaking-turn');drawSteps(5);dialogue('You did it. Thank you, friend!','A little adventure, a growing voice.');stopSpeech();rating=helpCount>=3?30:helpCount>0?40:50;ratePanel()}}
+function ratePanel(){if(typeof startAdventureWorkshop==='function'&&startAdventureWorkshop())return;const day=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Hong_Kong',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());const playKey=day+':'+lesson;const replay=!!data.plays[playKey]||(lesson==='ball'&&!!data.plays[day]);showModal('rating',`<div class="eyebrow">ADVENTURE COMPLETE</div><h2 id="modalTitle">A little moment of progress</h2><p>Confirm today’s suggested rating. It uses in-game help only; adjust it for any support you gave. Pronunciation is not scored.</p><div class="choice-row">${[[30,'With help'],[40,'Some help'],[50,'Mostly independent']].map(([v,l])=>`<button data-rating="${v}" class="${rating===v?'selected':''}">${l}<br><strong>${v} XP</strong></button>`).join('')}</div>${replay?'<div class="status-box">A lovely bit of extra practice! Replays today earn half XP, rounded up.</div>':''}<label for="parentNote">My note <span style="font-weight:normal">(optional)</span></label><textarea id="parentNote" placeholder="What did she try? What felt easier today?" maxlength="3000"></textarea><p class="note-caption">Notes, chosen words, character, date, and game progress are saved in this browser. Export your notes from the journal to keep a backup.</p><button id="confirmXP" class="primary">Confirm & celebrate · ${Math.ceil(rating*(replay?.5:1))} XP ✦</button>`);document.querySelectorAll('[data-rating]').forEach(b=>b.onclick=()=>{rating=Number(b.dataset.rating);document.querySelectorAll('[data-rating]').forEach(btn=>btn.classList.toggle('selected',btn===b));$('confirmXP').textContent=`Confirm & celebrate · ${Math.ceil(rating*(replay?.5:1))} XP ✦`});$('confirmXP').onclick=()=>finish(playKey,replay)}
 function finish(playKey,replay){if(completed)return;completed=true;awardStickers(data);newXP=Math.ceil(rating*(replay?.5:1));data.plays[playKey]=(data.plays[playKey]||0)+1;grantExperience(data,newXP,CHARACTERS.map(c=>c.name));data.journal.unshift({date:new Date().toISOString(),note:$('parentNote').value.trim(),xp:newXP,stickers:3,sentence:lessonSummary(),lesson,rating,character:selected,words:sessionWords(),bodyResults:lesson==='body'?structuredClone(bodyResults):undefined,phonics:lesson==='phonics'?phonicsJournal():undefined});if(['letters','wants','body','phonics'].includes(lesson)){data.pendingWordSaves=[...new Set([...(data.pendingWordSaves||[]),...(lesson==='phonics'?phonicsWords(phonicsPair):lesson==='body'?bodyWords:lesson==='wants'?WANT_ITEMS:ALPHABET_STEPS.map(item=>item.word))])];data.wordSaveBatch=[...data.pendingWordSaves];}save();updateProgress();phase='reward';rewardPanel()}
-function rewardPanel(){showModal('reward',`<div class="reward"><div class="eyebrow" style="justify-content:center">A LITTLE BRAVER. A LITTLE PROUDER.</div><h2 id="modalTitle" style="margin-right:0">Wonderful playing, ${selected||'friend'}!</h2><div class="sticker-prize"><div class="earned-stickers">${[0,1,2].map(i=>`<span style="--sticker-delay:${i*.14}s">${stickerSVG()}</span>`).join('')}</div><strong>+3 Elmo golden stickers!</strong><small>You have ${data.stickers} to spend in the shop.</small></div><div class="big-xp">+${newXP} <small>XP</small></div><p>${lesson==='phonics'?'You searched with the park friends<br>and matched words by sound and spelling!':lesson==='body'?'You explored the park, helped your friends,<br>and got the dance show ready!':lesson==='wants'?'You helped Rosita ask about six foods<br>and tell the baby’s story.':lesson==='letters'?'You collected four garden surprises<br>and matched each picture to its word.':'You and Rosita found the ball<br>and used your voice to tell her where.'}</p><div class="learning-card"><small>WHAT WE PRACTISED</small><strong>${lessonSummary()}</strong></div><button id="rewardShop" class="secondary">Visit the sticker shop ♡</button><button id="rewardNext" class="primary">${['letters','wants','body','phonics'].includes(lesson)?`Save my ${lesson==='body'?bodyWords.length:lesson==='wants'?'six':'four'} words →`:data.pendingRewards?'Three mystery boxes are waiting! ✦':'Return to town'}</button></div>`);$('rewardShop').onclick=()=>openShop('shop');$('rewardNext').onclick=()=>['letters','wants','body','phonics'].includes(lesson)?memoryCards():data.pendingRewards?unlockPanel():home()}
+function rewardPanel(){showModal('reward',`<div class="reward"><div class="eyebrow" style="justify-content:center">A LITTLE BRAVER. A LITTLE PROUDER.</div><h2 id="modalTitle" style="margin-right:0">Wonderful playing, ${selected||'friend'}!</h2><div class="sticker-prize"><div class="earned-stickers">${[0,1,2].map(i=>`<span style="--sticker-delay:${i*.14}s">${stickerSVG()}</span>`).join('')}</div><strong>+3 Elmo golden stickers!</strong><small>You have ${data.stickers} to spend in the shop.</small></div><div class="big-xp">+${newXP} <small>XP</small></div><p>${lesson==='phonics'?'You searched with the park friends<br>and matched words by sound and spelling!':lesson==='body'?'You explored the park, helped your friends,<br>and got the dance show ready!':lesson==='wants'?'You helped Rosita ask about six foods<br>and tell the baby’s story.':lesson==='letters'?'You collected four garden surprises<br>and matched each picture to its word.':lesson===STATIONERY.id?'You made art and a sticker poster<br>and told Pip about your work.':'You and Rosita found the ball<br>and used your voice to tell her where.'}</p><div class="learning-card"><small>WHAT WE PRACTISED</small><strong>${lessonSummary()}</strong></div><button id="rewardShop" class="secondary">Visit the sticker shop ♡</button><button id="rewardNext" class="primary">${['letters','wants','body','phonics'].includes(lesson)?`Save my ${lesson==='body'?bodyWords.length:lesson==='wants'?'six':'four'} words →`:data.pendingRewards?'Three mystery boxes are waiting! ✦':'Return to town'}</button></div>`);$('rewardShop').onclick=()=>openShop('shop');$('rewardNext').onclick=()=>['letters','wants','body','phonics'].includes(lesson)?memoryCards():data.pendingRewards?unlockPanel():home()}
 function home(){if(townSession){returnFromStory();return;}showLanding()}
 function friends({startAtHouse=false}={}){const unlocked=availableCharacters();showModal('friends',`${closeHTML}<div class="eyebrow">PICK YOUR ADVENTURE FRIEND</div><h2 id="modalTitle">Who would you like to be?</h2><p>All ${unlocked.length} unlocked friends are ready to play. Choose any one.</p><div class="friend-grid">${unlocked.map(c=>`<button class="friend-tile ${selected===c.name?'chosen':''}" data-friend="${c.name}" aria-pressed="${selected===c.name}"><img alt="${c.name}" src="${portraits[c.name]}"><strong>${c.name}</strong><small>${selected===c.name?'Playing as this friend':'Choose this friend'}</small></button>`).join('')}</div><p class="note-caption">More surprise friends join you as you level up.</p>`,true);wireClose();document.querySelectorAll('[data-friend]').forEach(b=>b.onclick=()=>{if(startAtHouse&&!ensureWorld()){
  closeModal();toast('The 3D house needs a browser with WebGL enabled.');return;
@@ -347,7 +406,7 @@ function friends({startAtHouse=false}={}){const unlocked=availableCharacters();s
  if(startAtHouse)enterTownSession();
  else{closeModal();toast(`${selected} is ready to play!`);}})}
 function journal(){openJournal();}
-function repeat(){if(lesson===TRANSPORTATION.id&&transportationWorld?.choosing){speak(transportationWorld.current.prompt);return;}if(lesson.startsWith('mac-')&&phase==='explore'){speak(familyStory.beats[familyIndex].clue);return;}if(lesson==='comparison'&&phase==='explore'){speak(paradePrompt);return;}if(lesson==='cat'&&phase==='explore'){speak(CAT_TURNS[catIndex].prompt);return;}if(lesson==='phonics'&&['explore','phonics-detail','phonics-intro'].includes(phase)){speak(phonicsPrompt(currentPhonicsTask()));return;}if(lesson==='body'&&phase==='explore'){speak(bodyReturning?'Walk to the dance stage.':`Walk to ${bodyWorld.stations[currentBodyMission().actorIndex].spec.name}. ${missionQuestion(currentBodyMission())}`);return}if(lesson==='body'&&phase==='body-find'){speak(missionQuestion(currentBodyMission()));return}if(lesson==='wants'&&['want-find','want-response','want-preference'].includes(phase)){speak(phase==='want-find'?`Find the ${WANT_ITEMS[wantIndex]}.`:phase==='want-response'?wantAnswer(WANT_ITEMS[wantIndex]):'What do you want?');return}if(['vocab-review','vocab-feedback'].includes(phase)){speak(reviewOrder[reviewIndex]);return}if(speakingPhase()){updateSpeakingControls('Listen to the instruction…');const token=sessionToken;speak($('dialogue').textContent,()=>{if(token!==sessionToken||!speakingPhase())return;updateSpeakingControls();})}else speak($('dialogue').textContent)}
+function repeat(){if(workshop?.active&&workshopToken===sessionToken){speak(phase==='workshop-say'?workshopSpeaking:workshop.config.title+'. '+(workshop.index===0?'Pick up the '+workshop.config.tool:workshop.index===1?workshop.config.action:'Talk to Pip'));return;}if(lesson==='wants'&&phase==='explore'){speak(wantMode==='deliver'?'Carry your food to Baby.':wantIndex<3?'Choose a food from the fridge or table.':'Find the milk.');return;}if(phase==='family-gallery-intro'){playFamilyGalleryIntroLine();return;}if(lesson.startsWith('mac-')&&lesson===FAMILY_GALLERY.id&&phase==='explore'&&familyGalleryWorld.photoReady){speak('Ready? Tap Take photo and ask for a smile.');return;}if(lesson===TRANSPORTATION.id&&transportationWorld?.choosing){speak(transportationWorld.current.prompt);return;}if(lesson.startsWith('mac-')&&phase==='explore'){speak(familyStory.beats[familyIndex].clue);return;}if(lesson==='comparison'&&phase==='explore'){speak(paradePrompt);return;}if(lesson==='cat'&&phase==='explore'){speak(CAT_TURNS[catIndex].prompt);return;}if(lesson==='phonics'&&['explore','phonics-detail','phonics-intro'].includes(phase)){speak(phonicsPrompt(currentPhonicsTask()));return;}if(lesson==='body'&&phase==='explore'){speak(bodyReturning?'Walk to the dance stage.':`Walk to ${bodyWorld.stations[currentBodyMission().actorIndex].spec.name}. ${missionQuestion(currentBodyMission())}`);return}if(lesson==='body'&&phase==='body-find'){speak(missionQuestion(currentBodyMission()));return}if(lesson==='wants'&&['want-find','want-response','want-preference'].includes(phase)){speak(phase==='want-find'?`Find the ${WANT_ITEMS[wantIndex]}.`:phase==='want-response'?wantAnswer(WANT_ITEMS[wantIndex]):'What do you want?');return}if(['vocab-review','vocab-feedback'].includes(phase)){speak(reviewOrder[reviewIndex]);return}if(speakingPhase()){updateSpeakingControls('Listen to the instruction…');const token=sessionToken;speak($('dialogue').textContent,()=>{if(token!==sessionToken||!speakingPhase())return;updateSpeakingControls();})}else speak($('dialogue').textContent)}
 $('startButton').onclick=enterTownSession;$('actionButton').onclick=interact;$('repeatButton').onclick=repeat;$('parentButton').onclick=parentPanel;$('friendsNav').onclick=friends;$('journalNav').onclick=journal;$('playNav').onclick=()=>{if(townView&&phase==='town-free')openTownMap();else if(phase==='home')closeModal();else toast('You’re in an adventure. Open Parent to leave the adventure.')};document.querySelector('.brand').onclick=e=>{e.preventDefault();if(phase==='home'&&!townSession)showLanding();else parentPanel()};$('soundButton').onclick=()=>{sound=!sound;$('soundButton').textContent=sound?'♫ Sound on':'♫ Sound off';if(!sound)stopSpeech(true)};
 $('modalShade').addEventListener('click',e=>{if(e.target===$('modalShade')&&['shop','wardrobe'].includes(modalKind)){closeShop();return}if(e.target===$('modalShade')&&['parent','plan','friends','journal','exit'].includes(modalKind))closeModal()});
 window.addEventListener('pagehide',()=>{music.stop();stopSpeech()});document.addEventListener('visibilitychange',()=>{if(document.hidden){music.stop();stopInput()}else if(audioUnlocked&&phase!=='town-night')music.start(['landing','chapter','home'].includes(phase)?'front':'game')});
@@ -391,7 +450,7 @@ function paintTrailer(){
  $('trailerSound').textContent=trailerAudio?'Voice on':'Hear trailer voice';
 }
 function trailerTick(now){const delta=Math.min((now-trailerLast)/1000,.2);trailerLast=now;if(phase==='landing'&&trailerPlaying&&!document.hidden&&$('modalShade').hidden){trailerElapsed+=delta;if(trailerElapsed>=TRAILER_SECONDS){trailerElapsed=0;trailerIndex=-1;}paintTrailer();const frame=Math.floor(trailerElapsed*30);if(frame!==parkFrame){parkFrame=frame;parkTrailer?.render(trailerElapsed)}}requestAnimationFrame(trailerTick)}
-function resetWorld(){if(!worldInitialized)return;beacon.visible=false;ball.visible=false;boxLid.rotation.x=0;player.position.set(-1,0,2);parkGuide();setCharacterPose(player,'file');setCharacterPose(rosita,'file')}
+function resetWorld(){if(typeof chapterIntro!=='undefined')chapterIntro?.stop();introContinue=null;workshop?.stop();if(alphaCarried){alphaCarried.removeFromParent();alphaCarried=null;}alphaDelivering=false;if(!worldInitialized)return;beacon.visible=false;ball.visible=false;boxLid.rotation.x=0;player.position.set(-1,0,2);parkGuide();setCharacterPose(player,'file');setCharacterPose(rosita,'file')}
 function showLanding(){phonicsWorld?.clearCargo();document.body.classList.remove('body-missions','phonics-missions');$('bodyMissionTools').hidden=true;parentApprovalReady=false;document.body.classList.remove('speaking-turn');if(audioUnlocked)music.start('front');else music.stop();sessionToken++;stopSpeech();stopInput();closeModal();resetWorld();phase='landing';selected=null;if(player)player.visible=false;completed=false;document.body.classList.remove('playing','chapter','story-learning');document.body.classList.add('landing');$('frontPage').hidden=false;$('chapterPage').hidden=true;$('sceneTools').hidden=true;$('parentDot').hidden=true;trailerAudio=false;trailerIndex=-1;trailerElapsed=0;parkFrame=-1;shuffleParkCast();paintTrailer();parkTrailer?.resize();updateProgress();$('frontStart').focus()}
 function showChapter(){if(audioUnlocked)music.start('front');selected=null;if(player)player.visible=false;showLessonPicker();return;}
 function openCharacterSelect(){document.body.classList.remove('body-missions','phonics-missions');$('bodyMissionTools').hidden=true;selected=null;if(player)player.visible=false;stopSpeech();phase='home';document.body.classList.remove('landing','chapter','playing','story-learning');$('frontPage').hidden=true;$('chapterPage').hidden=true;closeModal();$('welcome').hidden=false;$('roomTag').hidden=false;$('quest').hidden=true;clearLearningTray();$('playControls').hidden=true;$('targetLabel').hidden=true;$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('sceneTools').hidden=true;const ready=ensureWorld();renderChoices();if(ready){resetWorld();previewTownHouse();resize();$('chooseCharacter').focus()}updateProgress()}
@@ -404,6 +463,14 @@ for(const button of document.querySelectorAll('[data-trailer-jump]'))button.oncl
 paintTrailer();requestAnimationFrame(trailerTick);
 
 function applyCameraOrbit(position,target,orbit){const offset=position.clone().sub(target),spherical=new THREE.Spherical().setFromVector3(offset);spherical.radius*=orbit.zoom??1;spherical.theta+=orbit.yaw;spherical.phi=THREE.MathUtils.clamp(spherical.phi+orbit.pitch,.34,1.38);position.copy(target).add(new THREE.Vector3().setFromSpherical(spherical));return position;}
+function tickAutoCamera(dt){
+ const protectedView=speakingPhase()||!['town-free','explore','family-action','cat-find'].includes(phase)||
+  ((lesson===TRANSPORTATION.id||lesson===STATIONERY.id)&&phase==='family-action')||
+  (lesson===FAMILY_GALLERY.id&&phase==='family-action')||
+  (lesson==='phonics'&&phonicsCardViewing);
+ autoCamera.tick(dt,cameraOrbit,{active:$('modalShade').hidden&&!document.hidden,
+  protectedView,dragging:!!cameraDrag,reduced:reducedTownMotion.matches});
+}
 function setupCameraDrag(){
  const canvas=renderer.domElement;
  const touches=new Map();
@@ -411,9 +478,10 @@ function setupCameraDrag(){
  canvas.style.touchAction='none';
  canvas.style.cursor='grab';
  const span=()=>{const [a,b]=touches.values();return Math.max(1,Math.hypot(a.x-b.x,a.y-b.y));};
- const zoomBy=ratio=>{cameraOrbit.zoom=THREE.MathUtils.clamp(cameraOrbit.zoom*ratio,.55,1.65);};
+ const zoomBy=ratio=>{autoCamera.manual();cameraOrbit.zoom=THREE.MathUtils.clamp(cameraOrbit.zoom*ratio,.55,1.65);};
  canvas.addEventListener('pointerdown',event=>{
-  if(event.button!==0||!$('modalShade').hidden||['intro','town-travel','town-night'].includes(phase))return;
+  if(event.button!==0||!$('modalShade').hidden||['intro','family-gallery-intro','town-travel','town-night'].includes(phase))return;
+  autoCamera.manual();
   if(!cameraDrag){touches.clear();pinched=false;}
   if(touches.size>=2)return;
   const point={x:event.clientX,y:event.clientY};
@@ -440,8 +508,11 @@ function setupCameraDrag(){
   touches.delete(event.pointerId);
   if(!touches.size){cameraDrag=null;canvas.style.cursor='grab';}
   if(tap&&$('modalShade').hidden){
+   if(townView==='house'&&phase==='town-free'){tapHouseToy(event.clientX,event.clientY);return;}
+   if(lesson==='wants'&&phase==='explore'&&wantMode==='choose')tapWantFood(event.clientX,event.clientY);
    if(lesson==='phonics'&&['explore','phonics-detail'].includes(phase))tapPhonicsWorld(event.clientX,event.clientY);
    if(lesson==='comparison')paradeTap(event.clientX,event.clientY);
+   if(lesson===STATIONERY.id&&phase==='explore'&&!townView)tapStationery(event.clientX,event.clientY);
    if(lesson==='body'&&phase==='body-find')tapBodyPart(event.clientX,event.clientY);
   }
  }
@@ -454,7 +525,8 @@ $('inGameCharacters').onclick=friends;
 
 function showLessonPicker(){stopSpeech();stopInput();closeModal();phase='chapter';document.body.classList.remove('landing','playing','learning','story-learning');document.body.classList.add('chapter');$('frontPage').hidden=true;$('chapterPage').hidden=false;$('chapterPage').innerHTML=`<button id="pickerBack" class="chapter-back">← Back to the trailer</button><div class="lesson-hub"><span class="chapter-number">CHOOSE AN ADVENTURE</span><h1 id="chapterTitle">A little world<br>of <em>discovery.</em></h1><div class="lesson-grid"><button data-lesson="ball"><span class="lesson-symbol red-ball-symbol"></span><small>CHAPTER 01 · THE PLAYROOM</small><strong>Can you find<br>the ball?</strong><p>Explore in, on, and under.<br>Ask a question. Tell the story.</p><span>Let’s explore →</span></button><button data-lesson="letters"><span class="lesson-symbol alphabet-symbol">Aa <i>Bb</i></span><small>CHAPTER 02 · VOCABULARY GAME</small><strong>The A a & B b<br>Garden</strong><p>Four letter forms. Four little surprises.<br>Find, say, and remember.</p><span>Let’s discover →</span></button><button data-lesson="wants"><span class="lesson-symbol want-symbol">${wordPicture('milk')}</span><small>CHAPTER 03 · STORY GAME · 5 MIN</small><strong>What do<br>you want?</strong><p>A baby brother. Six little ideas.<br>Listen, ask, and tell the story.</p><span>Let’s help Rosita →</span></button><button data-lesson="body"><span class="lesson-symbol alphabet-symbol">♫</span><small>CHAPTER 04 · MOVE & SAY · 3–5 MIN</small><strong>Body<br>Boogie!</strong><p>Choose today’s body words.<br>Find, say, move, and dance.</p><span>Let’s dance →</span></button><button data-lesson="cat"><span class="lesson-symbol">🐈</span><small>CHAPTER 06 · STORY GAME</small><strong>Can you see<br>the cat?</strong><p>Look under, on, and in.<br>Find Cat with a friendly dog.</p><span>Let’s find Cat →</span></button><button data-lesson="phonics"><span class="lesson-symbol alphabet-symbol">♪ Aa</span><small>CHAPTER 05 · PHONICS · 5 MIN</small><strong>Sound Safari<br>Parade</strong><p>Two surprise letters. Roaming animal friends.<br>Find by sound, then follow the cards.</p><span>Let’s start the parade →</span></button><button data-lesson="comparison"><span class="lesson-symbol">🐢</span><small>CHAPTER 07 · COMPARISON</small><strong>Abby’s Toy<br>Parade</strong><p>Wind up two toy animals and describe your parade star.</p><span>Play with the toys →</span></button></div></div>`;$('pickerBack').onclick=showLanding;document.querySelectorAll('[data-lesson]').forEach(b=>b.onclick=()=>showChapterTitle(b.dataset.lesson));familyPicker();refreshFamilyShelf();}
 function showChapterTitle(id){lesson=id;if(id==='phonics'){phonicsTitle(true);return}if(id==='body'){bodyTitle();return}selected=null;if(player)player.visible=false;const info=LESSONS[id];$('chapterPage').innerHTML=`<button id="titleBack" class="chapter-back">← Choose another adventure</button><div class="chapter-spark spark-one">✦</div><div class="chapter-content"><span class="chapter-number">CHAPTER ${info.number}</span><p class="chapter-kicker">${info.setting.toUpperCase()}${info.type==='vocabulary'?' · VOCABULARY GAME':''}</p><h1 id="chapterTitle">${id.startsWith('mac-')?escapeHTML(info.title):id==='comparison'?'Comparison<br><em>Abby’s Toy Parade</em>':id==='cat'?'Can you see<br><em>the cat?</em>':id==='wants'?'What do<br><em>you want?</em>':id==='ball'?'Can you find<br><em>the ball?</em>':'The A a & B b<br><em>Garden</em>'}</h1><p>${id.startsWith('mac-')?escapeHTML(familyShelf.get(id).intro):id==='comparison'?'Open the toy chest, start two animal acts, and introduce your favorite toy.':id==='cat'?'A playful cat is hiding in the house. Walk, look, ask, and tell your friend where Cat is.':id==='wants'?'Help a friend find what the baby wants.<br>Six food words. Questions, choices, and a happy ending.':id==='ball'?'One missing ball. Three little clues.<br>A question only you can ask.':'Help the friends deliver four garden surprises.<br>Apple, ant, ball, and butterfly.'}</p><div class="chapter-targets">${info.targets.slice(0,id==='ball'?3:id==='wants'?6:4).map(t=>`<span>${t}</span>`).join('')}</div><button id="chapterContinue" class="front-start">Choose your friend <span>→</span></button><small>${id==='wants'?'About five minutes, with extra speaking time.':'Choose your own character.'} A grown-up can help.</small></div>`;$('titleBack').onclick=showChapter;$('chapterContinue').onclick=openCharacterSelect;$('chapterContinue').focus();}
-function labelBoard(text,x,y,z,width,parent){const canvas=document.createElement('canvas');canvas.width=512;canvas.height=180;const ctx=canvas.getContext('2d');ctx.fillStyle='#f9e6ba';ctx.fillRect(0,0,512,180);ctx.font='bold 94px Arial';ctx.fillStyle='#355e46';ctx.textAlign='center';ctx.fillText(text,256,122);const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;cube(0xbd945c,x,y,z-.035,width,.64,.12,parent);const board=new THREE.Mesh(new THREE.PlaneGeometry(width-.05,.59),new THREE.MeshBasicMaterial({map:tex,depthTest:true,toneMapped:false}));board.position.set(x,y,z+.04);parent.add(board);}
+function labelBoard(text,x,y,z,width,parent){const board=createHouseLabel(text,width,{height:.38,compact:true});board.position.set(x,y,z);parent.add(board);return board;}
+
 function rod(c,a,b,r,parent){const start=new THREE.Vector3(...a),end=new THREE.Vector3(...b),delta=end.clone().sub(start),object=mesh(new THREE.CylinderGeometry(r,r,delta.length(),10),c,0,0,0,1,1,1,parent);object.position.copy(start).add(end).multiplyScalar(.5);object.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());return object;}
 function buildGarden(){garden=new THREE.Group();garden.visible=false;scene.add(garden);cyl(0xa7c681,0,-.12,0,11,.2,garden);for(let z=-4;z<8;z+=1.15)cube(0xe6d6ac,0,.015,z,2.3,.035,.95,garden);
  for(let i=-9;i<=9;i++){cube(0xe7d3a4,i,1,-5.5,.18,2,.18,garden);for(const y of[.65,1.4])cube(0xd8bd84,i,y,-5.5,1.05,.12,.12,garden)}
@@ -469,7 +541,7 @@ function buildGarden(){garden=new THREE.Group();garden.visible=false;scene.add(g
  if(index===3){orb(0x455f72,0,.7,0,.075,.36,.075,thing);for(const side of[-1,1]){const wing=new THREE.Group();wing.position.set(0,.7,0);orb(side<0?0x7ebbc5:0xc39ed5,side*.28,.12,0,.32,.37,.06,wing);orb(side<0?0xe1b3cf:0x96c8c7,side*.24,-.22,0,.26,.25,.06,wing);orb(0xf2d69c,side*.3,.15,.065,.1,.12,.02,wing);thing.add(wing);butterflyWings.push(wing);rod(0x455f72,[0,1,0],[side*.14,1.22,0],.018,thing)}}gardenItems.push({root,thing,word:item.word});});
 }
 function randomizeVocabularyGarden(){alphaSteps=createVocabularyRound();for(const item of alphaSteps){const entry=gardenItems.find(entry=>entry.word===item.word);entry.root.position.set(item.x,0,item.z);entry.thing.visible=true;}}
-function setLessonWorld(){try{$('guidePortrait').hidden=lesson===RABBIT_STORY.id;if(rosita)rosita.visible=lesson!==RABBIT_STORY.id;if(rabbitWorld)rabbitWorld.root.visible=false;if(typeof clearFamilyProps==='function')clearFamilyProps();if(typeof paradeWorld!=='undefined'&&paradeWorld)paradeWorld.root.visible=false;if(typeof guideSpot!=='undefined'&&guideSpot)guideSpot.visible=lesson!=='cat';if(!garden)return;if(typeof catWorld!=='undefined'&&catWorld)catWorld.root.visible=false;
+function setLessonWorld(){if(typeof chapterIntro!=='undefined')if(typeof chapterIntro!=='undefined')chapterIntro?.stop();introContinue=null;if(typeof workshop!=='undefined')workshop?.stop();if(typeof alphaCarried!=='undefined'&&alphaCarried){alphaCarried.removeFromParent();alphaCarried=null;}if(typeof alphaDelivering!=='undefined')alphaDelivering=false;const useLocalCast=lesson===STATIONERY.id||lesson===RABBIT_STORY.id||(lesson.startsWith('mac-')&&lesson===FAMILY_GALLERY.id);try{$('guidePortrait').hidden=useLocalCast;if(rosita)rosita.visible=!useLocalCast;if(rabbitWorld)rabbitWorld.root.visible=false;if(typeof clearFamilyProps==='function')clearFamilyProps();if(typeof paradeWorld!=='undefined'&&paradeWorld)paradeWorld.root.visible=false;if(typeof guideSpot!=='undefined'&&guideSpot)guideSpot.visible=lesson!=='cat';if(!garden)return;if(typeof catWorld!=='undefined'&&catWorld)catWorld.root.visible=false;
  if(lesson.startsWith('mac-')){
   const s=familyShelf.get(lesson);for(const w of [wantWorld,bodyWorld,phonicsWorld])if(w)w.root.visible=false;
   const outdoor=s.setting==='garden';garden.visible=outdoor&&!s.adventure;gardenItems.forEach(o=>o.thing.visible=false);roomNodes.forEach(o=>o.visible=!outdoor&&!s.adventure);ambientHelpers.forEach(o=>o.visible=false);
@@ -492,16 +564,18 @@ function setLessonWorld(){try{$('guidePortrait').hidden=lesson===RABBIT_STORY.id
   $('welcome').querySelector('.eyebrow').textContent='CHAPTER 06 · FIND CAT';
   $('welcome').querySelector('.intro').textContent='Choose a friend to play hide-and-seek with Cat.';
   return;
- }ambientHelpers.forEach(a=>a.visible=lesson!=='phonics');if(phonicsWorld)phonicsWorld.root.visible=false;if(lesson==='phonics'){if(bodyWorld)bodyWorld.root.visible=false;if(wantWorld)wantWorld.root.visible=false;garden.visible=false;roomNodes.forEach(o=>o.visible=false);if(!phonicsPair.length)phonicsPair=choosePhonicsPair(phonicsPool);if(!phonicsWorld)phonicsWorld=new PhonicsWorld(scene,{orb,cube,cyl,rod,labelBoard,sharedGeometry:g=>g===sphereGeo||[...boxCache.values(),...furCache.values()].includes(g),sharedMaterial:m=>[...mats.values()].includes(m)});phonicsWorld.root.visible=true;phonicsWorld.reset(phonicsPair);phonicsWorld.bindGuide(rosita);scene.background.set(0xc4e4df);$('roomTag').textContent='SOUND SAFARI · THE PARADE PARK';$('welcome').querySelector('.eyebrow').textContent='CHAPTER 05 · PHONICS';$('welcome').querySelector('.intro').textContent='Choose a friend, then approve two letters and meet your guide.';setLessonLabels();return}if(bodyWorld)bodyWorld.root.visible=false;if(lesson==='body'){if(!bodyWorld)bodyWorld=new BodyMissionWorld(scene,{orb,cube,cyl,labelBoard,puppet});bodyWorld.root.visible=true;bodyWorld.setCast(CHARACTERS.filter(c=>['Bert','Ernie','Tamir'].includes(c.name)&&c.name!==selected).sort((a,b)=>['Bert','Ernie','Tamir'].indexOf(a.name)-['Bert','Ernie','Tamir'].indexOf(b.name)).slice(0,2));if(wantWorld)wantWorld.root.visible=false;roomNodes.forEach(o=>o.visible=false);garden.visible=false;scene.background.set(0xc3e5e4);$('roomTag').textContent='BODY BOOGIE · THE PARK STAGE';$('welcome').querySelector('.eyebrow').textContent='CHAPTER 04 · BODY BOOGIE';$('welcome').querySelector('.intro').textContent='Choose your own friend for the park dance show.';setLessonLabels();return}const story=lesson==='wants',alphabet=lesson==='letters';if(wantWorld)wantWorld.root.visible=story;if(story){roomNodes.forEach(o=>o.visible=false);garden.visible=false;scene.background.set(0xe5ece0);$('roomTag').innerHTML='<span>♡</span> THE LITTLE PLAYHOUSE <small>What do you want?</small>';$('welcome').querySelector('.eyebrow').textContent='CHAPTER 03 · WHAT DO YOU WANT?';$('welcome').querySelector('.intro').textContent='Choose a friend to help the baby.';setLessonLabels();return}setLessonLabels();roomNodes.forEach(o=>o.visible=!alphabet);garden.visible=alphabet;gardenItems.forEach(o=>o.thing.visible=true);scene.background.set(alphabet?0xc3e5e4:0xdce7db);$('roomTag').innerHTML=alphabet?'<span>✦</span> LETTER GARDEN <small>A a · B b</small>':'<span>✦</span> THE PLAYROOM <small>In · On · Under</small>';$('welcome').querySelector('.eyebrow').textContent=`CHAPTER ${LESSONS[lesson].number} · ${LESSONS[lesson].title.toUpperCase()}`;$('welcome').querySelector('.intro').textContent=alphabet?'Choose a friend to deliver garden surprises.':'Choose a friend to play catch with your story guide.';}finally{if(typeof environment!=='undefined'&&environment){const roots=lesson==='ball'?roomNodes:lesson==='letters'?[garden]:lesson==='wants'?[wantWorld?.root]:lesson==='body'?[bodyWorld?.root]:[phonicsWorld?.root];environment.root.visible=lesson!==RABBIT_STORY.id;environment.sky.visible=lesson!==RABBIT_STORY.id;environment.setLesson(lesson.startsWith('mac-')?(familyShelf.get(lesson).setting==='garden'?'letters':'ball'):['comparison','cat'].includes(lesson)?'ball':lesson,lesson.startsWith('mac-')||lesson==='comparison'?[]:lesson==='cat'?roomNodes:roots);}}}
+ }ambientHelpers.forEach(a=>a.visible=lesson!=='phonics');if(phonicsWorld)phonicsWorld.root.visible=false;if(lesson==='phonics'){if(bodyWorld)bodyWorld.root.visible=false;if(wantWorld)wantWorld.root.visible=false;garden.visible=false;roomNodes.forEach(o=>o.visible=false);if(!phonicsPair.length)phonicsPair=choosePhonicsPair(phonicsPool);if(!phonicsWorld)phonicsWorld=new PhonicsWorld(scene,{orb,cube,cyl,rod,labelBoard,sharedGeometry:g=>g===sphereGeo||[...boxCache.values(),...furCache.values()].includes(g),sharedMaterial:m=>[...mats.values()].includes(m)});phonicsWorld.root.visible=true;phonicsWorld.reset(phonicsPair);phonicsWorld.bindGuide(rosita);scene.background.set(0xc4e4df);$('roomTag').textContent='SOUND SAFARI · THE PARADE PARK';$('welcome').querySelector('.eyebrow').textContent='CHAPTER 05 · PHONICS';$('welcome').querySelector('.intro').textContent='Choose a friend, then approve two letters and meet your guide.';setLessonLabels();return}if(bodyWorld)bodyWorld.root.visible=false;if(lesson==='body'){if(!bodyWorld)bodyWorld=new BodyMissionWorld(scene,{orb,cube,cyl,labelBoard,puppet});bodyWorld.root.visible=true;bodyWorld.setCast(CHARACTERS.filter(c=>['Bert','Ernie','Tamir'].includes(c.name)&&c.name!==selected).sort((a,b)=>['Bert','Ernie','Tamir'].indexOf(a.name)-['Bert','Ernie','Tamir'].indexOf(b.name)).slice(0,2));if(wantWorld)wantWorld.root.visible=false;roomNodes.forEach(o=>o.visible=false);garden.visible=false;scene.background.set(0xc3e5e4);$('roomTag').textContent='BODY BOOGIE · THE PARK STAGE';$('welcome').querySelector('.eyebrow').textContent='CHAPTER 04 · BODY BOOGIE';$('welcome').querySelector('.intro').textContent='Choose your own friend for the park dance show.';setLessonLabels();return}const story=lesson==='wants',alphabet=lesson==='letters';if(wantWorld)wantWorld.root.visible=story;if(story){roomNodes.forEach(o=>o.visible=false);garden.visible=false;scene.background.set(0xe5ece0);$('roomTag').innerHTML='<span>♡</span> THE LITTLE PLAYHOUSE <small>What do you want?</small>';$('welcome').querySelector('.eyebrow').textContent='CHAPTER 03 · WHAT DO YOU WANT?';$('welcome').querySelector('.intro').textContent='Choose a friend to help the baby.';setLessonLabels();return}setLessonLabels();roomNodes.forEach(o=>o.visible=!alphabet);garden.visible=alphabet;gardenItems.forEach(o=>o.thing.visible=true);scene.background.set(alphabet?0xc3e5e4:0xdce7db);$('roomTag').innerHTML=alphabet?'<span>✦</span> LETTER GARDEN <small>A a · B b</small>':'<span>✦</span> THE PLAYROOM <small>In · On · Under</small>';$('welcome').querySelector('.eyebrow').textContent=`CHAPTER ${LESSONS[lesson].number} · ${LESSONS[lesson].title.toUpperCase()}`;$('welcome').querySelector('.intro').textContent=alphabet?'Choose a friend to deliver garden surprises.':'Choose a friend to play catch with your story guide.';}finally{if(typeof discoveryRoom!=='undefined'&&discoveryRoom)discoveryRoom.root.visible=lesson==='ball';if(typeof environment!=='undefined'&&environment){const roots=lesson==='ball'?roomNodes:lesson==='letters'?[garden]:lesson==='wants'?[wantWorld?.root]:lesson==='body'?[bodyWorld?.root]:[phonicsWorld?.root];environment.root.visible=!useLocalCast;environment.sky.visible=!useLocalCast;environment.setLesson(lesson.startsWith('mac-')?(familyShelf.get(lesson).setting==='garden'?'letters':'ball'):['comparison','cat'].includes(lesson)?'ball':lesson,lesson.startsWith('mac-')||lesson==='comparison'?[]:lesson==='cat'?roomNodes:roots);}}}
 function clearLearningTray(){$('learningTray').hidden=true;$('learningTray').innerHTML='';document.body.classList.remove('learning','vocabulary-review');if(renderer)resize()}
 function learningTray(html){$('learningTray').innerHTML=storyText(html);$('learningTray').hidden=false;document.body.classList.add('learning');if(renderer)resize()}
-function alphabetPlan(){showModal('plan',`${closeHTML}<div class="eyebrow">VOCABULARY GAME · CHAPTER 02</div><h2 id="modalTitle">Letter Garden Delivery</h2><p>Find four garden surprises, recognise each letter form, and name what you find with “a” or “an”. Then hear each word and match its picture to one of four written choices.</p><div class="learning-card"><div class="chips"><span>A</span><span>a</span><span>B</span><span>b</span></div><strong>A / a → apple, ant</strong><strong>B / b → ball, butterfly</strong><p>Speaking targets: “An apple.”, “An ant.”, “A ball.”, “A butterfly.”</p></div><p class="note-caption">She tries first. A parent approves each spoken response. Shorter word practice and full models are available. About three minutes, with extra speaking time.</p><button id="alphaBegin" class="primary">Approve & start →</button>`);wireClose();$('alphaBegin').onclick=()=>beginAlphabet();}
-async function beginAlphabet(){if(!selected){friends();return}if(!startTownStory())return;audioUnlocked=true;music.start('game');closeModal();const token=++sessionToken;phase='preparing';completed=false;helpCount=0;newXP=0;alphaIndex=0;randomizeVocabularyGarden();setLessonWorld();player.visible=true;player.position.set(-2,0,3);parkGuide();$('welcome').hidden=true;$('roomTag').hidden=true;$('quest').hidden=false;$('sceneTools').hidden=false;$('playControls').hidden=true;$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('targetLabel').hidden=true;ball.visible=false;beacon.visible=false;clearLearningTray();document.body.classList.add('playing');$('speakerName').textContent='ROSITA';dialogue('Welcome to Letter Garden!','Help Rosita deliver four little surprises.');resize();if(token!==sessionToken||phase!=='preparing')return;phase='alpha-intro';speak('Welcome to Letter Garden! Four surprises need a home. Let us find their letters!',()=>{if(token===sessionToken&&phase==='alpha-intro')alphabetLetter()});}
+function alphabetPlan(){showModal('plan',`${closeHTML}<div class="eyebrow">VOCABULARY GAME · CHAPTER 02</div><h2 id="modalTitle">Letter Garden Delivery</h2><p>Find four garden surprises, recognise each letter form, and name what you find with “a” or “an”. Then hear each word and match its picture to one of four written choices.</p><div class="learning-card"><div class="chips"><span>A</span><span>a</span><span>B</span><span>b</span></div><strong>A / a → apple, ant</strong><strong>B / b → ball, butterfly</strong><p>Full sentences: “This is an apple.”, “This is an ant.”, “This is a ball.”, “This is a butterfly.” Carry each surprise to its letter house, then help Pip grow a welcome garden.</p></div><p class="note-caption">She tries first. A parent approves each spoken response. Shorter word practice and full models are available. About three minutes, with extra speaking time.</p><button id="alphaBegin" class="primary">Approve & start →</button>`);wireClose();$('alphaBegin').onclick=()=>beginAlphabet();}
+async function beginAlphabet(){if(!selected){friends();return}if(!startTownStory())return;audioUnlocked=true;music.start('game');closeModal();const token=++sessionToken;phase='preparing';completed=false;helpCount=0;newXP=0;alphaIndex=0;randomizeVocabularyGarden();setLessonWorld();player.visible=true;player.position.set(-2,0,3);parkGuide();$('welcome').hidden=true;$('roomTag').hidden=true;$('quest').hidden=false;$('sceneTools').hidden=false;$('playControls').hidden=true;$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('targetLabel').hidden=true;ball.visible=false;beacon.visible=false;clearLearningTray();document.body.classList.add('playing');$('speakerName').textContent='ROSITA';dialogue('Welcome to Letter Garden!','Help Rosita deliver four little surprises.');resize();if(token!==sessionToken||phase!=='preparing')return;phase='alpha-intro';if(typeof playChapterIntro==='function'){playChapterIntro('letters',alphabetLetter);return;}speak('Welcome to Letter Garden! Four surprises need a home. Let us find their letters!',()=>{if(token===sessionToken&&phase==='alpha-intro')alphabetLetter()});}
 function alphabetLetter(){phase='alpha-letter';letterCorrect=false;stopInput();beacon.visible=false;$('playControls').hidden=true;$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('targetLabel').hidden=true;const item=alphaSteps[alphaIndex];drawSteps(alphaIndex);dialogue(`Find the ${item.form} letter.`,'Listen to Rosita, then tap the matching letter below.');learningTray(`<div class="letter-options">${shuffled(['A','a','B','b']).map(letter=>`<button data-letter="${letter}" aria-label="${letter===letter.toUpperCase()?'Capital':'Small'} ${letter}">${letter}</button>`).join('')}</div><p class="tray-note" id="letterFeedback">Which one is ${item.form} ${item.letter}?</p>`);document.querySelectorAll('[data-letter]').forEach(b=>b.onclick=()=>chooseAlphabetLetter(b.dataset.letter));speak(`Find ${item.form} ${item.letter}.`);}
 function chooseAlphabetLetter(choice){if(phase!=='alpha-letter'||letterCorrect)return;const item=alphaSteps[alphaIndex];if(!letterMatches(choice,item.letter)){helpCount++;$('letterFeedback').textContent=`Have another look. Find ${item.form} ${item.letter}.`;speak(`Have another look. Find ${item.form} ${item.letter}.`);return}letterCorrect=true;cheerHelpers();clearLearningTray();phase='explore';const point=new THREE.Vector3(item.x,0,item.z+1.25);beacon.position.copy(point);beacon.visible=true;lastNear=null;$('playControls').hidden=false;$('targetLabel').hidden=false;$('targetLabel').textContent=`Walk to the ${item.word}`;parkGuide();dialogue(`Yes! Now find the ${item.word}.`,'Walk to the marker, then collect the garden surprise.');speak(`Yes, ${item.form} ${item.letter}! Now find the ${item.word}.`);}
-function collectAlphabet(){if(phase!=='explore'||!$('modalShade').hidden)return;const item=alphaSteps[alphaIndex];if(player.position.clone().setY(0).distanceTo(new THREE.Vector3(item.x,0,item.z+1.25))>=1.75)return;phase='alpha-say';stopInput();beacon.visible=false;$('playControls').hidden=true;$('targetLabel').hidden=true;$('listening').hidden=false;$('parentDot').hidden=true;dialogue('Tell Rosita what you found. Use “a” or “an”.','Try first. A grown-up can help if you need it.');const token=sessionToken;updateSpeakingControls('Listen to your friend…');speak('What did you find?',()=>{if(token===sessionToken&&phase==='alpha-say'){updateSpeakingControls();}});}
+function alphaTarget(){return alphaDelivering?new THREE.Vector3(['apple','ant'].includes(alphaSteps[alphaIndex].word)?-3:3,0,-2.5):new THREE.Vector3(alphaSteps[alphaIndex].x,0,alphaSteps[alphaIndex].z+1.25);}
+function collectAlphabet(){if(phase!=='explore'||!$('modalShade').hidden)return;const item=alphaSteps[alphaIndex];if(player.position.clone().setY(0).distanceTo(alphaTarget())>=1.75)return;if(alphaDelivering){completeAlphabetDelivery();return;}phase='alpha-say';stopInput();beacon.visible=false;$('playControls').hidden=true;$('targetLabel').hidden=true;$('listening').hidden=false;$('parentDot').hidden=true;dialogue('Tell your friend: This is an apple, an ant, a ball or a butterfly.','Try first. A grown-up can help if you need it.');const token=sessionToken;updateSpeakingControls('Listen to your friend…');speak('What did you find?',()=>{if(token===sessionToken&&phase==='alpha-say'){updateSpeakingControls();}});}
 function alphabetHint(short){demonstratePronunciation(short)}
-function acceptAlphabet(){if(phase!=='alpha-say')return;closeModal();stopSpeech();$('parentDot').hidden=true;$('listening').hidden=true;document.body.classList.remove('speaking-turn');phase='alpha-delivery';gardenItems.find(entry=>entry.word===alphaSteps[alphaIndex].word).thing.visible=false;setCharacterPose(player,'joy');dialogue('A lovely delivery!','Another little surprise is on its way home.');const token=sessionToken;const next=()=>{if(token!==sessionToken||phase!=='alpha-delivery')return;if(!$('modalShade').hidden){setTimeout(next,200);return}setCharacterPose(player,'file');alphaIndex++;if(alphaIndex<ALPHABET_STEPS.length)alphabetLetter();else{reviewIndex=0;reviewOrder=shuffled(ALPHABET_STEPS.map(item=>item.word));vocabularyReview()}};setTimeout(next,900);}
+function acceptAlphabet(){if(phase!=='alpha-say')return;stopSpeech();$('listening').hidden=true;document.body.classList.remove('speaking-turn');alphaDelivering=true;const entry=gardenItems.find(e=>e.word===alphaSteps[alphaIndex].word);alphaCarried=entry.thing.clone(true);scene.add(alphaCarried);entry.thing.visible=false;phase='explore';beacon.position.copy(alphaTarget());beacon.visible=true;lastNear=null;$('playControls').hidden=false;$('targetLabel').hidden=false;clearLearningTray();dialogue('Carry your surprise to its letter house.','Walk to the gold marker, then use the hand to deliver it.');}
+function completeAlphabetDelivery(){if(!alphaDelivering)return;alphaDelivering=false;alphaCarried?.removeFromParent();alphaCarried=null;closeModal();stopSpeech();$('parentDot').hidden=true;$('listening').hidden=true;document.body.classList.remove('speaking-turn');phase='alpha-delivery';beacon.visible=false;$('playControls').hidden=true;$('targetLabel').hidden=true;gardenItems.find(entry=>entry.word===alphaSteps[alphaIndex].word).thing.visible=false;setCharacterPose(player,'joy');dialogue('A lovely delivery!','Another little surprise is on its way home.');const token=sessionToken;const next=()=>{if(token!==sessionToken||phase!=='alpha-delivery')return;if(!$('modalShade').hidden){setTimeout(next,200);return}setCharacterPose(player,'file');alphaIndex++;if(alphaIndex<ALPHABET_STEPS.length)alphabetLetter();else{reviewIndex=0;reviewOrder=shuffled(ALPHABET_STEPS.map(item=>item.word));vocabularyReview()}};setTimeout(next,900);}
 function experiencePanel(){stopInput();const canUnwrap=['landing','chapter','home','reward'].includes(phase);showModal('experience',`${closeHTML}<div class="eyebrow">PARENT SETTINGS</div><h2 id="modalTitle">Experience & surprises</h2><div class="learning-card"><strong>Level ${data.level} · ${data.xp} / ${need()} XP</strong><p>${data.unlocked.length} friends unlocked · ${data.pendingRewards||0} surprise rewards waiting</p></div><label for="xpAmount">Add experience points</label><div class="xp-input-row"><input id="xpAmount" type="number" min="1" max="5000" step="1" value="40" inputmode="numeric"><button id="addXP" class="primary">Add XP</button></div><p class="tray-note" id="xpFeedback"></p><button id="resetXP" class="secondary">Reset XP & level</button><p class="note-caption">Reset returns to Level 1 and 0 XP. Unlocked friends, vocabulary, earned surprise rewards, and your notes are kept.</p>${xpUndo?'<button id="undoXP" class="secondary">Undo last XP change</button>':''}${data.pendingRewards&&canUnwrap?'<button id="openBoxes" class="primary">Let her choose a mystery box ✦</button>':''}${data.pendingRewards&&!canUnwrap?'<p class="note-caption">Open the surprise boxes after this adventure.</p>':''}`);wireClose();$('addXP').onclick=()=>{const amount=Number($('xpAmount').value);if(!Number.isSafeInteger(amount)||amount<1||amount>5000){$('xpFeedback').textContent='Please enter a whole number from 1 to 5000.';return}xpUndo=captureExperience();grantExperience(data,amount,CHARACTERS.map(c=>c.name));save();updateProgress();experiencePanel();toast(`Added ${amount} XP`)};$('resetXP').onclick=()=>{xpUndo=captureExperience();data.xp=0;data.level=1;save();updateProgress();experiencePanel();toast('XP and level reset. Friends, words and notes kept.');};$('undoXP')?.addEventListener('click',()=>{Object.assign(data,xpUndo);xpUndo=null;save();updateProgress();experiencePanel()});$('openBoxes')?.addEventListener('click',unlockPanel);}
 function celebrationChime(){if(!sound)return;try{const ctx=new(window.AudioContext||window.webkitAudioContext)();[523.25,659.25,783.99,1046.5].forEach((frequency,i)=>{const oscillator=ctx.createOscillator(),gain=ctx.createGain();oscillator.type='sine';oscillator.frequency.value=frequency;gain.gain.setValueAtTime(0,ctx.currentTime+i*.13);gain.gain.linearRampToValueAtTime(.085,ctx.currentTime+i*.13+.03);gain.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+i*.13+.6);oscillator.connect(gain).connect(ctx.destination);oscillator.start(ctx.currentTime+i*.13);oscillator.stop(ctx.currentTime+i*.13+.65)});setTimeout(()=>ctx.close(),1600)}catch{}}
 function unlockPanel(){const choices=mysteryCandidates(data,CHARACTERS.map(c=>c.name));if(!choices.length){home();return}save();showModal('unlock',`<div class="reward mystery-reward"><div class="eyebrow" style="justify-content:center">LEVEL ${data.level} · A NEW FRIEND</div><h2 id="modalTitle" style="margin-right:0">Choose your surprise!</h2><p id="mysteryInstruction">Three mystery boxes. One wonderful new friend.<br>Every box has a friend you haven’t unlocked!</p><div class="mystery-stage" id="mysteryStage"><div class="reward-beam"></div><div class="mystery-boxes">${choices.map((_,i)=>`<button class="mystery-box box-${i}" data-box="${i}" aria-label="Choose mystery box ${i+1}"><span class="box-lid"></span><span class="box-base"><b>?</b></span><small>BOX ${i+1}</small></button>`).join('')}</div><div id="rewardFriend" class="reward-friend" hidden><img id="rewardPortrait" alt=""><div class="reward-halo"></div></div><div class="reward-confetti" id="rewardConfetti"></div></div><h3 id="revealedName" aria-live="polite" hidden></h3><button id="mysteryContinue" class="primary" hidden>${data.pendingRewards>1?'Another surprise is waiting →':'Back to the adventures →'}</button></div>`,true);let opened=false;document.querySelectorAll('[data-box]').forEach(button=>button.onclick=()=>{if(opened)return;const name=claimMystery(data,Number(button.dataset.box));if(!name)return;opened=true;xpUndo=null;save();updateProgress();document.querySelectorAll('[data-box]').forEach(b=>{b.disabled=true;b.classList.add(b===button?'winner':'unchosen')});$('mysteryStage').classList.add('opening');$('mysteryInstruction').textContent='A little sparkle… a new friend is on the way!';$('rewardPortrait').src=portraits[name];$('rewardPortrait').alt=name;celebrationChime();const delay=window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:1200;setTimeout(()=>{if(modalKind!=='unlock')return;$('rewardFriend').hidden=false;$('mysteryStage').classList.add('revealed');$('revealedName').hidden=false;$('revealedName').textContent=`${name} has joined your adventures!`;$('mysteryInstruction').textContent='Your new friend is now in Choose character.';$('rewardConfetti').innerHTML=Array.from({length:32},(_,i)=>`<i style="--x:${(i*37)%100}%;--delay:${(i%5)*.07}s;--color:${['#e9bd59','#98b9a2','#db99ad','#8caec7'][i%4]};--turn:${i*43}deg"></i>`).join('');$('mysteryContinue').hidden=false;speak(`Surprise! ${name} is your new friend!`);},delay)});$('mysteryContinue').onclick=()=>data.pendingRewards?unlockPanel():home();}
@@ -530,7 +604,7 @@ function buildSupportCast(){helperCast=new THREE.Group();helperCast.userData.npc
 function prepareNPCMaterials(actor){const clones=new Map();actor.traverse(object=>{if(object.isMesh){const original=object.material;if(!clones.has(original))clones.set(original,original.clone());object.material=clones.get(original)}});actor.userData.npcMaterials=[...clones.values()];actor.userData.npcOpacity=1;}
 function parkGuide(){if(!rosita)return;rosita.position.set(lesson==='phonics'?8.5:lesson==='letters'?6.8:6.6,0,lesson==='phonics'?-3.5:-1.05);rosita.rotation.y=-.7;if(guideSpot)guideSpot.position.set(rosita.position.x,.035,rosita.position.z);ambientHelpers.forEach((helper,index)=>helper.position.set(index===0?-7.6:7.8,0,index===0?-2.7:4.2));}
 function npcObstructs(npc,cameraPosition,target,radius=1){const direction=target.clone().sub(cameraPosition),distance=direction.length();direction.normalize();const relative=npc.clone().sub(cameraPosition),along=relative.dot(direction);return along>0&&along<distance&&relative.addScaledVector(direction,-along).length()<radius;}
-function updateSupportCast(time,dt){if(!helperCast||!player)return;const targets=[player.position.clone().add(new THREE.Vector3(0,1.3,0))];if(phase==='explore')targets.push(lesson.startsWith('mac-')?familyTarget().add(new THREE.Vector3(0,1,0)):lesson==='comparison'?paradeTarget().add(new THREE.Vector3(0,1,0)):lesson==='cat'?catTarget().add(new THREE.Vector3(0,1,0)):lesson==='phonics'?phonicsTarget().add(new THREE.Vector3(0,1.1,0)):lesson==='body'?bodyMissionTarget().add(new THREE.Vector3(0,1.1,0)):lesson==='wants'?wantTarget().add(new THREE.Vector3(0,1,0)):lesson==='letters'?new THREE.Vector3(alphaSteps[alphaIndex].x,1,alphaSteps[alphaIndex].z):places[order[step]].target.clone().add(new THREE.Vector3(0,1.1,0)));for(const actor of[rosita,...ambientHelpers]){const point=actor.position.clone().add(new THREE.Vector3(0,1.1,0)),blocked=actor===rosita&&phase==='intro'?false:targets.some(target=>npcObstructs(point,camera.position,target,actor===rosita?1:.65)),wanted=blocked?.12:1;actor.userData.npcOpacity+=(wanted-actor.userData.npcOpacity)*Math.min(dt*8,1);for(const material of actor.userData.npcMaterials){const transparent=actor.userData.npcOpacity<.995;if(material.transparent!==transparent){material.transparent=transparent;material.needsUpdate=true}material.opacity=actor.userData.npcOpacity;material.depthWrite=!transparent}if(actor!==rosita){actor.position.y=Math.sin(time*1.7)*.012;actor.rotation.y=Math.atan2(player.position.x-actor.position.x,player.position.z-actor.position.z);actor.userData.arms.forEach((arm,i)=>arm.rotation.z=time<actor.userData.cheerUntil?(i===0?-1.2:1.2)+Math.sin(time*10)*.2:Math.sin(time*1.2+i)*.08)}}}
+function updateSupportCast(time,dt){if(!helperCast||!player)return;const targets=[player.position.clone().add(new THREE.Vector3(0,1.3,0))];if(phase==='explore')targets.push(typeof workshop!=='undefined'&&workshop?.active&&workshopToken===sessionToken?workshop.target().add(new THREE.Vector3(0,1,0)):lesson.startsWith('mac-')?familyTarget().add(new THREE.Vector3(0,1,0)):lesson==='comparison'?paradeTarget().add(new THREE.Vector3(0,1,0)):lesson==='cat'?catTarget().add(new THREE.Vector3(0,1,0)):lesson==='phonics'?phonicsTarget().add(new THREE.Vector3(0,1.1,0)):lesson==='body'?bodyMissionTarget().add(new THREE.Vector3(0,1.1,0)):lesson==='wants'?wantTarget().add(new THREE.Vector3(0,1,0)):lesson==='letters'?new THREE.Vector3(alphaSteps[alphaIndex].x,1,alphaSteps[alphaIndex].z):places[order[step]].target.clone().add(new THREE.Vector3(0,1.1,0)));for(const actor of[rosita,...ambientHelpers]){const point=actor.position.clone().add(new THREE.Vector3(0,1.1,0)),blocked=actor===rosita&&phase==='intro'?false:targets.some(target=>npcObstructs(point,camera.position,target,actor===rosita?1:.65)),wanted=blocked?.12:1;actor.userData.npcOpacity+=(wanted-actor.userData.npcOpacity)*Math.min(dt*8,1);for(const material of actor.userData.npcMaterials){const transparent=actor.userData.npcOpacity<.995;if(material.transparent!==transparent){material.transparent=transparent;material.needsUpdate=true}material.opacity=actor.userData.npcOpacity;material.depthWrite=!transparent}if(actor!==rosita){actor.position.y=Math.sin(time*1.7)*.012;actor.rotation.y=Math.atan2(player.position.x-actor.position.x,player.position.z-actor.position.z);actor.userData.arms.forEach((arm,i)=>arm.rotation.z=time<actor.userData.cheerUntil?(i===0?-1.2:1.2)+Math.sin(time*10)*.2:Math.sin(time*1.2+i)*.08)}}}
 function cheerHelpers(){ambientHelpers.forEach(helper=>helper.userData.cheerUntil=clock.elapsedTime+1.5)}
 $('musicButton').onclick=toggleBackgroundMusic;
 $('vocabularyNav').onclick=vocabularyBank;$('frontVocabulary').onclick=vocabularyBank;
@@ -603,12 +677,14 @@ function openHouseCollection(view='storage',fromShop=false,message=''){
  const placement=active?`<section class="house-arrange"><h3 id="houseArrangeTitle" tabindex="-1">Place ${active.name}</h3><div class="house-spots">${slotPicker}</div>${selectedPlace?'<button data-place-house="storage" class="secondary">Put it back in storage</button>':''}</section>`:'';
  const cards=owned.map(item=>{
   const where=layout[item.id],used=data.houseSheets===item.id||data.housePlush===item.id;
-  const action=toys?'':canPlaceOnFloor(item)
+  const action=toys?`<button data-take-toy="${item.id}" class="primary" ${!atHome||townNear?.id!=='toy-cupboard'||data.carriedToy||data.playmatToys.includes(item.id)?'disabled':''}>Carry to playmat</button>${data.playmatToys.includes(item.id)||data.carriedToy===item.id?`<button data-put-toy="${item.id}" class="secondary">Return to shelf</button>`:''}`:canPlaceOnFloor(item)
     ?`<button class="secondary" data-arrange-item="${item.id}" aria-pressed="${active?.id===item.id}">Arrange</button>`
     :`<button class="${used?'secondary':'primary'}" data-bed-item="${item.id}">${used?'Put away':item.kind==='sheet'?'Change bedsheets':'Put on the bed'}</button>`;
-  return `<article class="shop-item"><div class="shop-item-picture">${itemSVG(item.id)}</div><h3>${item.name}</h3><p>${toys?'On the toy shelf':used?'On the bed':where?HOUSE_SLOTS.find(spot=>spot.id===where.slot)?.name:'In storage'}</p>${action}</article>`;
+  return `<article class="shop-item"><div class="shop-item-picture">${itemSVG(item.id)}</div><h3>${item.name}</h3><p>${toys?(data.carriedToy===item.id?'Carrying to the mat':data.playmatToys.includes(item.id)?'On the playmat':'On the toy shelf'):used?'On the bed':where?HOUSE_SLOTS.find(spot=>spot.id===where.slot)?.name:'In storage'}</p>${action}</article>`;
  }).join('');
- showModal('house-collection',`${closeHTML}<h2 id="modalTitle">${toys?'Toy Cupboard':'Store Room'}</h2><p>${toys?'Toys you buy go straight onto the cupboard shelves.':'Pick an owned item, choose a spot along a wall. It will face the open floor.'}</p><p role="status">${escapeHTML(message)}</p>${cards?`<div class="shop-grid">${cards}</div>`:`<p>${toys?'Buy a toy in the Sticker Shop to fill your cupboard.':'Buy furniture, decorations or bedding in the Sticker Shop to fill your storeroom.'}</p><button id="collectionsShop" class="primary">Sticker Shop</button>`}${toys?'':placement}<button id="collectionsDone" class="secondary">${fromShop?'Back to shop':'Done'}</button>`,true);
+ showModal('house-collection',`${closeHTML}<h2 id="modalTitle">${toys?'Toy Cupboard':'Store Room'}</h2><p>${toys?'Take an owned toy from this cupboard, walk to the playmat, and use the hand to place it. Tap a toy on the mat to play. Visit the cupboard to take one out.':'Pick an owned item, choose a spot along a wall. It will face the open floor.'}</p><p role="status">${escapeHTML(message)}</p>${cards?`<div class="shop-grid">${cards}</div>`:`<p>${toys?'Buy a toy in the Sticker Shop to fill your cupboard.':'Buy furniture, decorations or bedding in the Sticker Shop to fill your storeroom.'}</p><button id="collectionsShop" class="primary">Sticker Shop</button>`}${toys?'':placement}<button id="collectionsDone" class="secondary">${fromShop?'Back to shop':'Done'}</button>`,true);
+ $('modal').querySelectorAll('[data-take-toy]').forEach(button=>button.onclick=()=>{if(townView!=='house'||phase!=='town-free'||townNear?.id!=='toy-cupboard'||!takeShelfToy(data,button.dataset.takeToy))return;save();syncToyPlay();closeModal();beacon.position.set(0,0,6.3);beacon.visible=true;toast('Carry your toy through the playmat gate, then use the hand to place it.');});
+ $('modal').querySelectorAll('[data-put-toy]').forEach(button=>button.onclick=()=>{if(putAwayToy(data,button.dataset.putToy)){save();syncToyPlay();openHouseCollection(view,fromShop,'Toy returned to its shelf.');}});
  const redraw=text=>openHouseCollection(view,fromShop,text);
  const finish=()=>fromShop?renderShop():closeModal();
  $('closeModal').onclick=finish;$('collectionsDone').onclick=finish;
@@ -642,23 +718,31 @@ $('frontShop').onclick=()=>openShop('shop');$('shopNav').onclick=()=>openShop('s
 
 // Chapter 03 follows the supplied book's six food questions, with parent-led speaking.
 function setLessonLabels(){if(lesson==='comparison'){$('modeLabel').textContent='Toy Parade · About 3 minutes';$('welcome').querySelector('.session-details span').textContent='◷ About 3 minutes';$('quest').querySelector('.pill').textContent='ABBY’S TOY PARADE';$('playNav').textContent='Toy Parade';return;}if(lesson==='cat'){$('modeLabel').textContent='Can you see the cat? · 3–5 minutes';$('quest').querySelector('.pill').textContent='CAN YOU SEE THE CAT?';$('playNav').textContent='Find Cat';return;}if(lesson==='phonics'){$('modeLabel').textContent='Sound Safari · About 5 minutes';$('welcome').querySelector('.session-details span').textContent='◷ About 5 minutes';$('quest').querySelector('.pill').textContent='SOUND SAFARI PHONICS';$('playNav').textContent='Sound Safari';return}if(lesson==='body'){$('modeLabel').textContent='Move, find & say · 3–5 minutes';$('welcome').querySelector('.session-details span').textContent='◷ About 3–5 minutes';$('quest').querySelector('.pill').textContent='BODY BOOGIE';$('playNav').textContent='Body Boogie';return}const story=lesson==='wants';$('modeLabel').textContent=story?'A story to tell · About 5 minutes':'A guided adventure · Ages 4+';$('welcome').querySelector('.session-details span').textContent=story?'◷ About 5 minutes':'◷ About 3 minutes';$('quest').querySelector('.pill').textContent=story?'WHAT DO YOU WANT?':lesson==='letters'?'LETTER GARDEN':'FIND THE MISSING BALL';$('playNav').textContent=story?'Playhouse':lesson==='letters'?'Letter Garden':'Playroom';}
-function wantsPlan(){showModal('plan',`${closeHTML}<div class="eyebrow">PARENT PREVIEW · CHAPTER 03 · ABOUT 5 MINUTES</div><h2 id="modalTitle">What do you want?</h2><p>A baby is crying. Help your guide try six ideas in the pretend kitchen. He wants milk! Then your child chooses something and tells the story.</p><div class="learning-card"><small>FROM YOUR BOOK · EXACT FOOD QUESTIONS</small>${WANT_ITEMS.filter(word=>word!=='milk').map(word=>`<strong>${wantQuestion(word)}</strong>`).join('')}<small>MATCHING MILK QUESTION & SHOW-AND-TELL</small><strong>Do you want milk?</strong><strong>What do you want?</strong><strong>I want [my choice].</strong><strong>The baby wants milk.</strong></div><p class="note-caption">Nine speaking turns: an opening question, six food questions, her own choice, and a final story sentence. She tries first. Hear a model or practise a shorter phrase if needed; you approve every answer. Picture choices and short walks break up the speaking. Around five minutes, with no speaking deadline.</p><div class="status-box">Only pretend food is used. A grown-up puppet helps the baby at the end. No microphone access is needed; you accept each answer using the nearby button.</div><button id="wantsBegin" class="primary">Approve & start →</button>`);wireClose();$('wantsBegin').onclick=()=>beginWants();}
-async function beginWants(){if(!selected){friends();return}if(!startTownStory())return;audioUnlocked=true;music.start('game');closeModal();const token=++sessionToken;phase='preparing';completed=false;helpCount=0;newXP=0;wantIndex=0;wantStage='opening';wantChoice='milk';wantRound=createWantRound();wantWorld.reset(wantRound);setLessonWorld();player.visible=true;player.position.set(2,0,3.6);player.rotation.y=-.3;parkGuide();ball.visible=false;beacon.visible=false;clearLearningTray();$('welcome').hidden=true;$('roomTag').hidden=true;$('quest').hidden=false;$('sceneTools').hidden=false;$('playControls').hidden=true;$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('parentDot').hidden=true;$('targetLabel').hidden=true;document.body.classList.add('playing','story-learning');$('speakerName').textContent='ROSITA';dialogue('The baby is crying.','Let’s find out what he wants. We can help together.');drawSteps(0);resize();if(token!==sessionToken||phase!=='preparing')return;phase='want-intro';speak('The baby is crying. Let us find out what he wants. Can you help me?',()=>{if(token===sessionToken&&phase==='want-intro')wantSpeaking('opening')});}
-function wantTarget(){const item=wantRound[wantIndex];return item?new THREE.Vector3(item.x,0,item.z+1.15):new THREE.Vector3(2,0,3);}
-function wantSpeakingTarget(){if(wantStage==='opening')return 'What do you want?';if(wantStage==='question')return wantQuestion(WANT_ITEMS[wantIndex]);if(wantStage==='choice')return `I want ${wantChoice}.`;return 'The baby wants milk.';}
-function wantSpeaking(stage){wantStage=stage;phase='want-say';stopInput();beacon.visible=false;clearLearningTray();$('playControls').hidden=true;$('targetLabel').hidden=true;$('listening').hidden=false;$('parentDot').hidden=true;$('speakerName').textContent=stage==='choice'?'ROSITA':'YOUR TURN';const word=stage==='question'?WANT_ITEMS[wantIndex]:stage==='choice'?wantChoice:'milk';const prompt=stage==='opening'?'What could you ask the baby?':stage==='question'?`Ask the baby about ${word}.`:stage==='choice'?'Tell Rosita what you want.':'Tell the story. What does the baby want?';dialogue(prompt,'Try first. Your grown-up can help. Take all the time you need.');if(stage!=='opening')learningTray(`<div class="want-speaking-picture">${wordPicture(word)}<span>${word}</span></div>`);drawSteps(stage==='opening'?0:stage==='question'?wantIndex+1:stage==='choice'?7:8);updateSpeakingControls('Listen, then have a try…');const token=sessionToken;speak(prompt,()=>{if(token===sessionToken&&phase==='want-say'){updateSpeakingControls();}});}
+function wantsPlan(){showModal('plan',`${closeHTML}<div class="eyebrow">PARENT PREVIEW · CHAPTER 03 · ABOUT 5 MINUTES</div><h2 id="modalTitle">What do you want?</h2><p>A baby is crying. Choose three foods freely from a working fridge or table, carry each to Baby and ask about it. Then find the milk. He wants milk! Then your child chooses something and tells the story.</p><div class="learning-card"><small>FROM YOUR BOOK · EXACT FOOD QUESTIONS</small>${WANT_ITEMS.filter(word=>word!=='milk').map(word=>`<strong>${wantQuestion(word)}</strong>`).join('')}<small>MATCHING MILK QUESTION & SHOW-AND-TELL</small><strong>Do you want milk?</strong><strong>What do you want?</strong><strong>I want [my choice].</strong><strong>The baby wants milk.</strong></div><p class="note-caption">Choose three different non-milk foods, name each one, carry it to Baby and ask a full question. Then try milk and tell the story in 2–3 sentences. She tries first. Hear a model or practise a shorter phrase if needed; you approve every answer. Foods are shuffled between fridge shelves and the table every game. The child taps actual food in the 3D room. Around five minutes, with no speaking deadline.</p><div class="status-box">Only pretend food is used. A grown-up puppet helps the baby at the end. No microphone access is needed; you accept each answer using the nearby button.</div><button id="wantsBegin" class="primary">Approve & start →</button>`);wireClose();$('wantsBegin').onclick=()=>beginWants();}
+async function beginWants(){if(!selected){friends();return}if(!startTownStory())return;audioUnlocked=true;music.start('game');closeModal();const token=++sessionToken;phase='preparing';completed=false;helpCount=0;newXP=0;wantIndex=0;wantStage='opening';wantChoice='milk';wantMode='choose';wantPicked='';wantUsed=new Set();wantRound=createWantRound();wantWorld.reset(wantRound);setLessonWorld();wideView=true;cameraOrbit.yaw=0;cameraOrbit.pitch=0;player.visible=true;player.position.set(2,0,3.6);player.rotation.y=-.3;parkGuide();ball.visible=false;beacon.visible=false;clearLearningTray();$('welcome').hidden=true;$('roomTag').hidden=true;$('quest').hidden=false;$('sceneTools').hidden=false;$('playControls').hidden=true;$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('parentDot').hidden=true;$('targetLabel').hidden=true;document.body.classList.add('playing','story-learning');$('speakerName').textContent='ROSITA';dialogue('The baby is crying.','Let’s find out what he wants. We can help together.');drawSteps(0);resize();if(token!==sessionToken||phase!=='preparing')return;phase='want-intro';if(typeof playChapterIntro==='function'){playChapterIntro('wants',()=>wantSpeaking('opening'));return;}speak('The baby is crying. Let us find out what he wants. Can you help me?',()=>{if(token===sessionToken&&phase==='want-intro')wantSpeaking('opening')});}
+function wantTarget(){if(wantMode==='deliver')return new THREE.Vector3(4.7,0,2.5);const fridge=new THREE.Vector3(3.1,0,-2.7),table=new THREE.Vector3(-3.6,0,1.9);return player.position.distanceTo(fridge)<player.position.distanceTo(table)?fridge:table;}
+
+function wantSpeakingTarget(){if(wantStage==='opening')return 'What do you want?';if(wantStage==='name')return `I picked ${wantPicked}.`;if(wantStage==='question')return wantQuestion(wantPicked);if(wantStage==='choice')return `I want ${wantChoice}.`;return 'The baby wants milk.';}
+
+function wantSpeaking(stage){wantStage=stage;phase='want-say';stopInput();beacon.visible=false;clearLearningTray();$('playControls').hidden=true;$('targetLabel').hidden=true;$('listening').hidden=false;$('parentDot').hidden=true;$('speakerName').textContent=stage==='choice'?'ROSITA':'YOUR TURN';const word=['name','question'].includes(stage)?wantPicked:stage==='choice'?wantChoice:'milk';const prompt=stage==='opening'?'What could you ask the baby?':stage==='name'?`Tell your friend what you picked: ${word}.`:stage==='question'?`Ask the baby about ${word}.`:stage==='choice'?'Tell Rosita what you want.':'Tell the story. What does the baby want?';dialogue(prompt,'Try first. Your grown-up can help. Take all the time you need.');if(stage!=='opening')learningTray(`<div class="want-speaking-picture">${wordPicture(word)}<span>${word}</span></div>`);drawSteps(stage==='opening'?0:stage==='question'?wantIndex+1:stage==='choice'?7:8);updateSpeakingControls('Listen, then have a try…');const token=sessionToken;speak(prompt,()=>{if(token===sessionToken&&phase==='want-say'){updateSpeakingControls();}});}
 function wantHint(short){demonstratePronunciation(short)}
-function wantFindFood(){phase='want-find';stopInput();$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('parentDot').hidden=true;beacon.visible=false;$('speakerName').textContent='ROSITA';const word=WANT_ITEMS[wantIndex];dialogue(`Let’s try ${word}.`,'Listen, look, and tap the matching picture.');learningTray(`<div class="want-food-grid">${wantOptions(word).map(option=>`<button data-want-food="${option}" aria-label="Choose ${option}">${wordPicture(option)}<strong>${option}</strong></button>`).join('')}</div><p id="wantFeedback" class="tray-note" role="status">Find the ${word}.</p>`);document.querySelectorAll('[data-want-food]').forEach(button=>button.onclick=()=>chooseWantFood(button.dataset.wantFood));speak(`Find the ${word}.`);}
-function chooseWantFood(word){if(phase!=='want-find')return;const target=WANT_ITEMS[wantIndex];if(word!==target){helpCount++;$('wantFeedback').textContent=`Listen once more. Find the ${target}.`;speak(`Find the ${target}.`);return}cheerHelpers();clearLearningTray();phase='explore';beacon.position.copy(wantTarget());beacon.visible=true;lastNear=null;$('playControls').hidden=false;$('targetLabel').hidden=false;$('targetLabel').textContent=`Walk to the ${word}`;dialogue(`Yes! Collect the pretend ${word}.`,'Walk to the golden marker, then tap the hand.');speak(`Yes, ${word}! Let us collect it.`);}
-function collectWant(){if(phase!=='explore'||!$('modalShade').hidden||player.position.clone().setY(0).distanceTo(wantTarget())>=1.75)return;wantSpeaking('question');}
-function acceptWant(){if(phase!=='want-say')return;closeModal();stopSpeech();$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('parentDot').hidden=true;if(wantStage==='opening'){wantFindFood();return}if(wantStage==='choice'){wantSpeaking('show');return}if(wantStage==='show'){clearLearningTray();phase='rating';rating=helpCount>=3?30:helpCount>0?40:50;drawSteps(9);dialogue('You told the story!','Six foods, kind questions, and a happy little brother.');ratePanel();return}
- phase='want-response';const word=WANT_ITEMS[wantIndex],yes=word==='milk';wantWorld.stations.get(word).food.visible=false;wantWorld.offer(word);cheerHelpers();setCharacterPose(player,'joy');dialogue(yes?'Oh! You want milk.':wantAnswer(word),yes?'The grown-up helps the baby. Now he is happy!':'A good question. Let’s try another idea.');learningTray(`<div class="want-story-response"><div class="want-answer ${yes?'yes':'no'}">${yes?'♡ Yes, please!':'No, thank you.'}</div><p>${yes?'You listened and helped Rosita understand.':'That was a kind question. Keep helping Rosita.'}</p><button id="wantNext" class="primary">${yes?'What would you like? →':'Try another idea →'}</button></div>`);$('wantNext').disabled=true;const token=sessionToken;speak(yes?'Oh! You want milk. A grown-up can help. Now the baby is happy!':wantAnswer(word),()=>{if(token===sessionToken&&phase==='want-response')$('wantNext').disabled=false});$('wantNext').onclick=()=>advanceWant();}
-function advanceWant(){if(phase!=='want-response'||$('wantNext').disabled)return;setCharacterPose(player,'file');if(WANT_ITEMS[wantIndex]==='milk'){wantPreference();return}wantIndex++;wantFindFood();}
+function wantFindFood(){phase='explore';wantMode='choose';stopInput();clearLearningTray();$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('parentDot').hidden=true;beacon.visible=false;$('playControls').hidden=false;$('targetLabel').hidden=false;lastNear=null;dialogue(wantIndex<3?`Choose a food to try · ${wantIndex} / 3 trials`:'Three ideas tried. Now find the milk!','Walk to the fridge and use the hand to open it, or visit the table. Tap the real food you prefer.');speak(wantIndex<3?'Choose any food from the table or open the fridge.':'Now let us try milk. Find the milk.');}
+function tapWantFood(x,y){if(phase!=='explore'||wantMode!=='choose'||!$('modalShade').hidden)return;const r=renderer.domElement.getBoundingClientRect();const ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2((x-r.left)/r.width*2-1,-(y-r.top)/r.height*2+1),camera);const word=wantWorld.pick(ray);if(word)chooseWantFood(word);}
+
+
+function chooseWantFood(word){if(phase!=='explore'||wantMode!=='choose'||!$('modalShade').hidden)return;const item=wantRound.find(i=>i.word===word);if(!item||wantUsed.has(word))return;const at=item.location==='fridge'?new THREE.Vector3(3.1,0,-2.7):new THREE.Vector3(-3.6,0,1.9);if(player.position.clone().setY(0).distanceTo(at)>=1.75)return;if(item.location==='fridge'&&!wantWorld.fridgeOpen){dialogue('Open the fridge first.','Use the hand near its door.');return;}if((wantIndex<3&&word==='milk')||(wantIndex>=3&&word!=='milk')){dialogue(wantIndex<3?'Save the milk for after three food trials.':'Now it is time to try milk.','Choose another available food.');return;}wantPicked=word;wantWorld.pickup(word);wantSpeaking('name');}
+
+function collectWant(){if(phase!=='explore'||!$('modalShade').hidden||player.position.clone().setY(0).distanceTo(wantTarget())>=1.75)return;if(wantMode==='deliver'){wantSpeaking('question');return;}if(wantTarget().x>0){wantWorld.toggleFridge();dialogue(wantWorld.fridgeOpen?'The fridge is open!':'The fridge is closed.',wantWorld.fridgeOpen?'Tap a food inside. You choose what to try.':'Use the hand to open it again.');}else dialogue('What would you like from the table?','Tap a food on the table.');}
+
+function acceptWant(){if(phase!=='want-say')return;closeModal();stopSpeech();$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('parentDot').hidden=true;if(wantStage==='opening'){wantFindFood();return;}if(wantStage==='name'){wantMode='deliver';phase='explore';clearLearningTray();beacon.position.copy(wantTarget());beacon.visible=true;lastNear=null;$('playControls').hidden=false;$('targetLabel').hidden=false;dialogue(`Carry the ${wantPicked} to Baby.`,'Walk to Baby, then use the hand to ask your question.');return;}if(wantStage==='choice'){wantSpeaking('show');return;}if(wantStage==='show'){clearLearningTray();phase='rating';rating=helpCount>=3?30:helpCount?40:50;ratePanel();return;}
+ phase='want-response';const word=wantPicked,yes=word==='milk';wantUsed.add(word);wantWorld.offer(word);cheerHelpers();dialogue(wantAnswer(word),yes?'A grown-up helps Baby with milk. Baby is happy!':'Baby shakes his head gently. Let us try your next idea.');learningTray(`<div class="want-story-response"><strong>${wantAnswer(word)}</strong><button id="wantNext" class="primary">${yes?'Tell your favourite →':'Choose another food →'}</button></div>`);$('wantNext').disabled=false;$('wantNext').onclick=advanceWant;speak(wantAnswer(word));}
+function advanceWant(){if(phase!=='want-response'||$('wantNext').disabled)return;phase='want-next';if(wantPicked==='milk'){wantPreference();return;}wantIndex++;wantFindFood();}
+
 function wantPreference(){phase='want-preference';$('speakerName').textContent='ROSITA';dialogue('What do you want?','Choose your own favourite, then tell Rosita.');learningTray(`<div class="want-food-grid preference-grid">${shuffled(WANT_ITEMS).map(word=>`<button data-want-choice="${word}" aria-label="I want ${word}">${wordPicture(word)}<strong>${word}</strong></button>`).join('')}</div>`);document.querySelectorAll('[data-want-choice]').forEach(button=>button.onclick=()=>chooseWantPreference(button.dataset.wantChoice));speak('What do you want? Choose something you like.');}
 function chooseWantPreference(word){if(phase!=='want-preference'||!WANT_ITEMS.includes(word))return;wantChoice=word;wantSpeaking('choice');}
 
 // Manual speaking flow: a model is optional and only a parent advances the turn.
-function shorterSpeakingTarget(){if(phase==='family-say'&&lesson===TRANSPORTATION.id)return ['Where is the train?','It is yellow.','It has two wheels.','It goes on water.','Can it fly?',transportationWorld.picked?.description][familyIndex];if(phase==='family-say')return familyStory.adventure?familyStory.beats[familyIndex].sentence:familyStory.beats[familyIndex].word;if(phase==='parade-say')return paradeWord;if(phase==='cat-say')return CAT_TURNS[catIndex].short;if(phase==='phonics-say')return currentPhonicsTask().word||PHONICS[currentPhonicsTask().letter||phonicsPair[0]].words[0];if(phase==='body-say')return missionLabel(currentBodyMission());if(phase==='alpha-say')return alphaSteps[alphaIndex].word;if(phase==='want-say')return wantStage==='opening'?'What?':wantStage==='question'?WANT_ITEMS[wantIndex]:wantStage==='choice'?wantChoice:'milk';return phase==='ask'?'Where?':places[place].prep;}
+function shorterSpeakingTarget(){if(phase==='family-say'&&lesson===STATIONERY.id)return stationeryWorld.current.starter||stationeryWorld.current.sentence;if(phase==='workshop-say')return workshopSpeaking.split('. ')[0]+'.';if(phase==='family-say'&&lesson===FAMILY_GALLERY.id)return familyGalleryWorld.current.starter;if(phase==='family-say'&&lesson===TRANSPORTATION.id)return ['Where is the train?','It is yellow.','It has two wheels.','It goes on water.','Can it fly?',transportationWorld.picked?.description][familyIndex];if(phase==='family-say')return familyStory.adventure?familyStory.beats[familyIndex].sentence:familyStory.beats[familyIndex].word;if(phase==='parade-say')return paradeWord;if(phase==='cat-say')return CAT_TURNS[catIndex].short;if(phase==='phonics-say')return currentPhonicsTask().word||PHONICS[currentPhonicsTask().letter||phonicsPair[0]].words[0];if(phase==='body-say')return missionLabel(currentBodyMission());if(phase==='alpha-say')return alphaSteps[alphaIndex].word;if(phase==='want-say')return wantStage==='opening'?'What?':wantStage==='question'?wantPicked:wantStage==='choice'?wantChoice:'milk';return phase==='ask'?'Where?':places[place].prep;}
 function demonstratePronunciation(short=false){if(!speakingPhase())return;if(short)helpCount++;closeModal();const model=short?shorterSpeakingTarget():speakingTarget(),token=sessionToken,turn=phase,target=speakingTarget();updateSpeakingControls('Listen to the pronunciation…');$('modelSentence').hidden=false;$('modelSentence').textContent=model;const wasSound=sound;sound=true;speak(model,()=>{if(token!==sessionToken||phase!==turn||speakingTarget()!==target)return;updateSpeakingControls();$('modelSentence').hidden=false;$('modelSentence').textContent=model});sound=wasSound;}
 function approveSpeaking(){if(!speakingPhase()||!parentApprovalReady||performance.now()-lastApprovalAt<450)return;lastApprovalAt=performance.now();parentApprovalReady=false;$('nearbyApprove').disabled=true;stopSpeech();acceptAnswer();}
 function startWelcomeMusic(){audioUnlocked=true;if(data.musicEnabled!==false){music.setEnabled(true);music.start('front')}updateProgress();}
@@ -674,7 +758,7 @@ function bodyPlan(fromTitle=false){let draft=new Set(bodyWords);showModal('body-
 function currentBodyMission(){return bodyOrder[bodyIndex];}
 function bodyMissionTarget(){return bodyReturning?bodyWorld.finishTarget.clone():bodyWorld.target(currentBodyMission().actorIndex);}
 function bodyTools(html=''){$('bodyMissionTools').innerHTML=html;$('bodyMissionTools').hidden=!html;}
-function beginBody(){if(!selected){friends();return}if(!bodyWords.length){bodyPlan();return}if(!startTownStory())return;audioUnlocked=true;music.start('game');sessionToken++;completed=false;helpCount=0;newXP=0;bodyIndex=0;bodyReturning=false;bodyOrder=createBodyMissions(bodyWords,data.bodySides!==false);bodyResults=Object.fromEntries(bodyWords.map(w=>[w,{misses:0,confirmed:0,sentences:[]}]));closeModal();setLessonWorld();player.visible=true;player.position.set(0,0,5.7);parkGuide();ball.visible=false;clearLearningTray();$('welcome').hidden=true;$('roomTag').hidden=true;$('quest').hidden=false;$('sceneTools').hidden=false;document.body.classList.add('playing','body-missions');bodyFind(true);resize();}
+function beginBody(){if(!selected){friends();return}if(!bodyWords.length){bodyPlan();return}if(!startTownStory())return;audioUnlocked=true;music.start('game');sessionToken++;completed=false;helpCount=0;newXP=0;bodyIndex=0;bodyReturning=false;bodyOrder=createBodyMissions(bodyWords,data.bodySides!==false);bodyResults=Object.fromEntries(bodyWords.map(w=>[w,{misses:0,confirmed:0,sentences:[]}]));closeModal();setLessonWorld();player.visible=true;player.position.set(0,0,5.7);parkGuide();ball.visible=false;clearLearningTray();$('welcome').hidden=true;$('roomTag').hidden=true;$('quest').hidden=false;$('sceneTools').hidden=false;document.body.classList.add('playing','body-missions');if(typeof playChapterIntro==='function')playChapterIntro('body',()=>bodyFind(true));else bodyFind(true);resize();}
 function bodyFind(opening=false){phase='explore';stopInput();stopSpeech();$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('playControls').hidden=false;$('targetLabel').hidden=false;bodyTools();const m=currentBodyMission(),station=bodyWorld.stations[m.actorIndex];bodyWorld.activate(m.actorIndex);beacon.position.copy(bodyMissionTarget());beacon.visible=true;lastNear=null;bodyCloseView=false;cameraOrbit.yaw=0;cameraOrbit.pitch=0;$('speakerName').textContent='ROSITA';dialogue(opening?'Body parts can be tricky. Can you help me?':m.round===1?'Show-time relay! Help the next friend.':'Another friend needs your help!',`Walk to ${station.spec.name}, then tap the hand button. Mission ${bodyIndex+1} of ${bodyOrder.length}.`);$('targetLabel').textContent=`Walk to ${station.spec.name} ↓`;speak((opening?'It is hard to identify different body parts. Can you help me? ':bodyIndex===bodyWords.length?'Time for the show-time relay! ':'')+`Walk to ${station.spec.name}. We need to find the ${missionLabel(m)}.`);bodySteps();}
 function interactBody(){if(phase!=='explore'||!$('modalShade').hidden||!bodyWorld||player.position.distanceTo(bodyMissionTarget())>=1.75)return;if(bodyReturning){finishBodyShow();return}inspectBody();}
 function inspectBody(){const m=currentBodyMission();if(!bodyWorld.near(player.position,m.actorIndex))return;phase='body-find';stopInput();stopSpeech();beacon.visible=false;$('playControls').hidden=true;$('targetLabel').hidden=true;bodyCloseView=(FACE_PARTS.has(m.word)&&m.word!=='head'&&m.word!=='hair')||['finger','toe','ankle','elbow'].includes(m.word);cameraOrbit.yaw=0;cameraOrbit.pitch=0;bodyWorld.clearHighlight();$('speakerName').textContent='ROSITA';dialogue(missionQuestion(m),`Tap directly on ${bodyWorld.stations[m.actorIndex].spec.name}. Drag to look around.${m.side?' Left/right belongs to the friend.':''}`);bodyTools('<button id="bodyZoom">Whole friend / closer look</button><button id="bodyWalkAgain">Walk again</button>');$('bodyZoom').onclick=()=>{bodyCloseView=!bodyCloseView;cameraOrbit.yaw=0;cameraOrbit.pitch=0};$('bodyWalkAgain').onclick=()=>bodyFind();speak(missionQuestion(m));}
@@ -694,7 +778,7 @@ function phonicsTitle(fresh=false){selected=null;if(player)player.visible=false;
 function phonicsPlan(fromTitle=false){const draft=new Set(phonicsPool);showModal('phonics-plan',`${closeHTML}<div class="eyebrow">PARENT PREVIEW · SOUND SAFARI</div><h2 id="modalTitle">An open park. Two playful searches.</h2><p>${selected?`Playing as ${escapeHTML(selected)}, with ${escapeHTML(guideName)} as your guide.`:'Choose a character after setting today’s letters. Your guide will be a different friend.'} Enable the school letters you want available; every new adventure chooses two.</p><fieldset class="body-word-group"><legend>Enabled letter pool</legend>${PHONICS_LETTERS.map(l=>`<label><input type="checkbox" data-phonics-pool="${l}" ${draft.has(l)?'checked':''}> ${l} ${l.toLowerCase()}</label>`).join('')}</fieldset><div id="phonicsPreview" class="learning-card"></div><div class="choice-row"><button id="phonicsReroll">Draw two different letters</button><button id="phonicsReplayPair">Use last adventure’s pair</button></div><p id="phonicsPoolFeedback" role="status"></p><label for="phonicsCardCount">Words in the spelling-card round</label><select id="phonicsCardCount"><option value="3" ${data.phonicsCardCount!==2?'selected':''}>3 words</option><option value="2" ${data.phonicsCardCount===2?'selected':''}>2 words</option></select><details class="sound-clip-settings"><summary>Optional letter-sound clips</summary><p>Each search plays its built-in letter sound. A checked recording replaces that sound. You may add a short sound file (up to 180 KB) for each letter; these files stay on this device. Listen first, then confirm that the clip models the intended sound.</p>${PHONICS_LETTERS.map(l=>`<div class="sound-clip-row"><strong>${l} /${PHONICS[l].sound}/</strong><small>${PHONICS[l].hint}</small><input type="file" data-phonics-clip="${l}" accept="audio/*" aria-label="Add ${l} sound clip"><label><input type="checkbox" data-phonics-checked="${l}" ${data.phonicsSounds?.[l]?.checked?'checked':''}> I checked this sound</label><button data-phonics-preview="${l}" class="text-button">Preview clip</button><button data-phonics-remove="${l}" class="text-button">Remove clip</button><span data-phonics-status="${l}">${escapeHTML(data.phonicsSounds?.[l]?.name||'Built-in sound')}</span></div>`).join('')}</details><div class="status-box">Round 1 covers all four words by their starting sounds. Round 2 uses two or three spelling cards held by an NPC. Four slow-moving friends search alongside your child. Pronunciation models are optional; you approve speaking nearby. No microphone or voice scoring. Three stickers and parent notes follow the parade.</div><button id="phonicsApprove" class="primary">${fromTitle?'Save settings & return':'Approve & start the parade mission →'}</button>`,true);wireClose();const paint=()=>{const pool=[...draft];if(pool.length>=2&&!phonicsPair.every(l=>draft.has(l)))phonicsPair=choosePhonicsPair(pool,data.phonicsLastPair||[]);$('phonicsPreview').innerHTML=pool.length<2?'<strong>Enable at least two letters.</strong>':`<small>TODAY’S LETTERS AND WORDS</small>${phonicsPair.map(l=>`<strong>${l} ${l.toLowerCase()} · /${PHONICS[l].sound}/</strong><p>${PHONICS[l].words.join(' · ')}</p>`).join('')}`;$('phonicsApprove').disabled=pool.length<2;$('phonicsReroll').disabled=pool.length<2;$('phonicsReplayPair').disabled=!(data.phonicsLastPair?.length===2&&data.phonicsLastPair.every(l=>draft.has(l)));$('phonicsPoolFeedback').textContent=pool.length>=2?`${pool.length} enabled letters. Only these two letters and their four words are tested.`:'Enable two or more letters to continue.';};document.querySelectorAll('[data-phonics-pool]').forEach(c=>c.onchange=()=>{c.checked?draft.add(c.dataset.phonicsPool):draft.delete(c.dataset.phonicsPool);paint();});$('phonicsReroll').onclick=()=>{phonicsPair=choosePhonicsPair([...draft],phonicsPair);paint()};$('phonicsReplayPair').onclick=()=>{phonicsPair=[...data.phonicsLastPair];paint()};$('phonicsApprove').onclick=()=>{if(draft.size<2)return;phonicsPool=[...draft];data.phonicsPool=phonicsPool;data.phonicsCardCount=Number($('phonicsCardCount').value)===2?2:3;save();if(fromTitle){closeModal();phonicsTitle(false);}else beginPhonics();};
  document.querySelectorAll('[data-phonics-clip]').forEach(input=>input.onchange=()=>{const file=input.files?.[0],letter=input.dataset.phonicsClip;if(!file)return;if(!file.type.startsWith('audio/')||file.size>180000){toast('Choose an audio file up to 180 KB.');input.value='';return}const reader=new FileReader();reader.onload=()=>{data.phonicsSounds??={};data.phonicsSounds[letter]={src:reader.result,name:file.name,checked:false};save();const status=document.querySelector(`[data-phonics-status="${letter}"]`),check=document.querySelector(`[data-phonics-checked="${letter}"]`);if(status)status.textContent=file.name+' — please check the sound';if(check)check.checked=false;};reader.onerror=()=>toast('The clip could not be read. You can model the sound yourself.');reader.readAsDataURL(file);});
  document.querySelectorAll('[data-phonics-checked]').forEach(c=>c.onchange=()=>{const entry=data.phonicsSounds?.[c.dataset.phonicsChecked];if(!entry){c.checked=false;toast('Add a sound file first, or model it yourself.');return}entry.checked=c.checked;save();});document.querySelectorAll('[data-phonics-preview]').forEach(b=>b.onclick=()=>playPhonicsClip(b.dataset.phonicsPreview,true));document.querySelectorAll('[data-phonics-remove]').forEach(b=>b.onclick=()=>{const l=b.dataset.phonicsRemove;stopPhonicsAudio();if(data.phonicsSounds)delete data.phonicsSounds[l];save();document.querySelector(`[data-phonics-status="${l}"]`).textContent='Built-in sound';document.querySelector(`[data-phonics-checked="${l}"]`).checked=false;});paint();}
-function beginPhonics(){if(!selected){friends();return}if(phonicsPair.length!==2){phonicsPlan();return}if(!startTownStory())return;stopSpeech();closeModal();audioUnlocked=true;music.start('game');sessionToken++;completed=false;helpCount=0;newXP=0;phonicsIndex=0;phonicsFound=[];phonicsCardViewing=false;phonicsTasks=createPhonicsTasks(phonicsPair,Math.random,data.phonicsCardCount===2?2:3);phonicsResults={};data.phonicsLastPair=[...phonicsPair];save();setLessonWorld();player.visible=true;player.position.set(0,0,6.4);phonicsWorld.bindGuide(rosita);phonicsWorld.life.resetAgents();ball.visible=false;beacon.visible=false;clearLearningTray();$('welcome').hidden=true;$('roomTag').hidden=true;$('quest').hidden=false;$('sceneTools').hidden=false;$('playControls').hidden=true;$('targetLabel').hidden=true;$('listening').hidden=true;document.body.classList.remove('speaking-turn');document.body.classList.add('playing','phonics-missions');phase='phonics-intro';phonicsIntroTime=0;$('speakerName').textContent=guideName.toUpperCase();dialogue('Our park friends are ready to play!','First find by starting sound. Then follow the big word cards.');bodyTools('<button id="phonicsStartNow">Let’s play! →</button>');$('phonicsStartNow').onclick=startPhonicsMissions;resize();speak('Our park friends are ready to play! First, find something that starts with the sound. Then, look at a word card and find it again.');}
+function beginPhonics(){if(!selected){friends();return}if(phonicsPair.length!==2){phonicsPlan();return}if(!startTownStory())return;stopSpeech();closeModal();audioUnlocked=true;music.start('game');sessionToken++;completed=false;helpCount=0;newXP=0;phonicsIndex=0;phonicsFound=[];phonicsCardViewing=false;phonicsTasks=createPhonicsTasks(phonicsPair,Math.random,data.phonicsCardCount===2?2:3);phonicsResults={};data.phonicsLastPair=[...phonicsPair];save();setLessonWorld();player.visible=true;player.position.set(0,0,6.4);phonicsWorld.bindGuide(rosita);phonicsWorld.life.resetAgents();ball.visible=false;beacon.visible=false;clearLearningTray();$('welcome').hidden=true;$('roomTag').hidden=true;$('quest').hidden=false;$('sceneTools').hidden=false;$('playControls').hidden=true;$('targetLabel').hidden=true;$('listening').hidden=true;document.body.classList.remove('speaking-turn');document.body.classList.add('playing','phonics-missions');phase='phonics-intro';phonicsIntroTime=0;$('speakerName').textContent=guideName.toUpperCase();dialogue('Our park friends are ready to play!','First find by starting sound. Then follow the big word cards.');bodyTools('<button id="phonicsStartNow">Let’s play! →</button>');$('phonicsStartNow').onclick=startPhonicsMissions;resize();if(typeof playChapterIntro==='function')playChapterIntro('phonics',startPhonicsMissions);else speak('Our park friends are ready to play! First, find something that starts with the sound. Then, look at a word card and find it again.');}
 function startPhonicsMissions(){if(phase!=='phonics-intro')return;stopSpeech();routePhonics();}
 function routePhonics(){$('soundLetterBanner').hidden=true;phase='explore';stopSpeech();stopInput();$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('playControls').hidden=false;$('targetLabel').hidden=false;beacon.visible=false;lastNear=null;phonicsFocusEntity=null;const task=currentPhonicsTask();task.excluded=task.kind==='sound-search'?[...phonicsFound]:[];phonicsCardViewing=task.kind==='card-word';cameraOrbit.yaw=0;cameraOrbit.pitch=0;phonicsWorld.beginSearch(task);$('speakerName').textContent=guideName.toUpperCase();dialogue(phonicsPrompt(task),task.kind==='sound-search'?`ROUND 1 · ${phonicsFound.length} / 4 words found · Find a new word for /${PHONICS[task.letter].sound}/. Your friends will give you time.`:`ROUND 2 · ${phonicsIndex-3} / ${phonicsTasks.length-4} cards · Read ${phonicsWorld.life.holder?.name||'your friend'}’s card, then find the animal or object.`);bodyTools(`${task.kind==='sound-search'?`<button id="phonicsSearchSound">Hear sound again</button>`:'<button id="phonicsViewCard">Look at the word card</button>'}<button id="phonicsMoreTime">More thinking time</button>`);$('phonicsSearchSound')?.addEventListener('click',modelSearchSound);$('phonicsViewCard')?.addEventListener('click',()=>{phonicsCardViewing=true;cameraOrbit.yaw=0;cameraOrbit.pitch=0;});$('phonicsMoreTime').onclick=()=>{phonicsWorld.life.waitLonger();toast('The park friends will wait another ten seconds.');};$('targetLabel').textContent='Explore the open park · friends help slowly';phonicsProgress();const token=sessionToken,index=phonicsIndex;speak(phonicsPrompt(task),()=>{if(token!==sessionToken||index!==phonicsIndex||phase!=='explore'||task.kind!=='sound-search')return;$('soundLetter').textContent=task.letter.toLowerCase();$('soundLetterBanner').hidden=false;if(sound)playPhonicsClip(task.letter);});}
 function modelSearchSound(){const task=currentPhonicsTask();if(!task||task.kind!=='sound-search'||phase!=='explore')return;if(!playPhonicsClip(task.letter)){$('instruction').textContent=`Parent: model /${PHONICS[task.letter].sound}/ (${PHONICS[task.letter].hint}), then let her search. The friends will wait.`;phonicsWorld.life.waitLonger();}}
@@ -726,6 +810,7 @@ function beginCat(){
  $('welcome').hidden=true;$('roomTag').hidden=true;$('quest').hidden=false;$('sceneTools').hidden=false;
  document.body.classList.add('playing');resize();
  catWorld.startOpening();phase='cat-intro';dialogue('Cat wants to play hide-and-seek!','Our dog friend will help us search the house.');
+ if(typeof playChapterIntro==='function'){playChapterIntro('cat',()=>{catWorld.opening=0;catWorld.cat.visible=false;routeCat();});return;}
  const token=sessionToken;
  speak('Cat wants to play hide and seek! Our dog friend will help us look.',()=>{if(token===sessionToken&&lesson==='cat'&&phase==='cat-intro'){const wait=()=>{if(token!==sessionToken||phase!=='cat-intro')return;if(catWorld.opening){setTimeout(wait,120);return;}routeCat();};wait();}});
 }
@@ -765,7 +850,7 @@ function syncSpeakingBanner(){
  const active=speakingPhase()&&!['landing','chapter','home'].includes(phase);
  const changed=banner.hidden===active;
  banner.hidden=!active;
- if(active)$('speakingBannerText').textContent=speakingTarget();
+ if(active)$('speakingBannerText').textContent=phase==='family-say'&&lesson===STATIONERY.id&&stationeryWorld.current.banner||speakingTarget();
  if(changed&&typeof resize==='function')resize();
 }
 function finishCatNarration(){
@@ -792,7 +877,7 @@ function beginParade(){
  setLessonWorld();paradeWorld.reset();parkGuide();ball.visible=false;player.visible=true;player.position.set(.2,0,5.6);clearLearningTray();music.start('game');
  $('welcome').hidden=true;$('roomTag').hidden=true;$('quest').hidden=false;$('sceneTools').hidden=false;
  document.body.classList.add('playing','body-missions');paradeRound=0;paradeTurn=0;paradeSaid='';paradeFavorite=null;
- paradeWalk('chest','Our parade needs some toys! Come open my toy chest.');
+ if(typeof playChapterIntro==='function')playChapterIntro('comparison',()=>paradeWalk('chest','Our parade needs some toys! Come open my toy chest.'));else paradeWalk('chest','Our parade needs some toys! Come open my toy chest.');
 }
 function paradeMission(){return PARADES[paradeRounds[paradeRound]];}
 function paradeAnimals(){return paradeMode==='favorite'?paradeRounds.flatMap(key=>PARADES[key].animals):paradeMission().animals;}
@@ -875,7 +960,7 @@ function paradeTap(x,y){
 }
 
 function registerFamilyStories(list){
- for(const raw of list){const s=raw.id===TRANSPORTATION.id?TRANSPORTATION:raw.id===RABBIT_STORY.id?RABBIT_STORY:raw;familyShelf.set(s.id,s);LESSONS[s.id]={id:s.id,number:'★',type:'story',title:s.title,setting:s.setting==='garden'?'Story Garden':'Story Playroom',targets:s.beats.map(b=>b.word)};}
+ for(const raw of list){const s=raw.id===STATIONERY.id?STATIONERY:raw.id===FAMILY_GALLERY.id?FAMILY_GALLERY:raw.id===TRANSPORTATION.id?TRANSPORTATION:raw.id===RABBIT_STORY.id?RABBIT_STORY:raw;familyShelf.set(s.id,s);LESSONS[s.id]={id:s.id,number:'★',type:'story',title:s.title,setting:s.setting==='garden'?'Story Garden':'Story Playroom',targets:s.id===STATIONERY.id?[...new Set(s.beats.map(b=>b.word))]:s.beats.map(b=>b.word)};}
 }
 function familyPicker(){
  const grid=$('chapterPage').querySelector('.lesson-grid');if(!grid)return;
@@ -897,6 +982,8 @@ function familyPicker(){
  }
 }
 function familyPlan(){
+ if(lesson===STATIONERY.id){stationeryPlan();return;}
+ if(lesson===FAMILY_GALLERY.id){familyGalleryPlan();return;}
  if(lesson===TRANSPORTATION.id){
   if(!selected){friends();return;}
   showModal('plan',closeHTML+'<h2 id="modalTitle">Transportation Toy Parade</h2><p>Clear the routes for five toys, then ring the parade bell. Ask and answer in full sentences and tell your helper about your favourite toy.</p><p>Allow about 5–10 minutes. A grown-up accepts each speaking turn, including the final description.</p><button id="familyStart" class="primary">Approve &amp; play</button>');
@@ -908,8 +995,13 @@ function familyPlan(){
  showModal('plan',closeHTML+'<h2 id="modalTitle">'+escapeHTML(s.title)+'</h2><p>'+escapeHTML(s.intro)+'</p><p>'+s.beats.map(b=>escapeHTML(b.sentence)).join(' · ')+'</p><button id="familyStart" class="primary">Approve &amp; play →</button>');
  wireClose();$('familyStart').onclick=beginFamily;
 }
-function familyTarget(){if(lesson===TRANSPORTATION.id)return transportationWorld.target();return familyStory?.adventure?rabbitWorld.target():familyStops[familyIndex].clone();}
+function familyTarget(){if(lesson===STATIONERY.id)return stationeryWorld.target();if(lesson===FAMILY_GALLERY.id)return familyGalleryWorld.target();if(lesson===TRANSPORTATION.id)return transportationWorld.target();return familyStory?.adventure?rabbitWorld.target():familyStops[familyIndex].clone();}
 function clearFamilyProps(){
+ if(familyGalleryWorld){
+  familyGalleryWorld.root.visible=false;
+  document.body.classList.remove('gallery-photo-story');
+ }
+ if(stationeryWorld)stationeryWorld.root.visible=false;
  if(transportationWorld)transportationWorld.root.visible=false;
  if(rabbitWorld)rabbitWorld.root.visible=false;
  if(!familyProps)return;
@@ -918,6 +1010,8 @@ function clearFamilyProps(){
  familyProps=null;
 }
 function beginFamily(){
+ if(lesson===STATIONERY.id){beginStationery();return;}
+ if(lesson===FAMILY_GALLERY.id){beginFamilyGallery();return;}
  if(lesson===RABBIT_STORY.id){beginRabbit();return;}
  if(!selected){friends();return;}
  if(!startTownStory())return;familyStory=familyShelf.get(lesson);stopSpeech();closeModal();sessionToken++;completed=false;newXP=0;helpCount=0;familyIndex=0;
@@ -927,7 +1021,7 @@ function beginFamily(){
   cyl(0xbc9d76,0,.16,0,.62,.32,marker);labelBoard(b.icon+' '+b.word,0,1.02,0,2.35,marker);return new THREE.Vector3(x,0,z+.65);});
  player.position.set(0,0,6.4);player.visible=true;ball.visible=false;parkGuide();music.start('game');clearLearningTray();
  $('welcome').hidden=true;$('roomTag').hidden=true;$('quest').hidden=false;$('sceneTools').hidden=false;document.body.classList.add('playing');
- familyWalk(true);
+ if(typeof playChapterIntro==='function')playChapterIntro(lesson,()=>familyWalk(true));else familyWalk(true);
 }
 function familyWalk(opening=false,reply=''){
  const b=familyStory.beats[familyIndex];phase='explore';lastNear=null;
@@ -936,6 +1030,8 @@ function familyWalk(opening=false,reply=''){
  dialogue(prompt,lesson===TRANSPORTATION.id?'Follow the gold marker and tap the hand.':'Go to the story picture and tap the hand.');speak(prompt);resize();
 }
 function familyInteract(){
+ if(lesson===STATIONERY.id){interactStationery();return;}
+ if(lesson===FAMILY_GALLERY.id){interactFamilyGallery();return;}
  if(lesson===TRANSPORTATION.id){interactTransportation();return;}
  if(familyStory?.adventure){interactRabbit();return;}
  if(phase!=='explore'||!$('modalShade').hidden||player.position.clone().setY(0).distanceTo(familyTarget())>=1.75)return;
@@ -943,6 +1039,8 @@ function familyInteract(){
  dialogue(familyStory.beats[familyIndex].word,'Tell your friend what you found.');updateSpeakingControls();
 }
 function familyAccept(){
+ if(lesson===STATIONERY.id){acceptStationery();return;}
+ if(lesson===FAMILY_GALLERY.id){advanceFamilyGallery();return;}
  if(lesson===TRANSPORTATION.id){acceptTransportation();return;}
  if(familyStory?.adventure){nextRabbit();return;}
  stopSpeech();$('listening').hidden=true;document.body.classList.remove('speaking-turn');familyProps.children[familyIndex].visible=false;
@@ -957,10 +1055,80 @@ async function refreshFamilyShelf(){
  catch{if(phase==='chapter')toast('Mac sync is unavailable. Saved stories are still ready to play.');}
  finally{familySyncBusy=false;}
 }
-registerFamilyStories([RABBIT_STORY,TRANSPORTATION]);
+registerFamilyStories([RABBIT_STORY,TRANSPORTATION,FAMILY_GALLERY,STATIONERY]);
 try{pairMac();registerFamilyStories(loadFamilyStories());registerFamilyStories(Object.values(JSON.parse(localStorage.getItem('littleStreet.familyImports.v1')||'{}')).map(readFamilyStory));refreshFamilyShelf();}catch{toast('Could not read the Mac story collection.');}
 window.addEventListener('focus',refreshFamilyShelf);
 setInterval(()=>{if(phase==='chapter'||phase==='landing'||townView)refreshFamilyShelf();},120000);
+
+function stationeryPlan(){
+ if(!selected){friends();return;}
+ showModal('plan',closeHTML+'<h2 id="modalTitle">What’s This? · Stationery Studio</h2><p>Help Pip trace a circle, color a bus, and make a sticker poster with Clover. Practise book, bag, pencil and crayon, and take turns asking and answering “What’s this?”</p><p>Allow about 5–10 minutes. A grown-up accepts each answer and the final two or three sentences whenever your child is ready.</p><button id="familyStart" class="primary">Approve &amp; play</button>');
+ wireClose();$('familyStart').onclick=beginStationery;
+}
+
+function beginStationery(){
+ if(!selected){friends();return;}
+ if(!startTownStory())return;
+ familyStory=STATIONERY;stopSpeech();stopInput();closeModal();sessionToken++;
+ completed=false;newXP=0;helpCount=0;familyIndex=0;
+ setLessonWorld();
+ if(!stationeryWorld)stationeryWorld=new StationeryWorld(scene,{orb,cube,cyl,rod,labelBoard});
+ stationeryWorld.reset();
+ player.position.set(-2.3,0,5.9);player.rotation.set(0,Math.PI,0);player.visible=true;ball.visible=false;
+ if(guideSpot)guideSpot.visible=false;
+ scene.background.set(0xf3e1c3);scene.fog.color.set(0xf3e1c3);
+ Object.assign(cameraOrbit,{yaw:0,pitch:0,zoom:1});wideView=false;
+ music.start('game');clearLearningTray();
+ $('welcome').hidden=true;$('roomTag').hidden=true;$('quest').hidden=false;$('sceneTools').hidden=false;
+ document.body.classList.add('playing');
+ playChapterIntro(STATIONERY.id,routeStationery);
+}
+
+function routeStationery(reply=''){
+ stationeryWorld.index=familyIndex;
+ const beat=stationeryWorld.current;
+ phase='explore';
+ $('playControls').hidden=false;$('actionButton').hidden=false;$('actionButton').disabled=true;
+ $('targetLabel').hidden=false;$('listening').hidden=true;$('parentDot').hidden=true;
+ $('speakerName').textContent=familyIndex>=5&&!beat.freeTalk?'CLOVER':'PIP';
+ $('quest').querySelector('.pill').textContent=familyIndex<5?'On the classroom rug':beat.freeTalk?'Show and tell':'Play with Clover';
+ $('steps').innerHTML=STATIONERY.beats.map((_,i)=>'<i class="'+(i<familyIndex?'done':'')+'"></i>').join('');
+ beacon.position.copy(familyTarget());beacon.visible=true;
+ dialogue(beat.clue,reply||'Follow the gold marker and tap the hand.');
+ speak(reply?reply+' '+beat.clue:beat.clue);resize();
+}
+
+function tapStationery(x,y){
+ const bounds=renderer.domElement.getBoundingClientRect();
+ const pointer=new THREE.Vector2(2*(x-bounds.left)/bounds.width-1,1-2*(y-bounds.top)/bounds.height);
+ if(stationeryWorld.canAct(player.position)&&stationeryWorld.hits(pointer,camera))interactStationery();
+}
+
+function interactStationery(){
+ if(phase!=='explore'||!$('modalShade').hidden||!stationeryWorld.interact(player.position))return;
+ stopSpeech();stopInput();phase='family-action';beacon.visible=false;
+ $('playControls').hidden=true;$('targetLabel').hidden=true;
+ dialogue(stationeryWorld.current.action,'');
+}
+
+function stationerySpeak(){
+ const beat=stationeryWorld.current;
+ phase='family-say';$('speakerName').textContent='YOUR TURN';
+ $('modelSentence').hidden=true;$('modelSentence').textContent='';
+ dialogue(beat.prompt,beat.freeTalk?'You can start with “I used …” or “I made …”':'Try a whole sentence. Take your time.');
+ updateSpeakingControls();
+ speak(beat.prompt);
+}
+
+function acceptStationery(){
+ if(phase!=='family-say')return;
+ const {reply}=stationeryWorld.current;
+ closeModal();stopSpeech();$('listening').hidden=true;document.body.classList.remove('speaking-turn');
+ if(++familyIndex<STATIONERY.beats.length){routeStationery(reply);return;}
+ $('steps').querySelectorAll('i').forEach(dot=>dot.classList.add('done'));
+ phase='rating';dialogue(STATIONERY.ending,'');cheerHelpers();
+ rating=helpCount>=3?30:helpCount?40:50;ratePanel();
+}
 
 function beginTransportation(){
  if(!selected){friends();return;}
@@ -978,7 +1146,7 @@ function beginTransportation(){
  music.start('game');clearLearningTray();
  $('welcome').hidden=true;$('roomTag').hidden=true;$('quest').hidden=false;$('sceneTools').hidden=false;
  document.body.classList.add('playing');
- routeTransportation(true);
+ if(typeof playChapterIntro==='function')playChapterIntro('transportation',()=>routeTransportation(true));else routeTransportation(true);
 }
 function routeTransportation(opening=false,reply=''){
  transportationWorld.index=familyIndex;
@@ -1027,26 +1195,172 @@ function acceptTransportation(){
 }
 
 // Full-book adventure: actions change the story before any optional model or parent approval.
+function familyGalleryPlan(){
+ if(!selected){friends();return;}
+ showModal('plan',closeHTML+'<h2 id="modalTitle">What’s your name?</h2><p>Meet four randomly chosen relatives in the gallery hall. Take their smiling photos for the wall, then make a frame for show-and-tell.</p><p>Practise questions, answers, and picture descriptions in full sentences. For the last turn, tell Pippa two or three sentences about a real or pretend family. A grown-up accepts each turn when the child is ready.</p><p>Allow about 5–10 minutes. There is no speaking deadline.</p><button id="familyStart" class="primary">Approve &amp; play</button>');
+ wireClose();$('familyStart').onclick=beginFamilyGallery;
+}
+function beginFamilyGallery(){
+ if(!selected){friends();return;}
+ if(!startTownStory())return;
+ familyStory=createFamilyGalleryRound();
+ stopSpeech();stopInput();closeModal();sessionToken++;
+ completed=false;newXP=0;helpCount=0;familyIndex=0;
+ setLessonWorld();
+ if(!familyGalleryWorld)familyGalleryWorld=new FamilyGalleryWorld(scene,{orb,cube,cyl,rod,labelBoard,portraitLabel:createHouseLabel},familyStory);
+ else familyGalleryWorld.reset(familyStory);
+ familyGalleryWorld.root.visible=true;
+ scene.background.set(0xd5e6e2);
+ player.position.set(-2.42,0,5.90);player.rotation.y=Math.PI;
+ player.visible=true;ball.visible=false;rosita.visible=false;
+ if(guideSpot)guideSpot.visible=false;
+ clearLearningTray();music.start('game');
+ $('welcome').hidden=true;$('roomTag').hidden=true;$('quest').hidden=false;$('sceneTools').hidden=false;
+ document.body.classList.add('playing','gallery-photo-story');
+ Object.assign(cameraOrbit,{yaw:0,pitch:0,zoom:1});wideView=false;
+ phase='family-gallery-intro';galleryIntroLine=0;
+ $('playControls').hidden=true;$('targetLabel').hidden=true;$('listening').hidden=true;
+ $('parentDot').hidden=true;$('steps').innerHTML='';$('guidePortrait').hidden=true;beacon.visible=false;
+ document.body.classList.remove('speaking-turn');
+ bodyTools('<button id="skipGalleryIntro">Skip intro</button>');
+ $('skipGalleryIntro').onclick=finishFamilyGalleryIntro;
+ resize();
+ aimFamilyGalleryIntro();
+ camera.position.copy(cameraGoal);
+ lookCurrent.copy(lookGoal);
+ camera.lookAt(lookCurrent);
+ playFamilyGalleryIntroLine();
+}
+function aimFamilyGalleryIntro(){
+ lookGoal.set(.25,1.12,3.62);
+ cameraGoal.set(.45,2.44,3.62+Math.max(4.45,2.35/camera.aspect));
+}
+function playFamilyGalleryIntroLine(){
+ const {speaker,line}=FAMILY_GALLERY_INTRO[galleryIntroLine];
+ galleryIntroElapsed=0;galleryIntroSpoken=false;
+ familyGalleryWorld.poseIntro(galleryIntroLine,0,!reducedTownMotion.matches);
+ $('speakerName').textContent=speaker.toUpperCase();
+ dialogue(line,'');
+ speak(line,()=>{galleryIntroSpoken=true;});
+}
+function tickFamilyGalleryIntro(dt){
+ galleryIntroElapsed+=dt;
+ familyGalleryWorld.poseIntro(galleryIntroLine,galleryIntroElapsed,!reducedTownMotion.matches);
+ if(galleryIntroElapsed<4||(!galleryIntroSpoken&&galleryIntroElapsed<12))return;
+ if(galleryIntroLine+1===FAMILY_GALLERY_INTRO.length){finishFamilyGalleryIntro();return;}
+ galleryIntroLine++;
+ playFamilyGalleryIntroLine();
+}
+function finishFamilyGalleryIntro(){
+ if(phase!=='family-gallery-intro')return;
+ stopSpeech();familyGalleryWorld.endIntro();routeFamilyGallery();
+}
+function routeFamilyGallery(reply=''){
+ familyGalleryWorld.enter(familyIndex);
+ const beat=familyGalleryWorld.current;
+ phase='explore';lastNear=null;stopInput();bodyTools();
+ $('playControls').hidden=false;$('actionButton').hidden=false;$('actionButton').disabled=true;
+ $('targetLabel').hidden=false;$('parentDot').hidden=true;$('listening').hidden=true;
+ document.body.classList.remove('speaking-turn');
+ $('guidePortrait').hidden=true;$('speakerName').textContent='FAMILY GALLERY';
+ $('quest').querySelector('.pill').textContent=familyIndex<familyStory.beats.findIndex(beat=>beat.station==='photos')?'Family photo hunt':'Show and tell';
+ $('steps').innerHTML=familyStory.beats.map((_,i)=>i%2===0?'<i class="'+(i<familyIndex?'done':'')+'"></i>':'').join('');
+ const searching=!!familyGalleryWorld.relative;
+ beacon.position.copy(familyGalleryWorld.target());beacon.visible=!searching;
+ dialogue(beat.clue,reply||(searching?'Walk up to the person who matches the clue.':'Follow the gold marker and tap the hand.'));
+ speak(reply?reply+' '+beat.clue:beat.clue);resize();
+}
+function updateFamilyGalleryAction(){
+ const near=familyGalleryWorld.canAct(player.position);
+ const finding=familyGalleryWorld.relative&&!familyGalleryWorld.photoReady;
+ $('actionButton').disabled=!near;
+ $('actionLabel').textContent=near?(finding?'Say hello':familyGalleryWorld.current.action):'Come closer';
+ $('targetLabel').textContent=near?'Tap the hand or press Space':finding?'Walk up to a person':'Follow the gold spot';
+}
+function interactFamilyGallery(){
+ if(phase!=='explore'||!$('modalShade').hidden)return;
+ const action=familyGalleryWorld.interact(player.position);
+ if(!action)return;
+ if(action==='try-again'){
+  dialogue('Try another person.',familyGalleryWorld.current.clue);
+  speak(familyGalleryWorld.current.clue);
+  return;
+ }
+ stopSpeech();stopInput();phase='family-action';
+ $('playControls').hidden=true;$('targetLabel').hidden=true;beacon.visible=false;
+ if(action==='wave'){
+  dialogue('Hello!', 'Watch them wave.');
+  speak('Hello!');
+ }else if(action==='photo'){
+  dialogue('Smile!', 'Hold still for the photo.');
+  speak('Smile!');
+ }else{
+  if(familyGalleryWorld.current.station==='pippaStage'&&sound&&music.ctx?.state==='running'){
+   music.note(84,music.ctx.currentTime,.48,.34,'triangle');
+  }
+  dialogue(familyGalleryWorld.current.action,'Watch what happens.');
+ }
+}
+function familyGalleryActionDone(effect){
+ if(phase!=='family-action')return;
+ if(effect==='wave'){
+  phase='explore';
+  $('playControls').hidden=false;$('actionButton').hidden=false;$('targetLabel').hidden=false;
+  beacon.position.copy(familyGalleryWorld.target());beacon.visible=true;
+  dialogue('Ready for a photo?', 'Tap Take photo while you’re near.');
+  speak('Ready for a photo?');
+  updateFamilyGalleryAction();
+  return;
+ }
+ if(effect==='photo'){
+  familyGalleryWorld.showPhoto(renderer);
+  if(!reducedTownMotion.matches)$('galleryShutter').animate?.([{opacity:.53},{opacity:0}],{duration:300,easing:'ease-out'});
+ }
+ familyGallerySpeaking();
+}
+function familyGallerySpeaking(){
+ if(phase!=='family-action')return;
+ phase='family-say';
+ const beat=familyGalleryWorld.current;
+ $('speakerName').textContent=beat.caption?beat.caption.toUpperCase():'YOUR TURN';
+ $('modelSentence').hidden=true;$('modelSentence').textContent='';
+ dialogue(beat.prompt,'Take your time. A grown-up will accept your speaking turn.');
+ updateSpeakingControls();
+ resize();
+ speak(beat.prompt);
+}
+function advanceFamilyGallery(){
+ if(phase!=='family-say')return;
+ const {reply}=familyGalleryWorld.current;
+ familyGalleryWorld.hangPortrait(reducedTownMotion.matches);
+ stopSpeech();$('listening').hidden=true;document.body.classList.remove('speaking-turn');
+ if(++familyIndex<familyStory.beats.length){routeFamilyGallery(reply);return;}
+ phase='family-end';cheerHelpers();
+ dialogue(FAMILY_GALLERY.ending,'All four smiling photos are on the gallery wall.');speak(FAMILY_GALLERY.ending);
+ bodyTools('<button id="familyFinish">Finish &amp; add parent notes</button>');
+ $('familyFinish').onclick=()=>{if(phase!=='family-end')return;bodyTools();phase='rating';rating=helpCount>=3?30:helpCount?40:50;ratePanel();};
+}
+
 function rabbitPlan(){
  if(!selected){friends();return;}
  familyStory=RABBIT_STORY;
- showModal('plan',closeHTML+'<div class="eyebrow">THE WHOLE STORY · ABOUT 5–10 MINUTES</div><h2 id="modalTitle">Little Rabbit’s Special Delivery</h2><p>Your chosen friend helps Little Rabbit from the vegetable garden to Grandma’s tree house and all the way home.</p><p>Water and pull the carrot, wrap and carry it, rest on the sunny hill, meet Cat, Fish and Bird, keep the gift safe, knock, give, sing, wave goodbye, and tell Mum and Dad.</p><p>Short English phrases grow out of these actions. Hear a model only if wanted; a grown-up accepts speaking with no deadline.</p><button id="familyStart" class="primary">Begin the whole story →</button>');
+ showModal('plan',closeHTML+'<div class="eyebrow">A SHORTER JOURNEY · ONE SURPRISE ANIMAL</div><h2 id="modalTitle">Little Rabbit’s Special Delivery</h2><p>Your chosen friend helps Little Rabbit from the vegetable garden to Grandma’s tree house and all the way home.</p><p>Water and pull the carrot, wrap and carry it, meet one randomly chosen friend — Cat, Fish or Bird — keep the gift safe, knock, give, sing, wave goodbye, and tell Mum and Dad.</p><p>Full English sentences grow out of these actions. The other two animal encounters are skipped on this visit. Hear a model only if wanted; a grown-up accepts speaking with no deadline.</p><button id="familyStart" class="primary">Begin Rabbit’s journey →</button>');
  wireClose();$('familyStart').onclick=beginRabbit;
 }
 function beginRabbit(){
  if(!selected){friends();return;}
  if(!startTownStory())return;familyStory=RABBIT_STORY;stopSpeech();stopInput();closeModal();sessionToken++;completed=false;newXP=0;helpCount=0;familyIndex=0;
- setLessonWorld();clearFamilyProps();if(!rabbitWorld)rabbitWorld=new RabbitDeliveryWorld(scene,{orb,cube,cyl,rod,labelBoard});rabbitWorld.reset();
+ setLessonWorld();clearFamilyProps();if(!rabbitWorld)rabbitWorld=new RabbitDeliveryWorld(scene,{orb,cube,cyl,rod,labelBoard});rabbitWorld.reset();rabbitRoute=createRabbitRoute();rabbitStop=0;rabbitWorld.chooseEncounter(rabbitRoute.animal);rabbitWorld.enter(0,player);
  player.visible=true;ball.visible=false;rosita.visible=false;if(guideSpot)guideSpot.visible=false;music.start('game');clearLearningTray();
  $('welcome').hidden=true;$('roomTag').hidden=true;$('quest').hidden=false;$('sceneTools').hidden=false;document.body.classList.add('playing');
- cameraOrbit.yaw=0;cameraOrbit.pitch=0;cameraOrbit.zoom=1;routeRabbit();
+ cameraOrbit.yaw=0;cameraOrbit.pitch=0;cameraOrbit.zoom=1;if(typeof playChapterIntro==='function')playChapterIntro(RABBIT_STORY.id,routeRabbit);else routeRabbit();
 }
 function routeRabbit(){
  rabbitWorld.enter(familyIndex,player);const beat=DELIVERY_STEPS[familyIndex];phase='explore';lastNear=null;stopInput();bodyTools();
  $('playControls').hidden=false;$('actionButton').hidden=false;$('actionButton').disabled=true;$('targetLabel').hidden=false;$('listening').hidden=true;document.body.classList.remove('speaking-turn');
- $('speakerName').textContent='LITTLE RABBIT';$('guidePortrait').hidden=true;$('quest').querySelector('.pill').textContent=(familyIndex+1)+' / '+DELIVERY_STEPS.length+' · '+beat.title;
+ $('speakerName').textContent='LITTLE RABBIT';$('guidePortrait').hidden=true;$('quest').querySelector('.pill').textContent=(typeof rabbitStop==='number'?rabbitStop+1:familyIndex+1)+' / '+(typeof rabbitRoute!=='undefined'&&rabbitRoute.length?rabbitRoute.length:DELIVERY_STEPS.length)+' · '+beat.title;
  scene.background.set(['home','inside'].includes(beat.scene)?0xf5e1b4:beat.scene==='forest'?0xb9d4bf:0xc7e7ed);
- beacon.position.copy(rabbitWorld.target());beacon.visible=true;dialogue(beat.clue,(familyIndex+1)+' / '+DELIVERY_STEPS.length+' · '+beat.title+' · Walk together, then '+beat.action.toLowerCase()+'.'+(beat.count>1?' '+beat.count+' actions.':''));speak(beat.clue);resize();
+ beacon.position.copy(rabbitWorld.target());beacon.visible=true;dialogue(beat.clue,(typeof rabbitStop==='number'?rabbitStop+1:familyIndex+1)+' / '+(typeof rabbitRoute!=='undefined'&&rabbitRoute.length?rabbitRoute.length:DELIVERY_STEPS.length)+' · '+beat.title+' · Walk together, then '+beat.action.toLowerCase()+'.'+(beat.count>1?' '+beat.count+' actions.':''));speak(beat.clue);resize();
 }
 function interactRabbit(){
  if(phase!=='explore'||!$('modalShade').hidden)return;
@@ -1059,12 +1373,12 @@ function interactRabbit(){
 function rabbitActionDone(){
  if(phase!=='family-action')return;
  const beat=DELIVERY_STEPS[familyIndex];if(!beat.sentence){nextRabbit();return;}
- phase='family-say';$('speakerName').textContent='YOUR TURN';dialogue(beat.title,'Try a few words to help Little Rabbit.');updateSpeakingControls();
+ phase='family-say';$('speakerName').textContent='YOUR TURN';dialogue(beat.title,'Use a full sentence to help Little Rabbit. Take your time.');updateSpeakingControls();
 }
 function nextRabbit(){
  if(!['family-action','family-say'].includes(phase))return;
  stopSpeech();$('listening').hidden=true;document.body.classList.remove('speaking-turn');
- if(++familyIndex<DELIVERY_STEPS.length){routeRabbit();return;}
+ if(typeof rabbitRoute!=='undefined'&&rabbitRoute.length){rabbitStop++;if(rabbitStop<rabbitRoute.length){familyIndex=rabbitRoute[rabbitStop];routeRabbit();return;}}else if(++familyIndex<DELIVERY_STEPS.length){routeRabbit();return;}
  phase='family-end';beacon.visible=false;dialogue(RABBIT_STORY.ending,'Your whole story is complete.');speak(RABBIT_STORY.ending);cheerHelpers();
  bodyTools('<button id="familyFinish">Finish &amp; add parent notes →</button>');$('familyFinish').onclick=()=>{if(phase!=='family-end')return;bodyTools();phase='rating';rating=helpCount>=3?30:helpCount?40:50;ratePanel();};
 }
@@ -1076,6 +1390,7 @@ const reducedTownMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
 const TOWN_WRAP_UP=['rating','reward','memory','memory-complete','body-show','phonics-show','family-end'];
 let townWorld=null,townView='',townSession=false,townStoryActive=false;
 let townPlaces=[],townTrip=null,townSleepElapsed=0,townNear=null,townFocus=null;
+let townPanorama=false,townRadarTick=0;
 let townLandmark='',townFacilityMessage='',townFacilityUntil=0;
 const townFacing=new THREE.Vector3();
 let houseOverview=false,houseDoorGuide=false,houseTownTarget=null,houseShelfPage=0;
@@ -1195,9 +1510,9 @@ function syncTownToolbar(){
  $('townDoor').hidden=!inHouse;
  $('houseView').hidden=!inHouse;
  $('townActivities').hidden=!inHouse;
- $('townHome').hidden=inHouse;
+ $('townHome').hidden=inHouse;if($('townPanorama'))$('townPanorama').hidden=inHouse;
 }
-function showTownView(view,position,{night=false}={}){
+function showTownView(view,position,{night=false}={}){if(typeof chapterIntro!=='undefined')chapterIntro?.stop();introContinue=null;
  sessionToken++;
  phase=night?'town-night':'town-free';
  stopSpeech();stopInput();closeModal();
@@ -1213,7 +1528,7 @@ function showTownView(view,position,{night=false}={}){
  Object.assign(cameraOrbit,{yaw:0,pitch:0,zoom:1});wideView=false;
  player.rotation.set(0,Math.PI,0);player.position.set(position[0],0,position[1]);player.visible=true;setCharacterPose(player,'file');
  if(view==='town')townWorld.buildStreet(townPlaces);
- else{syncHouseShelf();townWorld.refreshPosters();townWorld.refreshCabinet();townWorld.syncHomeItems(data);}
+ else{syncHouseShelf();townWorld.refreshPosters();townWorld.refreshCabinet();townWorld.syncHomeItems(data);if(typeof syncToyPlay==='function')syncToyPlay();}
  townWorld.show(view,night);
  $('playNav').textContent='Town';
  $('modeLabel').textContent=night?'See you tomorrow':view==='house'?'Home sweet home':'Explore Sesame Street Town';
@@ -1238,9 +1553,11 @@ function aimTownCamera(view,cinematic,blend){
   }
  }else if(cinematic){
   cameraGoal.set(x+5.3,8,z+10.5);lookGoal.set(x,2.15,z-.8);
+ }else if(typeof townPanorama!=='undefined'&&townPanorama){
+  cameraGoal.set(x+19,42,z+39);lookGoal.set(x,0,z-8);
  }else{
-  const back=Math.max(14,10.4/Math.max(.62,camera.aspect));
-  cameraGoal.set(x+1.8,6.8,z+back);lookGoal.set(x,2.6,z-4.5);
+  const back=Math.max(17,12.2/Math.max(.62,camera.aspect));
+  cameraGoal.set(x+2.8,8.5,z+back);lookGoal.set(x,2.4,z-6.5);
  }
  if(view==='house'&&phase==='town-night'){
   cameraGoal.set(ROOM.bed[0]-2.58,7.85,ROOM.bed[1]+11.6);lookGoal.set(ROOM.bed[0]-.29,1.3,ROOM.bed[1]-1.45);
@@ -1275,11 +1592,13 @@ function animateTown(dt,elapsed,t){
   }
  }else if(phase==='town-free'&&active){
   moving=walkInTown(dt);
+  const toyNear=townView==='house'&&toyPlayWorld?.nearest(player.position);
   const spots=townView==='house'?HOUSE_STATIONS:
-   townPlaces.filter(p=>p.id===HOME.id||LESSONS[p.id]).map(p=>({...p,point:[p.x,p.doorZ]}));
+   townPlaces.filter(p=>p.id===HOME.id||LESSONS[p.id]||p.action).map(p=>({...p,point:[p.x,p.doorZ]}));
   townNear=spots.find(p=>Math.hypot(player.position.x-p.point[0],player.position.z-p.point[1])<(p.id==='exit'||p.id===HOME.id?3.4:townView==='house'?1.65:2.1));
+  if(toyNear&&!data.carriedToy)townNear={id:'playmat-toy',toy:toyNear,name:'Playmat',action:'Play with '+HOME_ITEM.get(toyNear).name};
   $('actionButton').disabled=!townNear;
-  $('actionLabel').textContent=townNear?(townNear.action||'Enter '+townNear.name):'Walk closer';
+  $('actionLabel').textContent=townNear?.id==='playmat'&&data.carriedToy?'Place my toy':townNear?(townNear.action||'Enter '+townNear.name):'Walk closer';
   if(townView==='town')updateTownWayfinding(t);
   else updateHouseWayfinding();
  }else if(phase==='town-night'&&active){
@@ -1293,7 +1612,7 @@ function animateTown(dt,elapsed,t){
  if(moving)walkT+=dt*13;
  if(phase!=='town-night')player.position.y=moving?Math.abs(Math.sin(walkT))*.07:0;
  updateCharacter(player,t,moving);updateAccessoryPose(player,t,moving);
- if(active&&townView==='town')townWorld.tick(t,calm);
+ if(active&&townView==='town')townWorld.tick(t,calm);if(typeof updateTownRadar==='function')updateTownRadar(t);if(townView==='house')toyPlayWorld?.tick(dt,player,{paused:!active,reduced:calm});
  if(beacon.visible){
   beacon.position.y=.1;
   beacon.userData.arrow.position.y=3.1+(calm?0:Math.sin(t*4)*.18);
@@ -1301,7 +1620,7 @@ function animateTown(dt,elapsed,t){
  aimTownCamera(townView,phase==='town-travel',calm?1:1-Math.exp(-dt*(phase==='town-travel'?7:5)));
  graphics?.update(townView==='house'?(phase==='town-night'?'night':'house'):townView==='town'?'town':lesson,player);renderer.render(scene,camera);
 }
-function updateHouseWayfinding(){
+function updateHouseWayfinding(){if(data.carriedToy){$('targetLabel').hidden=false;$('targetLabel').textContent='Carry '+HOME_ITEM.get(data.carriedToy).name+' to the playmat · use the hand inside';return;}
  const nearDoor=townNear?.id==='exit';
  const location=(nearDoor?null:townNear?.name)??`${selected}’s house`;
  if(townLandmark!==location){
@@ -1316,7 +1635,7 @@ function updateHouseWayfinding(){
 function updateTownWayfinding(seconds){
  const {x,z}=player.position;
  const nearby=townNear??townPlaces.find(place=>Math.abs(x-place.x)<place.width*.65&&Math.abs(z-place.doorZ)<8);
- const district=nearby?.district??(z<=-68?'Storybook Lane':z<=-45?'Adventure Gardens':z<=-23?'Wonder Park':z<1?'Main Street':'Welcome Plaza');
+ const district=nearby?.district??(z<=-150?'Storybook Village':z<=-93?'Adventure Heights':z<=-35?'Enchanted Gardens':z<18?'Discovery Quarter':'Friendship Harbour');
  const name=nearby?.name??district;
  if(townLandmark!==name){
   townLandmark=name;
@@ -1332,7 +1651,7 @@ function updateTownWayfinding(seconds){
   const dx=townFocus.x-x,dz=townFocus.doorZ-z;
   const angle=Math.atan2(-townFacing.z*dx+townFacing.x*dz,townFacing.x*dx+townFacing.z*dz);
   const direction=['↑','↗','→','↘','↓','↙','←','↖'][(Math.round(angle/(Math.PI/4))+8)%8];
-  $('targetLabel').textContent=direction+'  '+townFocus.name;
+  $('targetLabel').textContent=direction+'  '+townFocus.name+' · '+Math.round(Math.hypot(dx,dz))+' m';
  }
 }
 function walkInTown(dt){
@@ -1353,6 +1672,9 @@ function walkInTown(dt){
 }
 function interactTown(){
  if(!townNear||!$('modalShade').hidden)return;
+ if(townNear.id==='playmat'){if(data.carriedToy&&placeMatToy(data)){save();syncToyPlay();beacon.visible=false;toast('Tap your toy on the mat to play!');}else toast('Bring a toy from the cupboard, or tap a toy on the mat.');return;}
+ if(townNear.id==='playmat-toy'){playHouseToy(townNear.toy);return;}
+ if(townNear.action&&townView==='town'){townWorld.useFacility(townNear.id,clock.elapsedTime);townFacilityMessage=townNear.name+' · '+townNear.action+'!';townFacilityUntil=clock.elapsedTime+5;toast(townNear.action+'!');return;}
  if(townNear.id==='exit'){exploreStreet();return;}
  if(townNear.id==='activities'){openTownActivities();return;}
  if(townNear.id==='computer'){journal();return;}
@@ -1367,7 +1689,7 @@ function interactTown(){
 }
 function markTownDestination(destination){
  townFocus=destination;townFacilityMessage='';townFacilityUntil=0;
- beacon.position.set(destination.x,0,destination.doorZ);beacon.visible=true;
+ beacon.position.set(destination.x,0,destination.doorZ);beacon.visible=true;const route=townWorld.findRoute([player.position.x,player.position.z],destination);if(route)townWorld.showRoute(route);
 }
 function markMainDoor(destination=null){
  if(phase!=='town-free'||townView!=='house')return;
@@ -1381,7 +1703,7 @@ function exploreStreet(){
  if(destination)markTownDestination(destination);
 }
 function travelToStory(place){
- if(phase!=='town-free'||!LESSONS[place.id])return;
+ if(phase!=='town-free'||!(LESSONS[place.id]||place.action||place.id===HOME.id))return;
  tickTownBudget();
  if(phase!=='town-free')return;
  closeModal();stopInput();beacon.visible=false;
@@ -1396,6 +1718,7 @@ function travelToStory(place){
  $('townTravel').hidden=false;
 }
 function arriveAtTownStory(place){
+ if(place.action||place.id===HOME.id){townTrip=null;$('townTravel').hidden=true;if(place.id===HOME.id)showTownView('house',ROOM.start);else{showTownView('town',[place.x,place.doorZ+.7]);toast(place.action+' · Walk closer and use the hand.');}return;}
  townTrip=null;townWorld.clearGroup(townWorld.route);
  $('townTravel').hidden=true;$('townPlace').textContent=place.name;
  townFocus=place;
@@ -1468,33 +1791,22 @@ function openTownActivities(){
   }catch{toast('Choose a valid story JSON file from Generated.');}
  };
 }
-function openTownMap(){
+function openTownMap(filter='',selectedId=''){
+ if(typeof filter!=='string')filter='';
  if(phase!=='town-free')return;
- refreshTownPlaces();
- const b=townBounds(townPlaces);
- const left=x=>7+86*(x-b.left)/(b.right-b.left);
- const top=z=>6+88*(z-b.top)/(b.bottom-b.top);
- const here=townView==='house'?HOME:player.position;
- const roads=[...new Set(townPlaces.map(p=>p.lane))].map(z=>`<i class="road" style="left:8%;right:8%;top:${top(z)}%"></i>`).join('');
- const spine=[...TOWN_LOOP,TOWN_SPINE].map(x=>`<i class="road spine" style="left:${left(x)}%;top:${top(Math.min(...townPlaces.map(p=>p.lane)))}%;bottom:${100-top(HOME.lane)}%"></i>`).join('');
- const markers=townPlaces.map(p=>`<button class="town-map-marker" data-town-place="${escapeHTML(p.id)}" ${p.action?'disabled':''} aria-label="${escapeHTML(p.name)}" style="left:${left(p.x)}%;top:${top(p.z)}%;--landmark:${p.swatch}">${p.icon}</button>`).join('');
- const height=Math.max(330,Math.round((b.bottom-b.top)*3.65));
- const groups=new Map();
- for(const place of townPlaces){
-  if(!groups.has(place.district))groups.set(place.district,[]);
-  groups.get(place.district).push(place);
- }
- showModal('town-map',`${closeHTML}<h2 id="modalTitle">Sesame Street Town map</h2><p>The blue dot is you. Choose a place to mark it, then follow the arrow and gold marker.</p><div class="town-map-layout"><div class="town-mini" style="min-height:${height}px">${roads}${spine}${markers}<i class="town-map-you" style="left:${left(here.x)}%;top:${top(here.z)}%"></i></div><div class="town-map-list">${[...groups].map(([district,places])=>`<section class="town-map-district"><h3>${district}</h3>${places.map(mapCard).join('')}</section>`).join('')}</div></div>`,true);
- wireClose();
- $('modal').querySelectorAll('[data-town-place]').forEach(button=>button.onclick=()=>{
-  const destination=townPlaces.find(p=>p.id===button.dataset.townPlace);
-  if(!destination||destination.action)return;
-  closeModal();
-  if(townView==='house'){
-   if(destination.id!==HOME.id)markMainDoor(destination);
-  }else markTownDestination(destination);
- });
+ refreshTownPlaces();const b=townBounds(townPlaces),here=townView==='house'?HOME:player.position;
+ const selectedPlace=townPlaces.find(p=>p.id===(selectedId||townFocus?.id))||null;
+ const normalize=text=>text.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ const filtered=townPlaces.filter(p=>normalize(p.name+' '+p.district).includes(normalize(filter)));
+ const route=selectedPlace&&townView==='town'?townWorld.findRoute([player.position.x,player.position.z],selectedPlace):[];
+ showModal('town-map',`${closeHTML}<div class="atlas-heading"><div><span class="atlas-eyebrow">EXPLORE YOUR WORLD</span><h2 id="modalTitle">The Wonder Isles</h2><p>Five colourful districts. One big adventure.</p></div><span class="atlas-count">${townPlaces.length} places<br><small>to discover</small></span></div><div class="atlas-layout"><div class="atlas-chart">${atlasSVG(townPlaces,b,here,selectedPlace?.id,route||[])}<div class="atlas-key"><span>● You are here</span><span>••• Your trail</span><span>↑ North</span></div></div><aside class="atlas-side"><label class="atlas-search">Find a place<input id="atlasSearch" type="search" placeholder="Try garden, theatre or café" value="${escapeHTML(filter)}"></label>${selectedPlace?`<section class="atlas-selection" style="--district:${selectedPlace.swatch}"><span class="atlas-selected-icon">${selectedPlace.icon}</span><small>${escapeHTML(selectedPlace.district)}</small><h3>${escapeHTML(selectedPlace.name)}</h3><p>${selectedPlace.action?'A playful place to explore':selectedPlace.id===HOME.id?'Your house, wardrobe and toy collection':'A story adventure with your chosen friend'}</p><div><button id="atlasWalk" class="secondary">Mark a walking trail</button><button id="atlasRide" class="primary">Take the shuttle →</button></div></section>`:'<div class="atlas-hint">Tap a colourful pin to explore a place. Walk there, or take a short shuttle ride.</div>'}<div class="atlas-destinations">${filtered.map(p=>`<button data-atlas-list="${escapeHTML(p.id)}" class="atlas-destination ${selectedPlace?.id===p.id?'selected':''}"><span style="background:${p.swatch}">${p.icon}</span><span><strong>${escapeHTML(p.name)}</strong><small>${escapeHTML(p.district)}</small></span><b>›</b></button>`).join('')}</div></aside></div>`,true);
+ wireClose();const choose=id=>openTownMap(filter,id);
+ $('modal').querySelectorAll('[data-atlas-pin]').forEach(pin=>{pin.onclick=()=>choose(pin.dataset.atlasPin);pin.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose(pin.dataset.atlasPin);}};});
+ $('modal').querySelectorAll('[data-atlas-list]').forEach(button=>button.onclick=()=>choose(button.dataset.atlasList));
+ $('atlasSearch').oninput=e=>{const value=e.target.value;openTownMap(value,selectedPlace?.id);requestAnimationFrame(()=>{const input=$('atlasSearch');input.focus();input.setSelectionRange(value.length,value.length);});};
+ if(selectedPlace){$('atlasWalk').onclick=()=>{closeModal();if(townView==='house'){if(selectedPlace.id!==HOME.id)markMainDoor(selectedPlace);}else markTownDestination(selectedPlace);};$('atlasRide').onclick=()=>{if(selectedPlace.id===HOME.id&&townView==='house'){closeModal();return;}travelToStory(selectedPlace);};}
 }
+
 $('resetPlayTime').onclick=resetTownTime;
 $('townDoor').onclick=exploreStreet;
 $('houseView').onclick=()=>{
@@ -1518,3 +1830,23 @@ window.addEventListener('storage',event=>{
  const stored=readTownBudget();
  if(stored.day===townBudget.day)townBudget.used=Math.max(stored.used,townBudget.used);
 });
+
+// Shared practical closing missions stay in the current 3D scene and use the same parent dock.
+function startAdventureWorkshop(){if(!WORKSHOPS[lesson]||workshopDone===sessionToken)return false;if(!workshop)workshop=new AdventureWorkshop(scene,{orb,cube,cyl,rod,labelBoard});if(workshopToken===sessionToken&&workshop.active)return true;workshopToken=sessionToken;workshop.start(lesson);closeModal();bodyTools();stopSpeech();stopInput();clearLearningTray();$('listening').hidden=true;document.body.classList.remove('speaking-turn');if(workshop.index===3){workshopTalk();return true;}routeWorkshop();return true;}
+function routeWorkshop(){phase='explore';lastNear=null;clearLearningTray();$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('playControls').hidden=false;$('targetLabel').hidden=false;beacon.position.copy(workshop.target());beacon.visible=true;const c=workshop.config;dialogue(c.title,workshop.index===0?`Pip needs help. Walk to the ${c.tool} and pick it up.`:workshop.index===1?`Carry it to the gold marker. ${c.action} three times.`:'Walk to Pip and tell what happened.');}
+function interactWorkshop(){if(phase!=='explore'||!$('modalShade').hidden)return;const result=workshop.interact(player.position);if(result==='carry'){workshopSpeak(workshop.config.question,'Ask Pip a question before you help.');}else if(result==='animate'){dialogue(workshop.config.action,`${workshop.taps} / 3 · Watch what happens!`);}else if(result==='talk')workshopTalk();}
+function workshopSpeak(sentence,prompt){phase='workshop-say';workshopSpeaking=sentence;stopInput();beacon.visible=false;$('playControls').hidden=true;$('targetLabel').hidden=true;dialogue(prompt,'Try first. Hear a model if useful. A grown-up accepts your answer, with no time limit.');$('listening').hidden=false;updateSpeakingControls();}
+function workshopAnswer(){workshopSpeak(workshop.config.answer,'Tell Pip what changed.');}
+function workshopTalk(){workshop.index=3;workshopSpeak(workshop.config.talk,'Free talk: tell your adventure in 2–3 simple sentences. You can use your own words.');}
+function acceptWorkshop(){if(phase!=='workshop-say'||workshopToken!==sessionToken)return;stopSpeech();$('listening').hidden=true;document.body.classList.remove('speaking-turn');if(workshop.index===3){workshopDone=sessionToken;workshop.stop();phase='rating';ratePanel();return;}routeWorkshop();}
+
+function playChapterIntro(key,after){if(!chapterIntro)chapterIntro=new ChapterIntro(scene,{orb,cube,cyl,rod});stopSpeech();stopInput();clearLearningTray();const priorPhase=phase;introToken=sessionToken;introContinue=after;introSaved={phase:priorPhase,position:player.position.clone(),rotation:player.rotation.clone(),guide:rosita.visible,ball:ball.visible};const fallback={title:familyStory?.title||'A new adventure',lines:[familyStory?.intro||'A new story is waiting for you.','Explore together, help your friends, and tell your story.'],toy:'toy-blocks',kind:'garden'};const visual=key==='cat'?catWorld?.cat.clone(true):key==='wants'?wantWorld?.baby.clone(true):key===RABBIT_STORY.id?rabbitWorld?.rabbit.clone(true):key==='phonics'?phonicsWorld?.entities[0]?.root.clone(true):null;chapterIntro.start(key,fallback,visual);phase='chapter-intro';ball.visible=false;player.position.set(-2.3,0,2.6);player.rotation.y=.5;rosita.visible=false;beacon.visible=false;$('playControls').hidden=true;$('targetLabel').hidden=true;$('listening').hidden=true;document.body.classList.remove('speaking-turn');$('speakerName').textContent='STORYTIME';dialogue(chapterIntro.spec.title,chapterIntro.spec.lines[0]);bodyTools('<button id="skipChapterIntro">Skip intro →</button>');$('skipChapterIntro').onclick=finishChapterIntro;speak(chapterIntro.spec.lines[0]);resize();lookCurrent.set(0,1.2,2);camera.position.set(.3,3,2+Math.max(7,5.6/camera.aspect));camera.lookAt(lookCurrent);}
+function tickChapterIntro(dt){if(!chapterIntro?.active||introToken!==sessionToken)return;const before=chapterIntro.line,done=chapterIntro.tick(dt,{paused:!$('modalShade').hidden||document.hidden,reduced:reducedTownMotion.matches});if(before!==chapterIntro.line){dialogue(chapterIntro.spec.title,chapterIntro.spec.lines[chapterIntro.line]);speak(chapterIntro.spec.lines[chapterIntro.line]);}if(!$('modalShade').hidden||document.hidden)return;updateCharacter(player,chapterIntro.elapsed,!reducedTownMotion.matches);if(done)finishChapterIntro();}
+function finishChapterIntro(){if(phase!=='chapter-intro'||introToken!==sessionToken||!introContinue)return;const next=introContinue;introContinue=null;chapterIntro.stop();stopSpeech();bodyTools();player.position.copy(introSaved.position);player.rotation.copy(introSaved.rotation);rosita.visible=introSaved.guide;ball.visible=introSaved.ball;phase=introSaved.phase;next();}
+function syncToyPlay(){if(!townWorld)return;normalizeToyPlay(data);if(!toyPlayWorld)toyPlayWorld=new ToyPlayWorld(townWorld.house,{cube,cyl,orb});toyPlayWorld.sync(data);townWorld.syncHomeItems(data);}
+function tapHouseToy(x,y){if(townView!=='house'||phase!=='town-free'||!$('modalShade').hidden||!toyPlayWorld)return;const r=renderer.domElement.getBoundingClientRect(),ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2((x-r.left)/r.width*2-1,-(y-r.top)/r.height*2+1),camera);const id=toyPlayWorld.pick(ray);if(id)playHouseToy(id);}
+function playHouseToy(id){if(townView!=='house'||phase!=='town-free'||!$('modalShade').hidden||!toyPlayWorld?.play(id,player.position)){toast('Walk closer to your toy, or let its animation finish.');return;}const lines={'toy-train':'Choo choo! My train is moving.','toy-bus':'My bus is going for a ride.','toy-rocket':'Three, two, one! My rocket can fly!','toy-blocks':'My blocks can jump and stack.','toy-duck':'My duck can waddle and hop.','toy-drum':'Tap, tap! I can play my drum.'};speak(lines[id]);toast(lines[id]);}
+
+$('townPanorama').onclick=()=>{if(townView!=='town'||phase!=='town-free')return;townPanorama=!townPanorama;Object.assign(cameraOrbit,{yaw:0,pitch:0,zoom:1});$('townPanorama').textContent=townPanorama?'Follow camera':'Panorama';};
+$('townRadar').onclick=()=>openTownMap();
+function updateTownRadar(t){const el=$('townRadar');if(!el)return;el.hidden=townView!=='town'||phase!=='town-free';if(el.hidden||t-townRadarTick<.18)return;townRadarTick=t;const c=$('townRadarCanvas'),ctx=c.getContext('2d');if(!ctx)return;const range=55,x=player.position.x,z=player.position.z;ctx.fillStyle='#173d50';ctx.fillRect(0,0,180,180);const map=(a,b)=>[90+(a-x)/range*82,90+(b-z)/range*82];ctx.strokeStyle='#7fafa7';ctx.lineWidth=4;for(const row of new Set(townPlaces.map(p=>p.lane))){const y=map(x,row)[1];ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(180,y);ctx.stroke();}for(const col of[-110,10,110]){const q=map(col,z)[0];ctx.beginPath();ctx.moveTo(q,0);ctx.lineTo(q,180);ctx.stroke();}const canal=map(-8,z)[0];ctx.fillStyle='#57a9c4';ctx.fillRect(canal-5,0,10,180);for(const p of townPlaces){const [a,b]=map(p.x,p.z);if(a<5||a>175||b<5||b>175)continue;ctx.fillStyle=p.id===townFocus?.id?'#ffdb79':p.swatch;ctx.beginPath();ctx.arc(a,b,p.id===townFocus?.id?6:4,0,Math.PI*2);ctx.fill();}ctx.fillStyle='#fff8da';ctx.beginPath();ctx.moveTo(90,82);ctx.lineTo(84,96);ctx.lineTo(96,96);ctx.closePath();ctx.fill();}

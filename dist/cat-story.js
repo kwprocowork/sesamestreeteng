@@ -3,9 +3,9 @@ import {PhonicsWorld} from './phonics-world.js?v=23';
 export const CAT_TURNS=[
  {place:null,prompt:'Can you see the cat?',sentence:'I can not see Cat.',short:'Not yet.'},
  {place:'bed',prompt:'Look under the bed. What should you ask?',sentence:'Is Cat under the bed?',short:'Under the bed?'},
- {place:null,prompt:'Is Cat under the bed?',sentence:'No!',short:'No!'},
+ {place:null,prompt:'Is Cat under the bed?',sentence:'No, Cat is not under the bed.',short:'No!'},
  {place:'chair',prompt:'Check on the chair. What should you ask?',sentence:'Is Cat on the chair?',short:'On the chair?'},
- {place:null,prompt:'Is Cat on the chair?',sentence:'No!',short:'No!'},
+ {place:null,prompt:'Is Cat on the chair?',sentence:'No, Cat is not on the chair.',short:'No!'},
  {place:'curtain',prompt:'Look behind the curtain. Can you see Cat?',sentence:'I can not see Cat.',short:'Not yet.'},
  {place:'basket',prompt:'The basket is rustling. What should you ask?',sentence:'Is Cat in the basket?',short:'In the basket?'},
  {place:null,prompt:'You found Cat! Tell your friend where Cat is.',sentence:'Cat is in the basket!',short:'In the basket!'},

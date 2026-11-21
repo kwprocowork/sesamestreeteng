@@ -24,12 +24,13 @@ export const HOUSE_STATIONS = [
   {id:'wardrobe',name:'Wardrobe',action:'Change accessories',point:[WARDROBE.x+2.57,WARDROBE.z]},
   {id:'bookshelf',name:'Word Library',action:'Read saved words',point:[LIBRARY.x,LIBRARY.z+2.48]},
   {id:'cabinet',name:'Figure Cabinet',action:'Change character',point:[CABINET_X,-9.12]},
+  {id:'playmat',name:'Toy Playmat',action:'Play on the mat',point:ROOM.mat},
   {id:'toy-cupboard',name:'Toy Cupboard',action:'See your toys',point:[TOYS.x+2.55,TOYS.z]},
   {id:'store-room',name:'Store Room',action:'Arrange the house',point:[17.1,11.48]},
 ];
 const PALE=0xfff8e9, INK=0x244963, WOOD=0xffcf85;
 export const PLAY_MAT_COLOR=0xeae5d9;
-export const HOUSE_DOOR={width:2.05,height:2.68,z:SHELL.front};
+export const HOUSE_DOOR={width:3.4,height:4.4,z:SHELL.front};
 const HOUSE_BLOCKS=[
   [-15.45,-9.14,-12.55,-10.38], [CABINET_X-3.19,CABINET_X+3.19,-13.13,-11.23],
   [LIBRARY.x-4.03,LIBRARY.x+4.03,-12.67,-10.39],
@@ -457,8 +458,8 @@ function mainDoor({house:g,box,orb}){
   hinge.position.set(x-width/2,0,z+.08);g.add(hinge);
   box(0x61c3bd,width/2,height/2,0,width,height,.123,hinge);
   for(const side of [-1,1]){
-    orb(0xc9eff6,width/2,1.83,.073*side,.38,.37,.027,hinge);
-    orb(0xffce69,width-.26,1.14,.095*side,.081,.079,.065,hinge);
+    orb(0xc9eff6,width/2,height*.70,.073*side,.38,.37,.027,hinge);
+    orb(0xffce69,width-.32,height*.43,.095*side,.081,.079,.065,hinge);
   }
   return hinge;
 }
@@ -493,7 +494,7 @@ function homeInventoryViews(kit,toysAt,baseSheet){
   const dynamic=new THREE.Group();house.add(dynamic);
   let signature='';
   return state=>{
-    const next=JSON.stringify([state.ownedItems,state.houseLayout,state.houseSheets,state.housePlush]);
+    const next=JSON.stringify([state.ownedItems,state.houseLayout,state.houseSheets,state.housePlush,state.playmatToys,state.carriedToy]);
     if(next===signature)return;
     signature=next;
     for(const item of [...dynamic.children]){
@@ -515,7 +516,7 @@ function homeInventoryViews(kit,toysAt,baseSheet){
       model.position.set(16+(i%5)*.62,i<5?1.43:2.54,14.03);
       model.rotation.y=Math.PI;dynamic.add(model);
     });
-    const toys=(state.ownedItems||[]).filter(id=>HOME_ITEM.get(id)?.kind==='toy');
+    const toys=(state.ownedItems||[]).filter(id=>HOME_ITEM.get(id)?.kind==='toy'&&!(state.playmatToys||[]).includes(id)&&state.carriedToy!==id);
     toys.forEach((id,i)=>{
       const toy=homeModel(id,{cube:box,cyl,orb});toy.scale.setScalar(1.12);
       toy.position.set(toysAt.x+.16,i<3?1.59:2.92,toysAt.z-(i%3-1)*1.56);
@@ -566,14 +567,14 @@ export function buildHouseInterior({house,night,cube:box,cyl,orb,figure,portrait
   box(0x76cdec,0,height/2,back,width,height,.25,backWall);
   box(0xff8fbd,0,.72,back+.172,width,1.43,.13,backWall);
   for(let i=0;i<39;i++)orb(0xff8fbd,i-19,1.43,back+.19,.52,.32,.067,backWall);
-  const half=(width-2.25)/2;
+  const gap=HOUSE_DOOR.width+.2,half=(width-gap)/2;
   for(const side of [-1,1]){
-    const x=side*(1.125+half/2);
+    const x=side*(gap/2+half/2);
     box(0xb299eb,x,height/2,front,half,height,.24,frontWall);
     box(0xf6b6ca,x,.44,front-.16,half,.88,.08,frontWall);
   }
   const above=height-HOUSE_DOOR.height;
-  box(0xb299eb,0,HOUSE_DOOR.height+above/2,front,2.25,above,.242,frontWall);
+  box(0xb299eb,0,HOUSE_DOOR.height+above/2,front,gap,above,.242,frontWall);
   for(const [x,side] of [[left,leftWall],[right,rightWall]]){
     box(0x78d8c3,x,height/2,mid,.24,height,depth,side);
     box(0xffc46c,x+Math.sign(-x)*.16,.68,mid,.08,1.36,depth,side);
@@ -617,7 +618,7 @@ export function buildHouseInterior({house,night,cube:box,cyl,orb,figure,portrait
   const refreshCabinet=displayCabinet(kit);
   const baseSheet=bedroom(kit),toysAt=buildStorage(kit);
   const door=mainDoor(kit);
-  box(0x61c3bd,0,HOUSE_DOOR.height/2,front+.22,2.28,HOUSE_DOOR.height+.014,.14,frontWall);
+  box(0x61c3bd,0,HOUSE_DOOR.height/2,front+.22,HOUSE_DOOR.width+.2,HOUSE_DOOR.height+.014,.14,frontWall);
   const updateShelf=wordLibrary(kit);
   const updateInventory=homeInventoryViews(kit,toysAt,baseSheet);
   baseSheet.traverse(node=>{

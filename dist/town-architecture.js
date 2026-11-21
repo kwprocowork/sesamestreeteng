@@ -94,8 +94,8 @@ function star(color,x,y,z,size,g){
 }
 function facade(p,g,box){
   const {x,z,width:w,depth:d,style,color}=p,front=z+d/2;
-  const height=p.id==='house'?7.65:style==='library'?7.8:style==='theatre'?6.65:style==='barn'?4.8:6.2;
-  const art=(label,y=3.78)=>sign(label,x,y,front+.36,w*.88,g,box);
+  const height=p.id==='house'?7.65:style==='library'?7.8:style==='theatre'?6.65:6.2;
+  const art=(label,y=5.5)=>sign(label,x,y,front+.36,w*.88,g,box);
   if(['rowhouse','library','barn'].includes(style)||p.id==='house'){
     const shape=new THREE.Shape();shape.moveTo(-w*.54,0);shape.lineTo(0,2.65);shape.lineTo(w*.54,0);shape.closePath();
     const geo=new THREE.ExtrudeGeometry(shape,{depth:d+.9,bevelEnabled:false});
@@ -163,11 +163,12 @@ function facade(p,g,box){
       ball(PALETTE[(j+8)%6],bx+j*.29,1.3,front+.55,.16,.16,.12,g);
     }
   }
-  box(CREAM,x,1.25,front+.28,2.7,2.56,.27,g);
-  box(INK,x,1.22,front+.44,2.34,2.37,.13,g);
-  box(style==='library'?0x9ae1b0:0x9de7f4,x,1.59,front+.52,1.81,.85,.09,g);
-  box(GOLD,x,1.15,front+.55,.11,.28,.1,g);
-  if(['theatre','rowhouse','cafe','station'].includes(style))canopy(x,2.84,front+.64,g,box,[color,CREAM]);
+  // Entrances leave headroom for the tallest playable friend and wardrobe.
+  box(CREAM,x,2.27,front+.28,3.8,4.54,.27,g);
+  box(INK,x,2.2,front+.44,3.4,4.4,.13,g);
+  box(style==='library'?0x9ae1b0:0x9de7f4,x,3.15,front+.52,2.85,1.4,.09,g);
+  box(GOLD,x+1.25,1.85,front+.55,.11,.28,.1,g);
+  if(['theatre','rowhouse','cafe','station'].includes(style))canopy(x,4.85,front+.64,g,box,[color,CREAM]);
   art(p.name);
   if(style==='garden'){
     for(const side of [-1,1]){
@@ -471,3 +472,5 @@ export function buildTownscape(world,places,g,{spine:main,loop}){
   }
   world.batchStreet(g);
 }
+
+export {facade as buildTownFacade,facility as buildTownFacility,sign as townSign};

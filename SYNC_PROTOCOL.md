@@ -18,6 +18,6 @@ On the Mac, headquarters additionally uses `sync_project.py` in the parent works
 - Interface updates become available to the Mac through the same repository. Mac updates become available to Interface by the same pre-development open/pull step. Chat messages themselves are not shared source or synchronization.
 - Record chapter-specific decisions in their story workspace. Shared architecture/settings belong in headquarters. The user has authorized story chats only for genuinely new/changed picture content; empty synchronization checks create no chat or sidebar section.
 
-The Mac checks shared release metadata hourly through its headquarters automation and before development. Credentials are ephemeral; never store them in source, config, scripts, logs or prompts. An unavailable Mac/app/network/authorization delays synchronization; never claim an offline copy is current without a successful check.
+The Mac checks shared release metadata when an actual development/modification session starts and before publishing. There is no hourly Site synchronization; a local intake queue check with no work performs no source synchronization. Credentials are ephemeral; never store them in source, config, scripts, logs or prompts. An unavailable Mac/app/network/authorization delays synchronization; never claim an offline copy is current without a successful check.
 
 Browser-local progress/preferences are distinct from source version synchronization. Preserve them; do not reset them as part of a source update.
