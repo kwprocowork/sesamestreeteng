@@ -522,7 +522,7 @@ function storyTaskFocus(){
  return null;
 }
 function frameStoryTask(dt,focus){
- if(!$('modalShade').hidden||document.hidden){cameraGoal.copy(camera.position);lookGoal.copy(lookCurrent);return false;}
+ if(!$('modalShade').hidden||document.hidden||(cameraDrag&&!cameraDrag.manual)){cameraGoal.copy(camera.position);lookGoal.copy(lookCurrent);return false;}
  const moving=Math.hypot(joy.x,joy.y)>.1||['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].some(key=>keys.has(key));
  return taskCamera.frame(dt,{focus,player,camera,position:cameraGoal,look:lookGoal,moving,dragging:!!cameraDrag,paused:!$('modalShade').hidden||document.hidden,occluders:taskObstructors(focus),currentLook:lookCurrent,phase});
 }
@@ -572,16 +572,16 @@ function setupCameraDrag(){
  canvas.style.touchAction='none';
  canvas.style.cursor='grab';
  const span=()=>{const [a,b]=touches.values();return Math.max(1,Math.hypot(a.x-b.x,a.y-b.y));};
- const zoomBy=ratio=>{autoCamera.manual();taskCamera.manual();cameraOrbit.zoom=THREE.MathUtils.clamp(cameraOrbit.zoom*ratio,.55,1.65);};
+ const zoomBy=ratio=>{autoCamera.manual();taskCamera.manual();if(cameraDrag)cameraDrag.manual=true;cameraOrbit.zoom=THREE.MathUtils.clamp(cameraOrbit.zoom*ratio,.55,1.65);};
  canvas.addEventListener('pointerdown',event=>{
   if(event.button!==0||!$('modalShade').hidden||['intro','family-gallery-intro','town-travel','town-night'].includes(phase))return;
-  autoCamera.manual();taskCamera.manual();
+  autoCamera.manual();
   if(!cameraDrag){touches.clear();pinched=false;}
   if(touches.size>=2)return;
   const point={x:event.clientX,y:event.clientY};
   touches.set(event.pointerId,point);
   if(touches.size===2)pinched=true;
-  cameraDrag={...point,startX:point.x,startY:point.y,distance:0};
+  cameraDrag={...point,startX:point.x,startY:point.y,distance:0,manual:false};
   canvas.setPointerCapture(event.pointerId);canvas.style.cursor='grabbing';
  });
  canvas.addEventListener('pointermove',event=>{
@@ -592,6 +592,8 @@ function setupCameraDrag(){
   touches.set(event.pointerId,{x,y});
   if(before){zoomBy(before/span());return;}
   cameraDrag.distance=Math.max(cameraDrag.distance,Math.hypot(x-cameraDrag.startX,y-cameraDrag.startY));
+  if(cameraDrag.distance<9&&!cameraDrag.manual)return;
+  if(!cameraDrag.manual){cameraDrag.manual=true;taskCamera.manual();}
   cameraOrbit.yaw-=(x-old.x)*.006;
   cameraOrbit.pitch=THREE.MathUtils.clamp(cameraOrbit.pitch-(y-old.y)*.004,-.75,.65);
   if(lesson==='body'&&['body-find','body-say'].includes(phase))cameraOrbit.yaw=THREE.MathUtils.clamp(cameraOrbit.yaw,-.8,.8);
