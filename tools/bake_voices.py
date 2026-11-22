@@ -24,7 +24,7 @@ def catalog():
                     except (SyntaxError,ValueError):text=''
                     text=normalize(text)
                     words=re.findall(r"[A-Za-z]+(?:'[A-Za-z]+)?",text)
-                    if 3<=len(words)<=65 and not re.search(r'[<>{}=/\\#]|https?:|\b(?:function|const|document|querySelector)\b',text) and re.match(r'[A-Z]',text) and re.search(r'[.!?]',text):
+                    if 1<=len(words)<=65 and not re.search(r'[<>{}=/\\#]|https?:|\b(?:function|const|document|querySelector)\b',text) and re.match(r'[A-Z]',text) and (re.search(r'[.!?]',text) or node.parent.type=='arguments' and node.parent.parent.type=='call_expression' and source[node.parent.parent.child_by_field_name('function').start_byte:node.parent.parent.child_by_field_name('function').end_byte] in {b'speak',b'dialogue'}):
                         texts.update(segments(text))
             for child in node.named_children:walk(child)
         walk(tree.root_node)

@@ -15,3 +15,5 @@ const voiceCtx=vm.createContext({narrator,stopPhonicsAudio(){},storyText:text=>t
 let callbacks=0;voiceCtx.callback=()=>callbacks++;vm.runInContext("speak('Hello!',callback);stopSpeech()",voiceCtx);voiceFinished();assert.equal(callbacks,0,'cancelled neural narration cannot advance a story');
 
 console.log('PASS: no microphone API or activity gates; nearby manual approval; optional American-English models for all lesson types; no model auto-advance or XP penalty; shorter phrases; mute preference preservation; duplicate parent tap and stale callback protection.');
+
+ctx.phase='workshop-say';ctx.workshopSpeaking='Can I plant a seed?';assert.equal(ctx.shorterSpeakingTarget(),'Can I plant a seed?');ctx.workshopSpeaking='I found a seed. I planted it.';assert.equal(ctx.shorterSpeakingTarget(),'I found a seed.');
