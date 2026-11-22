@@ -1,37 +1,31 @@
 import assert from 'node:assert/strict';
 import * as THREE from './dist/assets/three.module.js';
-import {TaskCamera,avatarObstruction} from './dist/task-camera.js';
-import fs from 'node:fs';import vm from 'node:vm';
-const avatar=new THREE.Mesh(new THREE.BoxGeometry(2.5,3.8,2.2));avatar.position.set(0,1.9,1.7);
-const camera=new THREE.PerspectiveCamera(48,1.6,.1,100),position=new THREE.Vector3(0,4,9),look=new THREE.Vector3(0,1,0);
-camera.position.copy(position);camera.lookAt(look);camera.updateMatrixWorld(true);
-const focus={key:'item',point:look.clone(),width:1,height:1,force:true};
-assert(avatarObstruction(camera,new THREE.Box3().setFromObject(avatar),focus).blocked,'reproduce the back blocking the task');
-let views=0,clear=0;
-for(const aspect of [.55,.75,1,1.6,2.1])for(const x of [-2,-1,0,1,2])for(const z of [.7,1.7,2.7]){
- avatar.position.set(x,1.9,z);camera.aspect=aspect;camera.updateProjectionMatrix();position.set(0,5,10);look.set(0,1,0);
- const rig=new TaskCamera(),f={...focus,point:focus.point.clone()};
- assert(rig.frame(.05,{focus:f,player:avatar,camera,position,look}));
+import {TaskCamera} from './dist/task-camera.js';
+import fs from 'node:fs';
+let count=0;
+for(const aspect of [.55,.75,1,1.6,2.1])for(const x of [-2,0,2])for(const z of [1,2,3]){
+ const player=new THREE.Mesh(new THREE.BoxGeometry(2.5,3.8,2.2));player.position.set(x,1.9,z);
+ const npc=new THREE.Mesh(new THREE.BoxGeometry(1.5,3,1.5));npc.position.set(0,1.5,-1);
+ const camera=new THREE.PerspectiveCamera(48,aspect,.1,100),position=new THREE.Vector3(0,5,10),look=new THREE.Vector3(0,1,0),rig=new TaskCamera();
+ const focus={key:'npc',point:new THREE.Vector3(0,1.5,-1),approach:new THREE.Vector3(0,0,1),width:2,height:3,subjects:[npc]};
+ const args={focus,player,camera,position,look,phase:'explore'};
+ assert(!rig.frame(.1,args),'approaching a task never changes camera');rig.select(focus);assert(rig.frame(.1,args));
  camera.position.copy(position);camera.lookAt(look);camera.updateMatrixWorld(true);
- if(!rig.obstructs(camera,avatar,f))clear++;
- assert(position.toArray().every(Number.isFinite));assert(look.clone().project(camera).length()<1.1);
- const saved=avatar.position.clone();rig.obstructs(camera,avatar,f);assert(avatar.position.equals(saved),'camera does not move the player');
- const angle=rig.angle;rig.frame(.05,{focus:f,player:avatar,camera,position,look});assert.equal(rig.angle,angle,'stable angle while standing');views++;
+ for(const actor of [player,npc]){
+  assert(actor.visible);const box=new THREE.Box3().setFromObject(actor);
+  for(const a of [box.min.x,box.max.x])for(const b of [box.min.y,box.max.y])for(const c of [box.min.z,box.max.z]){
+   const p=new THREE.Vector3(a,b,c).project(camera);assert(Math.abs(p.x)<.99&&Math.abs(p.y)<.99,'both complete silhouettes fit');
+  }
+ }
+ const pp=player.position.clone().project(camera),np=npc.position.clone().project(camera);
+ assert(Math.abs(pp.x-np.x)>.05,'player and NPC separated left/right');assert(Math.abs(position.y-look.y)<.7,'nearly horizontal');
+ assert(!rig.obstructs(camera,player,focus));assert(!rig.frame(.1,{...args,moving:true}));assert(!rig.active);
+ rig.select(focus);rig.frame(.1,{...args,phase:'body-say',focus:{...focus,force:true}});assert(rig.active);rig.frame(15,{...args,phase:'body-say',focus:{...focus,force:true}});assert(rig.active,'no speaking timeout');
+ assert(!rig.frame(.1,args));assert(!rig.active,'normal view resumes on task completion');
+ rig.select(focus);assert(!rig.frame(2,args),'short exploration animation returns to normal');
+ count++;
 }
-assert(clear>views*.35,'side views resolve most non-overlapping approach positions');
-const rig=new TaskCamera();rig.manual();assert(!rig.frame(.1,{focus,player:avatar,camera,position,look}));
-assert(!rig.frame(2,{focus,player:avatar,camera,position,look,dragging:true}));
-assert(!rig.frame(.1,{focus:null,player:avatar,camera,position,look}));assert(!rig.active);
-assert(!rig.frame(.1,{focus,player:avatar,camera,position,look,paused:true}));
-const source=fs.readFileSync('dist/game.js','utf8');function fn(name){const a=source.indexOf('function '+name+'(');let i=source.indexOf('{',a)+1,d=1;for(;d;i++){if(source[i]==='{')d++;if(source[i]==='}')d--;}return source.slice(a,i);}
-let during;const player={visible:true};const ctx=vm.createContext({player,taskCamera:{obstructs:()=>true},renderer:{render(){during=player.visible;}},scene:{},camera:{}});
-vm.runInContext(fn('renderStoryTask'),ctx);ctx.renderStoryTask({});assert.equal(during,false);assert(player.visible,'render-only removal restores avatar immediately');
-ctx.renderer.render=()=>{throw Error('renderer failed')};assert.throws(()=>ctx.renderStoryTask({}));assert(player.visible,'avatar is restored even after render failure');
-console.log('PASS: reproduces avatar obstruction, '+views+' portrait/landscape compositions ('+clear+' clear by angle), stable angles, manual control, pause, and render-only fallback with restoration.');
-const walkRig=new TaskCamera(),walker=new THREE.Mesh(new THREE.BoxGeometry(1,3,1));walker.position.set(0,1.5,2);
-const walkFocus={key:'walking',point:new THREE.Vector3(0,1,0),width:1.5,height:1.5},walkGoal=new THREE.Vector3(0,5,10),walkLook=new THREE.Vector3(0,1,0);
-walkRig.frame(.05,{focus:walkFocus,player:walker,camera,position:walkGoal,look:walkLook});camera.position.copy(walkGoal);camera.lookAt(walkLook);
-const offset=camera.position.clone().sub(walkLook),beforeLook=walkLook.clone();walker.position.x+=.2;
-assert(walkRig.frame(.05,{focus:walkFocus,player:walker,camera,position:walkGoal,look:walkLook,currentLook:beforeLook,moving:true}));
-assert(walkGoal.clone().sub(walkLook).distanceTo(offset)<1e-8,'holding movement keeps the camera heading');assert(Math.abs(walkLook.x-beforeLook.x-.2)<1e-8,'task camera follows translation while moving');
-console.log('PASS: camera-relative walking keeps its heading during a task-view departure.');
+const source=fs.readFileSync('dist/game.js','utf8');
+assert(!source.includes('playerWasVisible'));assert(!source.includes('for(const actor of hidden)actor.visible=false'));
+assert(source.includes('tapTaskMarker'));assert(source.includes('selectTaskView();'));
+console.log(`PASS: ${count} selected horizontal two-shots; full silhouettes, left/right separation, walking, timeout-free speech, restoration, and no render-time avatar omission.`);

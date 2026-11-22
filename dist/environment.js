@@ -108,13 +108,18 @@ export class LivingEnvironment{
   for(const x of[-8.5,8.5]){block(p,wood,x,.32,3.5,1.4,.6,1.1);block(p,cloth,x,.68,3.5,1.45,.18,1.15);for(let i=0;i<4;i++)block(p,cream,x-.5+i*.33,.4,4.06,.015,.32,.02);}
  }
 
- clearView(camera,player,focus){
+ clearView(camera,player,focus,subjects=[]){
   if(!camera||!player)return;
   for(const mesh of this.hiddenForView||[])mesh.visible=true;
   this.hiddenForView=[];
   this.scene.updateMatrixWorld(true);
   const origin=camera.position;
   const targets=[player.position.clone().add(new THREE.Vector3(0,1.3,0)),focus].filter(Boolean);
+  for(const actor of new Set([player,...subjects])){
+   if(!actor?.visible)continue;
+   const box=new THREE.Box3().setFromObject(actor),centre=box.getCenter(new THREE.Vector3());
+   for(const height of [.4,.8,1])for(const x of [box.min.x,centre.x,box.max.x])targets.push(new THREE.Vector3(x,box.min.y+(box.max.y-box.min.y)*height,centre.z));
+  }
   const ray=new THREE.Raycaster();
   for(const target of targets){
    const direction=target.clone().sub(origin),distance=direction.length();

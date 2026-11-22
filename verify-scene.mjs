@@ -58,9 +58,9 @@ for(const name of vm.runInContext('CHARACTERS.map(c=>c.name)',ctx)){
  for(const aspect of [.6,1.6])for(const y of [.4,1.3,2.5]){
   const camera=new THREE.PerspectiveCamera(48,aspect,.1,100),goal=new THREE.Vector3(0,5,10),look=new THREE.Vector3(0,y,0);
   const rig=new TaskCamera(),focus={key:name+y,point:look.clone(),width:1.8,height:1.8,force:true};
-  assert(rig.frame(.05,{focus,player:actor,camera,position:goal,look}));camera.position.copy(goal);camera.lookAt(look);camera.updateMatrixWorld(true);
+  rig.select(focus);assert(rig.frame(.05,{focus,player:actor,camera,position:goal,look}));camera.position.copy(goal);camera.lookAt(look);camera.updateMatrixWorld(true);
   const hide=rig.obstructs(camera,actor,focus);assert(typeof hide==='boolean');assert(goal.toArray().every(Number.isFinite));
-  const projected=focus.point.clone().project(camera);assert(Math.abs(projected.x)<.01&&Math.abs(projected.y)<.01,'task stays centred');taskChecks++;
+  const projected=focus.point.clone().project(camera);assert(Math.abs(projected.x)<.95&&Math.abs(projected.y)<.95,'task stays in view alongside the player');taskChecks++;
  }
 }
 console.log('PASS: '+taskChecks+' close-task compositions with all actual selectable character rigs in portrait and landscape.');
