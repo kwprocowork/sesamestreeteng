@@ -1,3 +1,4 @@
+import {shortPublicLines} from '../dist/short-adventures.js';
 // Public speech catalog: demos, short models, NPC replies and generated story beats.
 import {BODY_WORDS} from '../dist/body.js';
 import {PAIRED_PARTS,missionSentence,missionQuestion,missionLabel} from '../dist/body-world.js';
@@ -17,7 +18,9 @@ import {PARADES} from '../dist/comparison.js';
 import {WANT_ITEMS,wantAnswer,wantQuestion} from '../dist/wants.js';
 const fields=new Set(['sentence','starter','reply','clue','prompt','intro','ending','description','voice','talk','question','answer','short','model','caption','word','lines']);
 export function publicVoiceLines(){
- const lines=new Set(Object.keys(VOCABULARY));
+ const lines=new Set([...Object.keys(VOCABULARY),...shortPublicLines()]);
+ for(const word of BODY_WORDS)lines.add(`I can touch my ${word}.`);
+ for(const word of PHONICS_WORDS)lines.add(`I can see ${/^[aeiou]/i.test(word)?'an':'a'} ${word}.`);
  const visit=(value,key='')=>{
   if(typeof value==='string'){if(fields.has(key)&&value.trim())lines.add(value);return;}
   if(Array.isArray(value)){value.forEach(v=>visit(v,key));return;}

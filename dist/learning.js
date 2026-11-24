@@ -1,5 +1,5 @@
 export const LESSONS={ball:{id:'ball',number:'01',title:'Can you find the ball?',setting:'The playroom',targets:['in','on','under']},letters:{id:'letters',type:'vocabulary',number:'02',title:'The A a & B b Garden',setting:'Letter Garden',targets:['A','a','B','b','apple','ant','ball','butterfly']}};
-LESSONS.wants={id:'wants',number:'03',type:'story',title:'What do you want?',setting:'The Little Playhouse',targets:['cookies','bread','rice','ice cream','juice','milk'],minutes:5};
+LESSONS.wants={id:'wants',number:'03',type:'story',title:'What do you want?',setting:'The Little Playhouse',targets:['cookies','bread','rice','ice cream','juice','milk'],minutes:3};
 export const ALPHABET_STEPS=[{letter:'A',form:'capital',word:'apple',family:'A',icon:'🍎',x:-4},{letter:'a',form:'small',word:'ant',family:'A',icon:'🐜',x:-1.35},{letter:'B',form:'capital',word:'ball',family:'B',icon:'⚽',x:1.35},{letter:'b',form:'small',word:'butterfly',family:'B',icon:'🦋',x:4}];
 export const letterMatches=(choice,target)=>choice===target;
 export const familyMatches=(choice,item)=>choice===item.family;
@@ -15,10 +15,10 @@ export function createVocabularyRound(random=Math.random){
  return shuffled(ALPHABET_STEPS,random).map((item,index)=>({...item,...slots[index]}));
 }
 
-LESSONS.body={id:'body',number:'04',type:'story',title:'Ready for the Body Boogie?',setting:'The park stage',targets:['head','nose','hand','foot'],minutes:5};
+LESSONS.body={id:'body',number:'04',type:'story',title:'Ready for the Body Boogie?',setting:'The park stage',targets:['head','nose','hand','foot'],minutes:3};
 
-LESSONS.phonics={id:'phonics',number:'05',type:'story',title:'Sound Safari Parade',setting:'The parade park',targets:['Two letters','Initial sounds','Four word missions'],minutes:5};
+LESSONS.phonics={id:'phonics',number:'05',type:'story',title:'Sound Safari Parade',setting:'The parade park',targets:['Two letters','Initial sounds','Four word missions'],minutes:3};
 
-LESSONS.cat={id:'cat',number:'06',type:'story',title:'Can you see the cat?',setting:'The hide-and-seek house',targets:['cat','bed','chair','basket','under','on','in'],minutes:4};
+LESSONS.cat={id:'cat',number:'06',type:'story',title:'Can you see the cat?',setting:'The hide-and-seek house',targets:['cat','bed','chair','basket','under','on','in'],minutes:3};
 
 LESSONS.comparison={id:'comparison',number:'07',type:'story',title:'Comparison — Abby’s Toy Parade',setting:'Abby’s home',targets:['fast / slow','big / small','tall / short','long / short'],minutes:3};

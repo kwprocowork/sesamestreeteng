@@ -73,3 +73,8 @@ body.gallery-photo-story.speaking-turn #world{height:auto;min-height:190px;flex:
 body.gallery-photo-story.speaking-turn #dialogueDock{height:auto;gap:0;padding-block:8px}
 body.gallery-photo-story.speaking-turn #quest{flex:0 0 auto;width:min(100%,760px)}
 body.gallery-photo-story #listenDetail{max-width:none}
+
+.short-pattern{display:flex;flex-direction:column;align-items:flex-start;gap:.3rem;padding:.65rem 1rem;border-radius:1rem;background:#e3f1f2;color:#24475b;max-width:100%;}
+.short-pattern small{font-size:.75rem;letter-spacing:.08em;font-weight:700;}
+.short-pattern strong{font-size:clamp(1.1rem,2.8vw,1.55rem);line-height:1.3;overflow-wrap:anywhere;}
+.short-pattern span{font-size:.9rem;line-height:1.35;}
