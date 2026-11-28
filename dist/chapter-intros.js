@@ -15,7 +15,7 @@ export const CHAPTER_INTROS={
 };
 export class ChapterIntro{
  constructor(scene,kit){this.kit=kit;this.root=new THREE.Group();this.root.visible=false;scene.add(this.root);this.active=false;}
- start(key,fallback,visual=null){this.doors=null;this.spec=CHAPTER_INTROS[key]||fallback;this.root.clear();this.root.position.set(0,0,2);this.root.visible=true;this.active=true;this.elapsed=0;this.line=0;const {orb,cube,cyl,rod}=this.kit,g=this.root;
+ start(key,fallback,visual=null){this.doors=null;this.spec=CHAPTER_INTROS[key]||fallback;this.root.clear();this.root.position.set(0,0,2);this.root.visible=true;this.active=true;this.elapsed=0;this.duration=8;this.line=0;const {orb,cube,cyl,rod}=this.kit,g=this.root;
  cyl(0xf2d690,0,.04,0,2.5,.08,g);this.prop=new THREE.Group();g.add(this.prop);this.prop.scale.setScalar(2);this.toy=new THREE.Group();const item=visual||homeModel(this.spec.toy||'toy-blocks',this.kit);item.position.set(0,0,0);item.visible=true;this.toy.add(item);this.prop.add(this.toy);if(visual)this.prop.scale.setScalar(this.spec.kind==='carrot'?1.2:1.5);
  this.special=new THREE.Group();g.add(this.special);const kind=this.spec.kind;
  if(kind==='ball')orb(0xe97358,0,.5,.5,.42,.42,.42,this.special);
@@ -24,6 +24,6 @@ export class ChapterIntro{
  if(kind==='theatre'||kind==='cat'||kind==='food'){this.doors=[-1,1].map(s=>cube(kind==='theatre'?0xb86f91:0x9dc5bd,s*.7,1.2,-.2,1.4,2.4,.12,this.special));}
  this.stars=Array.from({length:7},(_,i)=>orb(i%2?0xf5c968:0x8accc4,Math.sin(i)*2,1+Math.cos(i),.2,.09,.09,.09,g));return this.spec;
  }
- tick(dt,{paused=false,reduced=false}={}){if(!this.active||paused)return false;this.elapsed=Math.min(8,this.elapsed+dt);this.line=this.elapsed<4?0:1;const t=this.elapsed,u=(t%4)/4;poseToy(this.toy,this.spec.toy,u,reduced);const bounce=reduced?0:Math.abs(Math.sin(t*2));if(this.spec.kind==='ball')this.special.position.set(Math.sin(t)*1.2,bounce*1.2,0);if(this.spec.kind==='garden')this.special.scale.setScalar(reduced?1:.35+Math.min(1,t/5)*.65);if(this.spec.kind==='carrot')this.special.rotation.z=reduced?0:Math.sin(t*3)*.12;if(this.spec.kind==='food')this.toy.position.y=reduced?0:Math.sin(t*2)*.045;if(this.doors)this.doors.forEach((d,i)=>d.position.x=(i?1:-1)*(.7+Math.min(1,t/3)*1.2));this.stars.forEach((o,i)=>o.position.y=1.4+(reduced?0:Math.sin(t*2+i)*.4));return this.elapsed===8;}
+ tick(dt,{paused=false,reduced=false}={}){if(!this.active||paused)return false;this.elapsed=Math.min(this.duration,this.elapsed+dt);this.line=this.elapsed<this.duration/2?0:1;const t=this.elapsed,u=(t%4)/4;poseToy(this.toy,this.spec.toy,u,reduced);const bounce=reduced?0:Math.abs(Math.sin(t*2));if(this.spec.kind==='ball')this.special.position.set(Math.sin(t)*1.2,bounce*1.2,0);if(this.spec.kind==='garden')this.special.scale.setScalar(reduced?1:.35+Math.min(1,t/5)*.65);if(this.spec.kind==='carrot')this.special.rotation.z=reduced?0:Math.sin(t*3)*.12;if(this.spec.kind==='food')this.toy.position.y=reduced?0:Math.sin(t*2)*.045;if(this.doors)this.doors.forEach((d,i)=>d.position.x=(i?1:-1)*(.7+Math.min(1,t/3)*1.2));this.stars.forEach((o,i)=>o.position.y=1.4+(reduced?0:Math.sin(t*2+i)*.4));return this.elapsed===this.duration;}
  stop(){this.active=false;this.root.visible=false;}
 }

@@ -1,4 +1,4 @@
-import {CANAL,DISTRICT_PALETTES} from './fantasy-town.js?v=71f';
+import {CANAL,DISTRICT_PALETTES} from './fantasy-town.js?v=73a';
 const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function atlasProject(bounds,x,z){return [50+700*(x-bounds.left)/(bounds.right-bounds.left),52+680*(z-bounds.top)/(bounds.bottom-bounds.top)];}
 export function atlasSVG(places,bounds,here,selection=null,route=[]){const project=(x,z)=>atlasProject(bounds,x,z),point=(x,z)=>project(x,z).join(','),lanes=[...new Set(places.map(p=>p.lane))];const parks=[[-59,70,22,12,true],[67,-33,19,14,true],[-61,-87,22,14,false],[69,-87,19,12,false]].map(([x,z,rx,rz,pond])=>{const [px,py]=project(x,z),w=rx*700/(bounds.right-bounds.left),h=rz*680/(bounds.bottom-bounds.top);return `<ellipse cx="${px}" cy="${py}" rx="${w}" ry="${h}" fill="#91b69a" stroke="#efe4bd" stroke-width="3"/>${pond?`<ellipse cx="${px}" cy="${py}" rx="${w*.5}" ry="${h*.5}" fill="#79bdc7"/>`:''}`;}).join('');const riverX=project(CANAL.x,0)[0],riverW=700*10/(bounds.right-bounds.left);

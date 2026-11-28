@@ -96,3 +96,5 @@ body.playing :is(header,#houseControls,#speakingBanner,#dialogueDock){flex:0 0 a
 body.playing #world{height:auto!important;max-height:none;min-height:160px;flex:1 1 0}
 body.playing #dialogueDock{height:auto;min-height:104px}
 body.playing #bodyMissionTools button{min-height:44px;font-size:14px}
+
+#stepTime{position:absolute;left:50%;bottom:1rem;transform:translateX(-50%);z-index:22;padding:.4rem .8rem;border-radius:2rem;background:#fff5cb;color:#4a3812;font-size:.875rem;pointer-events:none}#stepTime[hidden]{display:none}

@@ -1,3 +1,4 @@
+import {ADVENTURE_LINES,TASK_GUIDANCE} from '../dist/story-pace.js';
 import fs from 'node:fs';
 import {LIFE_LINES} from '../dist/daily-life.js';
 import {HOME_ACTIVITIES} from '../dist/schoolbus/activity-catalog.js';
@@ -22,7 +23,7 @@ const fields=new Set(['sentence','starter','reply','clue','prompt','intro','endi
 export function publicVoiceLines(){
  const lines=new Set(Object.keys(VOCABULARY));
  for(const line of JSON.parse(fs.readFileSync(new URL('../dist/schoolbus/voice-lines.json',import.meta.url),'utf8')))lines.add(line);
- for(const text of [...Object.values(LIFE_LINES),...Object.values(HOME_ACTIVITIES).map(a=>a.txt),'I like it.','I found the ball.','I helped my friend.','Where is the cat?','Here is the carrot.'])lines.add(text);
+ for(const text of [...Object.values(LIFE_LINES),...Object.values(ADVENTURE_LINES),...Object.values(TASK_GUIDANCE),...Object.values(HOME_ACTIVITIES).map(a=>a.txt),'I like it.','I found the ball.','I helped my friend.','Where is the cat?','Here is the carrot.'])lines.add(text);
  for(const word of BODY_WORDS)lines.add('I can touch my '+word+'.');
  for(const word of PHONICS_WORDS)lines.add('I can see '+(/^[aeiou]/i.test(word)?'an':'a')+' '+word+'.');
  for(const word of Object.keys(VOCABULARY)){lines.add('I have '+(/^[aeiou]/i.test(word)?'an':'a')+' '+word+'.');lines.add('This is '+(/^[aeiou]/i.test(word)?'an':'a')+' '+word+'.');}

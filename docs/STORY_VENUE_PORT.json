@@ -1,0 +1,30 @@
+[
+  {
+    "venue": "ballet",
+    "source_sha256": "ae3921add0c7fbe4e9f8a5ccb8c6b290c36393094c38c31663f23764ee1319a0",
+    "source_start_line": 3754,
+    "bytes": 17270,
+    "dependencies": 9
+  },
+  {
+    "venue": "amusement",
+    "source_sha256": "ae3921add0c7fbe4e9f8a5ccb8c6b290c36393094c38c31663f23764ee1319a0",
+    "source_start_line": 5168,
+    "bytes": 75851,
+    "dependencies": 17
+  },
+  {
+    "venue": "traffic",
+    "source_sha256": "ae3921add0c7fbe4e9f8a5ccb8c6b290c36393094c38c31663f23764ee1319a0",
+    "source_start_line": 4890,
+    "bytes": 21356,
+    "dependencies": 9
+  },
+  {
+    "venue": "pool",
+    "source_sha256": "ae3921add0c7fbe4e9f8a5ccb8c6b290c36393094c38c31663f23764ee1319a0",
+    "source_start_line": 5880,
+    "bytes": 21619,
+    "dependencies": 11
+  }
+]

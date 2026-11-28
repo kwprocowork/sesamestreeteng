@@ -1,9 +1,9 @@
 import {placedHouseBlocks} from './home-goods.js?v=46';
 import * as THREE from './assets/three.module.js';
 
-import {buildHouseInterior,canWalkInHouse} from './town-house.js?v=71f';
-export {ROOM} from './town-house.js?v=71f';
-import {buildFantasyTown,townWaterBlocked} from './fantasy-town.js?v=71f';
+import {buildHouseInterior,canWalkInHouse} from './town-house.js?v=73a';
+export {ROOM} from './town-house.js?v=73a';
+import {buildFantasyTown,townWaterBlocked} from './fantasy-town.js?v=73a';
 import {findWorldRoute} from './town-navigation.js?v=61';
 
 export const TOWN_NAME = 'Sesame Street Town';
@@ -161,6 +161,10 @@ export class TownWorld {
         bead.castShadow=false;
       }
     }
+    // Flat arrowheads give an unambiguous ground direction at every turn.
+    const shape=new THREE.Shape();shape.moveTo(0,-.8);shape.lineTo(.55,-.12);shape.lineTo(.22,-.12);shape.lineTo(.22,.7);shape.lineTo(-.22,.7);shape.lineTo(-.22,-.12);shape.lineTo(-.55,-.12);shape.closePath();
+    const geometry=new THREE.ShapeGeometry(shape),material=new THREE.MeshBasicMaterial({color:0xffdf24,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+    for(let i=0;i<points.length-1;i++){const [x,z]=points[i],[nx,nz]=points[i+1],length=Math.hypot(nx-x,nz-z);for(let d=.8;d<length;d+=3){const arrow=new THREE.Mesh(geometry,material);arrow.position.set(x+(nx-x)*d/length,.13,z+(nz-z)*d/length);arrow.rotation.set(-Math.PI/2,0,Math.atan2(nx-x,nz-z));arrow.name='Yellow route direction';this.route.add(arrow);}}
     this.batchStreet(this.route);
   }
   show(view,night=false) {
