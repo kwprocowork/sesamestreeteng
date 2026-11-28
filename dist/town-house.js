@@ -1,7 +1,7 @@
-import {PLAYMAT_BLOCKS,ROUTINE_BLOCKS} from './schoolbus/layout.js?v=72a';
-import {detailTexture} from './graphics.js?v=49';
-import {HOME_ITEM,slotById} from './home-goods.js?v=44';
-import {homeModel} from './home-models.js?v=44';
+import {PLAYMAT_BLOCKS,ROUTINE_BLOCKS} from './schoolbus/layout.js?v=74a';
+import {detailTexture} from './graphics.js?v=74a';
+import {HOME_ITEM,slotById} from './home-goods.js?v=74a';
+import {homeModel} from './home-models.js?v=74a';
 import * as THREE from './assets/three.module.js';
 
 const SHELL={left:-19.65,right:19.65,back:-13.42,front:14.88,ceiling:10.75};

@@ -19,4 +19,4 @@ const BXC=new Map(),B=(w,h,d)=>{const key=w.toFixed(3)+','+h.toFixed(3)+','+d.to
   const dx=v[0]-c[0],dy=v[1]-c[1],dz=v[2]-c[2],l=Math.hypot(dx,dy,dz);if(l>1e-6){P.setXYZ(i,c[0]+dx/l*r,c[1]+dy/l*r,c[2]+dz/l*r);N.setXYZ(i,dx/l,dy/l,dz/l)}else P.setXYZ(i,v[0],v[1],v[2])}
  P.needsUpdate=true;N.needsUpdate=true;BXC.set(key,g);return g};
 export {B as schoolBox,M as schoolMaterial,rod as schoolRod};
-export const SCHOOL_RENDER={fov:55,near:.1,far:600,exposureOutdoor:.97,exposureIndoor:.94,pixelRatioCap:2,fogNear:120,fogFar:340,zoomFactor:1.18,pitchReduction:7*Math.PI/180,followDamping:6};
+export const SCHOOL_RENDER={fov:55,near:.1,far:600,exposureOutdoor:1.02,exposureIndoor:1.00,pixelRatioCap:2,fogNear:120,fogFar:340,zoomFactor:1.18,pitchReduction:7*Math.PI/180,followDamping:6};

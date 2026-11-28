@@ -1,5 +1,5 @@
-import {PHONICS_WORDS,phonicsPicture} from './phonics.js?v=18';
-import {BODY_WORDS,bodyPicture} from './body.js?v=14';
+import {PHONICS_WORDS,phonicsPicture} from './phonics.js?v=74a';
+import {BODY_WORDS,bodyPicture} from './body.js?v=74a';
 import {shuffled} from './learning.js';
 export const VOCABULARY={
  apple:{word:'apple',sameStart:'airplane',others:['cat','sun']},

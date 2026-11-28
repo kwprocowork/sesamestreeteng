@@ -1,4 +1,4 @@
-import {SchoolTHREE as THREE,schoolMaterial as M} from './core.js?v=71f';
+import {SchoolTHREE as THREE,schoolMaterial as M} from './core.js?v=74a';
 const TAU=Math.PI*2,V=(x,y,z)=>new THREE.Vector3(x,y,z);
 export const createSchoolBicycle=()=>{const g=new THREE.Group(),pk=M(0xf3b9b4,{roughness:.45}),bk=M(0x1e1e20,{roughness:.7}),gy=M(0x9aa0a6,{roughness:.4,metalness:.5}),ye=M(0xffc21a,{roughness:.5}),or=M(0xff9a1a,{roughness:.6});
   const tube=(a,b,r,m)=>{const A=V(a[0],a[1],a[2]),Bv=V(b[0],b[1],b[2]),d=Bv.clone().sub(A),L=d.length(),t=new THREE.Mesh(new THREE.CylinderGeometry(r,r,L,10),m);t.position.copy(A).add(Bv).multiplyScalar(.5);t.quaternion.setFromUnitVectors(V(0,1,0),d.normalize());g.add(t);return t};

@@ -1,8 +1,8 @@
 import * as THREE from './assets/three.module.js';
-import {GALLERY_PEOPLE,createGalleryPerson,smileForPhoto} from './gallery-people.js?v=57';
-import {buildGalleryVenue,WALL_Z} from './gallery-venue.js?v=57-four';
-import {shuffled} from './learning.js?v=49';
-export {VENUE_BOUNDS} from './gallery-venue.js?v=57-four';
+import {GALLERY_PEOPLE,createGalleryPerson,smileForPhoto} from './gallery-people.js?v=74a';
+import {buildGalleryVenue,WALL_Z} from './gallery-venue.js?v=74a-four';
+import {shuffled} from './learning.js?v=74a';
+export {VENUE_BOUNDS} from './gallery-venue.js?v=74a-four';
 
 const photoGeometry=new THREE.PlaneGeometry(1.37,1.57);
 const PERSON_REACH=1.85;

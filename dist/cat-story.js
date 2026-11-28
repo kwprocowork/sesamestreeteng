@@ -1,5 +1,5 @@
 import * as THREE from './assets/three.module.js';
-import {PhonicsWorld} from './phonics-world.js?v=23';
+import {PhonicsWorld} from './phonics-world.js?v=74a';
 export const CAT_TURNS=[
  {place:null,prompt:'Can you see the cat?',sentence:'I can not see Cat.',short:'Not yet.'},
  {place:'bed',prompt:'Look under the bed. What should you ask?',sentence:'Is Cat under the bed?',short:'Under the bed?'},

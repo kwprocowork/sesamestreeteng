@@ -1,6 +1,6 @@
 import * as THREE from './assets/three.module.js';
-import {homeModel} from './home-models.js?v=44';
-import {poseToy} from './toy-play.js?v=59';
+import {homeModel} from './home-models.js?v=74a';
+import {poseToy} from './toy-play.js?v=74a';
 export const CHAPTER_INTROS={
  ball:{title:'Discovery Playroom',lines:['A bouncy ball has rolled away!','Search the room together and tell your friend where it is.'],toy:'toy-blocks',kind:'ball'},
  letters:{title:'Letter Garden',lines:['Four little surprises need a home.','Find their letters, carry each surprise, and help our garden grow!'],toy:'toy-blocks',kind:'garden'},

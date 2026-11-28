@@ -1,0 +1,16 @@
+import {findWorldRoute} from './town-navigation.js?v=74a';
+const distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
+export function onMainRoad(x,z,places,{spine=10,loop=[-110,110],margin=3.15}={}){const rows=places.map(p=>p.lane),lo=Math.min(...rows),hi=Math.max(...rows);return rows.some(row=>Math.abs(z-row)<=margin)||z>=lo&&z<=hi&&[spine,...loop].some(col=>Math.abs(x-col)<=margin);}
+// A small road graph preserves right-angle turns; only the first/last venue approach may leave the road.
+export function mainRoadRoute(start,destination,places,bounds,walk,{spine=10,loop=[-110,110]}={}){
+ const rows=[...new Set(places.map(p=>p.lane))].sort((a,b)=>a-b),cols=[...loop,spine].sort((a,b)=>a-b);if(!rows.length||!Number.isFinite(destination.lane))return null;
+ const clear=(a,b)=>{const n=Math.max(1,Math.ceil(distance(a,b)/.25));for(let i=0;i<=n;i++){const u=i/n;if(!walk(a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u))return false;}return true;};
+ const nodes=[],links=[],node=(p)=>{const old=nodes.findIndex(q=>distance(p,q)<.001);if(old>=0)return old;nodes.push(p);links.push([]);return nodes.length-1;},connect=(a,b)=>{if(a===b||!clear(nodes[a],nodes[b]))return;const d=distance(nodes[a],nodes[b]);links[a].push([b,d]);links[b].push([a,d]);};
+ for(const x of cols)for(const z of rows)node([x,z]);const end=[destination.x,destination.doorZ],door=node([destination.x,destination.lane]);
+ const candidates=[...rows.map(z=>[start[0],z]),...cols.map(x=>[x,Math.max(rows[0],Math.min(rows.at(-1),start[1]))])].sort((a,b)=>distance(start,a)-distance(start,b)).slice(0,5),approaches=[];
+ for(const p of candidates){const local=clear(start,p)?[start,p]:distance(start,p)<28?findWorldRoute(start,p,bounds,walk):null;if(local)approaches.push({index:node(p),path:local,length:local.slice(1).reduce((n,q,i)=>n+distance(q,local[i]),0)});}
+ for(const z of rows){const ids=nodes.map((p,i)=>({p,i})).filter(e=>Math.abs(e.p[1]-z)<.001).sort((a,b)=>a.p[0]-b.p[0]);for(let i=1;i<ids.length;i++)connect(ids[i-1].i,ids[i].i);}
+ for(const x of cols){const ids=nodes.map((p,i)=>({p,i})).filter(e=>Math.abs(e.p[0]-x)<.001).sort((a,b)=>a.p[1]-b.p[1]);for(let i=1;i<ids.length;i++)connect(ids[i-1].i,ids[i].i);}
+ let best=null;approaches.sort((a,b)=>a.length-b.length);for(const entry of approaches.slice(0,1)){const costs=new Map([[entry.index,entry.length]]),previous=new Map(),open=new Set([entry.index]);while(open.size){let at=[...open].sort((a,b)=>costs.get(a)-costs.get(b))[0];open.delete(at);if(at===door)break;for(const [next,cost]of links[at]){const sum=costs.get(at)+cost;if(sum<(costs.get(next)??Infinity)){costs.set(next,sum);previous.set(next,at);open.add(next);}}}if(!costs.has(door))continue;const tail=clear(nodes[door],end)?[nodes[door],end]:findWorldRoute(nodes[door],end,bounds,walk);if(!tail)continue;const score=costs.get(door)+tail.slice(1).reduce((n,q,i)=>n+distance(q,tail[i]),0);if(best&&score>=best.score)continue;const path=[nodes[door]];let at=door;while(at!==entry.index){at=previous.get(at);if(at===undefined)break;path.push(nodes[at]);}path.reverse();best={score,path:[...entry.path.slice(0,-1),...path,...tail.slice(1)]};}
+ if(!best)return null;return best.path.filter((p,i,a)=>!i||distance(p,a[i-1])>.001);
+}

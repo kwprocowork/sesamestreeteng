@@ -1,4 +1,4 @@
-import {shuffled} from './learning.js?v=18';
+import {shuffled} from './learning.js?v=74a';
 export const PHONICS={A:{sound:'æ',hint:'short a, as at the start of ant',words:['ant','axe']},B:{sound:'b',hint:'a short b sound, without adding uh',words:['bear','ball']},C:{sound:'k',hint:'the hard c sound, as at the start of cat',words:['cat','cut']},D:{sound:'d',hint:'a short d sound, without adding uh',words:['dog','dig']},E:{sound:'ɛ',hint:'short e, as at the start of egg',words:['elephant','egg']},F:{sound:'f',hint:'a continuous f sound, as at the start of fish',words:['fish','fin']},G:{sound:'g',hint:'the hard g sound, as at the start of goose',words:['goose','gate']},H:{sound:'h',hint:'a gentle breath, as at the start of hen',words:['hen','hat']}};
 export const PHONICS_LETTERS=Object.keys(PHONICS);
 export const PHONICS_WORDS=Object.values(PHONICS).flatMap(x=>x.words);

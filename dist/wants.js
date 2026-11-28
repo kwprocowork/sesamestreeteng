@@ -1,6 +1,6 @@
 import * as THREE from './assets/three.module.js';
 import {shuffled} from './learning.js';
-import {createFamilyCharacter,setFamilyHappy,createHouseLabel,faceHouseLabels} from './playhouse-design.js?v=60';
+import {createFamilyCharacter,setFamilyHappy,createHouseLabel,faceHouseLabels} from './playhouse-design.js?v=74a';
 export const WANT_ITEMS=['cookies','bread','rice','ice cream','juice','milk'];
 export const wantQuestion=word=>`Do you want ${word}?`;
 export function wantOptions(word,random=Math.random){if(!WANT_ITEMS.includes(word))throw Error('Unknown food');return shuffled([word,...shuffled(WANT_ITEMS.filter(w=>w!==word),random).slice(0,3)],random);}

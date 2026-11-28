@@ -1,4 +1,4 @@
-import {LivingEnvironment} from './environment.js?v=19';
+import {LivingEnvironment} from './environment.js?v=74a';
 import * as THREE from './assets/three.module.js';
 import {shuffled} from './learning.js';
 // Palette, silhouette, clothes and accessories follow the family's supplied photo references.

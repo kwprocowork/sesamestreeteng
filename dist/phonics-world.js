@@ -1,7 +1,7 @@
-import {PhonicsParkLife,ANIMAL_WORDS} from './phonics-park-life.js?v=23';
+import {PhonicsParkLife,ANIMAL_WORDS} from './phonics-park-life.js?v=74a';
 import * as THREE from './assets/three.module.js';
-import {shuffled} from './learning.js?v=18';
-import {PHONICS,phonicsWords,phonicsMatches} from './phonics.js?v=18';
+import {shuffled} from './learning.js?v=74a';
+import {PHONICS,phonicsWords,phonicsMatches} from './phonics.js?v=74a';
 export class PhonicsWorld{
  constructor(scene,kit){this.kit=kit;this.root=new THREE.Group();this.root.visible=false;scene.add(this.root);this.dynamic=new THREE.Group();this.root.add(this.dynamic);this.entities=[];this.animations=[];this.cargo=null;this.wind=0;this.parade=false;this.time=0;this.deliveryBursts=[];this.finish=new THREE.Vector3(0,0,-2.5);this.buildPark();this.life=new PhonicsParkLife(this);this.motionPaused=false;}
  buildPark(){const {orb,cube,cyl,labelBoard}=this.kit,g=this.root;cyl(0xa9ca8b,0,-.13,0,14,.22,g);cube(0xe6d4a6,0,.01,1,2.2,.04,11,g);cyl(0xe6bf7d,0,.15,-3.5,1.9,.3,g);labelBoard('PARK',0,3.4,-4.8,3.6,g);for(const [x,z]of[[-8,-3],[8,-3],[-8,5],[8,5]]){cyl(0x9b7853,x,1,z,.17,2,g);orb(0x82ad72,x,2.7,z,1.1,1.3,1.1,g);orb(0x9bbb7d,x+.6,2.5,z,.8,1,.8,g);}this.flags=[];for(let i=0;i<12;i++){const o=orb([0xe6b667,0xc7a3c2,0x8dbdc4][i%3],-6+i,3.65,-4.5,.12,.2,.1,g);this.flags.push(o);}}

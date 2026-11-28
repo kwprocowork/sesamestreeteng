@@ -1,10 +1,11 @@
-import {placedHouseBlocks} from './home-goods.js?v=46';
+import {mainRoadRoute,onMainRoad} from './main-roads.js?v=74a';
+import {placedHouseBlocks} from './home-goods.js?v=74a';
 import * as THREE from './assets/three.module.js';
 
-import {buildHouseInterior,canWalkInHouse} from './town-house.js?v=73a';
-export {ROOM} from './town-house.js?v=73a';
-import {buildFantasyTown,townWaterBlocked} from './fantasy-town.js?v=73a';
-import {findWorldRoute} from './town-navigation.js?v=61';
+import {buildHouseInterior,canWalkInHouse} from './town-house.js?v=74a';
+export {ROOM} from './town-house.js?v=74a';
+import {buildFantasyTown,townWaterBlocked} from './fantasy-town.js?v=74a';
+import {findWorldRoute} from './town-navigation.js?v=74a';
 
 export const TOWN_NAME = 'Sesame Street Town';
 export const TOWN_LOOP = [-110,110];
@@ -116,7 +117,8 @@ export class TownWorld {
     this.places=places;this.waterLanes=[...new Set(places.map(p=>p.lane))];this.routeCache=new Map();buildFantasyTown(this,places,g,{spine:TOWN_SPINE,loop:TOWN_LOOP});
     this.blockGrid=new Map();for(const block of this.blocks){for(let x=Math.floor(block[0]/12);x<=Math.floor(block[1]/12);x++)for(let z=Math.floor(block[2]/12);z<=Math.floor(block[3]/12);z++){const key=x+','+z;if(!this.blockGrid.has(key))this.blockGrid.set(key,[]);this.blockGrid.get(key).push(block);}}
   }
-  findRoute(start,destination){const key=start.join(',')+':'+destination.id;if(this.routeCache?.has(key))return this.routeCache.get(key);const route=findWorldRoute(start,[destination.x,destination.doorZ],this.bounds,(x,z)=>this.canWalk(x,z,'town'));if(this.routeCache){if(this.routeCache.size>=32)this.routeCache.delete(this.routeCache.keys().next().value);this.routeCache.set(key,route);}return route;}
+  findRoute(start,destination){const key=start.join(',')+':'+destination.id+':'+destination.x+':'+destination.lane+':'+destination.doorZ;if(this.routeCache?.has(key))return this.routeCache.get(key);const route=mainRoadRoute(start,destination,this.places,this.bounds,(x,z)=>this.canWalk(x,z,'town'));if(this.routeCache){if(this.routeCache.size>=32)this.routeCache.delete(this.routeCache.keys().next().value);this.routeCache.set(key,route);}return route;}
+  onRoad(x,z){return onMainRoad(x,z,this.places);}
   useFacility(id, seconds) {
     const effect=this.facilityEffects.get(id);
     if(effect)effect.started=seconds;

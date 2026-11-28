@@ -1,6 +1,6 @@
 import * as THREE from './assets/three.module.js';
-import {homeModel} from './home-models.js?v=44';
-import {HOME_ITEM} from './home-goods.js?v=59';
+import {homeModel} from './home-models.js?v=74a';
+import {HOME_ITEM} from './home-goods.js?v=74a';
 export const MAT_SLOTS=[[-5.8,-1.6],[5.8,-1.6],[-5.8,1.9],[5.8,1.9],[-5.8,5.4],[5.8,5.4]];
 const ownedToy=(s,id)=>s.ownedItems?.includes(id)&&HOME_ITEM.get(id)?.kind==='toy';
 export function normalizeToyPlay(s){s.playmatToys=[...new Set(Array.isArray(s.playmatToys)?s.playmatToys:[])].filter(id=>ownedToy(s,id)).slice(0,MAT_SLOTS.length);if(!ownedToy(s,s.carriedToy)||s.playmatToys.includes(s.carriedToy))s.carriedToy=null;return s;}
