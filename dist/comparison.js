@@ -1,5 +1,5 @@
 import * as THREE from './assets/three.module.js';
-import {PhonicsWorld} from './phonics-world.js?v=74a';
+import {PhonicsWorld} from './phonics-world.js?v=75a';
 
 export const PARADES={
  speed:{animals:['turtle','rabbit'],words:['slow','fast'],prop:'drum',action:'Beat the drum',intro:'Beat the drum to start the toy race!',clue:'Watch how each toy moves.'},

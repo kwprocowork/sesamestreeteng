@@ -1,12 +1,13 @@
-import {createActivityDistrict} from './activity-district.js?v=74a';
-import {giveNeighbourJob,tickNeighbourJob,jobPose} from './neighbour-props.js?v=74a';
-import {neighbourIdentity} from '../neighbour-life.js?v=74a';
-import {SchoolTHREE as THREE,schoolMaterial} from './core.js?v=74a';
-import {createSchoolActor} from './actor.js?v=74a';
-import {STORY_STYLE,ORAL_ANIMATION_SECONDS} from '../story-pace.js?v=74a';
-import {homeModel} from '../home-models.js?v=74a';
-import {poseToy} from '../toy-play.js?v=74a';
-import {ActivityCamera} from './activity-camera.js?v=74a';
+import {tickLivingFacilities} from './living-facilities.js?v=75a';
+import {createActivityDistrict} from './activity-district.js?v=75a';
+import {giveNeighbourJob,tickNeighbourJob,jobPose} from './neighbour-props.js?v=75a';
+import {neighbourIdentity,neighbourAppearance} from '../neighbour-life.js?v=75a';
+import {SchoolTHREE as THREE,schoolMaterial} from './core.js?v=75a';
+import {createSchoolActor} from './actor.js?v=75a';
+import {STORY_STYLE,ORAL_ANIMATION_SECONDS} from '../story-pace.js?v=75a';
+import {homeModel} from '../home-models.js?v=75a';
+import {poseToy} from '../toy-play.js?v=75a';
+import {ActivityCamera} from './activity-camera.js?v=75a';
 export class StoryFestival{
  constructor(scene,kit){this.scene=scene;this.kit=kit;this.root=new THREE.Group();this.root.name='Schoolbus story district';this.root.visible=false;scene.add(this.root);this.cache=new Map();this.castFactory=createSchoolActor(scene);this.guard=new ActivityCamera();this.time=0;this.reaction=null;this.originals=[];}
  start(id,toy='toy-blocks'){
@@ -14,7 +15,7 @@ export class StoryFestival{
   const kind=id;
   if(!this.cache.has(kind))this.cache.set(kind,createActivityDistrict(this.root,id,this.kit));
   for(const [key,v]of this.cache)v.root.visible=key===kind;this.venue=this.cache.get(kind);this.toyId=toy;
-  if(!this.cast){this.cast=[];for(let i=0;i<20;i++){const e=this.castFactory.create({skin:[0xffd8bb,0xd6a073,0x8d5c40][i%3],hair:[0x48352b,0x886947,0x282333][i%3],top:[0xf0b2ba,0x8ccbbd,0x9eadd9,0xf2cd79][i%4],pants:i%2===0,dress:i%2===1,s:1.5});e.g.userData.neighbour=i;e.g.userData.storyNeighbour=i;this.root.add(e.g);this.cast.push(e);}}
+  if(!this.cast){this.cast=[];for(let i=0;i<20;i++){const e=this.castFactory.create(neighbourAppearance(i+8));e.g.userData.neighbour=i;e.g.userData.storyNeighbour=i;this.root.add(e.g);this.cast.push(e);}}
   this.venue.cast=this.cast;this.cast.forEach((e,i)=>{e.identity=neighbourIdentity(i,this.venue.profile.roles[i%this.venue.profile.roles.length]);giveNeighbourJob(e,e.identity.job);const side=i%2?-1:1,row=Math.floor(i/2);e.origin=new THREE.Vector3(side*(18+(row%3)*6),0,12-row*6);e.pos.copy(e.origin);e.g.visible=true;});
 
   this.prize=new THREE.Group();this.prize.name='Story consequence animation';this.prize.visible=false;this.root.add(this.prize);this.toy=homeModel(toy,this.kit);this.prize.add(this.toy);const toySize=new THREE.Box3().setFromObject(this.toy).getSize(new THREE.Vector3());this.prize.scale.setScalar(2/Math.max(.1,toySize.x,toySize.y,toySize.z));
@@ -29,7 +30,7 @@ export class StoryFestival{
  endOverview(){this.scene.fog.near=75;this.scene.fog.far=210;}
  celebrate(player){this.reaction={time:0,start:player.position.clone(),rotation:player.rotation.clone()};this.prize.visible=true;this.prize.position.copy(player.position).add(new THREE.Vector3(3.8,0,0));this.toy.position.set(0,0,0);this.toy.rotation.set(0,0,0);this.toy.scale.setScalar(1.6);}
  reactionCamera(player,aspect,position,look){look.copy(player.position).add(new THREE.Vector3(1.85,1.45,0));position.copy(look).add(new THREE.Vector3(0,2.2,Math.max(9,7.5/aspect)));}
- tick(dt,{paused=false,reduced=false,player}={}){if(!this.root.visible||paused)return false;this.guard.restore();this.time+=dt;const t=this.time,d=this.venue.data;
+ tick(dt,{paused=false,reduced=false,player}={}){if(!this.root.visible||paused)return false;this.guard.restore();this.time+=dt;const t=this.time,d=this.venue.data;tickLivingFacilities(d.living,t,reduced);
   if(!reduced){if(d.car_)d.car_.rotation.y=t*.28;if(d.cups)d.cups.rotation.y=-t*.24;if(d.fw){d.fw.rotation.z=t*.09;d.fwG?.forEach(e=>e.g.rotation.z=-t*.09);}d.horses?.forEach(e=>e.h.position.y=1.6+Math.sin(t*2+e.i)*.3);d.spinners?.forEach(m=>{if(m)m.rotation.y=t*.28;});d.wMats?.forEach(m=>{if(m.map)m.map.offset.x=t*.012;});}
   this.venue.cast.forEach((e,i)=>{const near=player&&e.pos.distanceTo(player.position)<5;e.mv=0;if(!reduced&&!this.reaction&&!near&&['deliver','walk','sweep'].includes(e.job)){const x=e.origin.x+Math.sin(t*.24+i)*2,z=e.origin.z+Math.cos(t*.2+i)*1.4;if(this.canWalk(x,z)){e.yaw=Math.atan2(x-e.pos.x,z-e.pos.z);e.pos.set(x,0,z);e.mv=1;}}e.pose=this.reaction?(i%2?'clap':'wave'):near?'wave':jobPose(e.job);this.castFactory.animate(e,reduced?0:dt,t+i);tickNeighbourJob(e,t+i,{busy:!!this.reaction||near,reduced});});
   if(!this.reaction)return false;const a=this.reaction;a.time=Math.min(ORAL_ANIMATION_SECONDS,a.time+dt);const u=a.time/ORAL_ANIMATION_SECONDS;poseToy(this.toy,this.toyId,u,reduced);

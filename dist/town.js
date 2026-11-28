@@ -1,11 +1,11 @@
-import {mainRoadRoute,onMainRoad} from './main-roads.js?v=74a';
-import {placedHouseBlocks} from './home-goods.js?v=74a';
+import {mainRoadRoute,onMainRoad} from './main-roads.js?v=75a';
+import {placedHouseBlocks} from './home-goods.js?v=75a';
 import * as THREE from './assets/three.module.js';
 
-import {buildHouseInterior,canWalkInHouse} from './town-house.js?v=74a';
-export {ROOM} from './town-house.js?v=74a';
-import {buildFantasyTown,townWaterBlocked} from './fantasy-town.js?v=74a';
-import {findWorldRoute} from './town-navigation.js?v=74a';
+import {buildHouseInterior,canWalkInHouse} from './town-house.js?v=75a';
+export {ROOM} from './town-house.js?v=75a';
+import {buildFantasyTown,townWaterBlocked} from './fantasy-town.js?v=75a';
+import {findWorldRoute} from './town-navigation.js?v=75a';
 
 export const TOWN_NAME = 'Sesame Street Town';
 export const TOWN_LOOP = [-110,110];

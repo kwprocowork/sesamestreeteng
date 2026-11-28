@@ -1,4 +1,4 @@
-import {findWorldRoute} from './town-navigation.js?v=74a';
+import {findWorldRoute} from './town-navigation.js?v=75a';
 const distance=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1]);
 export function onMainRoad(x,z,places,{spine=10,loop=[-110,110],margin=3.15}={}){const rows=places.map(p=>p.lane),lo=Math.min(...rows),hi=Math.max(...rows);return rows.some(row=>Math.abs(z-row)<=margin)||z>=lo&&z<=hi&&[spine,...loop].some(col=>Math.abs(x-col)<=margin);}
 // A small road graph preserves right-angle turns; only the first/last venue approach may leave the road.

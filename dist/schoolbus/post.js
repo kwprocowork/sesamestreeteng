@@ -1,5 +1,5 @@
 // Original Schoolbus v223 bloom/grading with canvas-size and color-space compatibility.
-import {SchoolTHREE as THREE,SCHOOL_RENDER} from './core.js?v=74a';
+import {SchoolTHREE as THREE,SCHOOL_RENDER} from './core.js?v=75a';
 export function createSchoolFX(S,R,cam){let scene='A';
 const FX=(()=>{const F={on:true,q:2,ok:false};try{const gl2=R.capabilities.isWebGL2;const mk=(w,h,ms)=>{const o={minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,format:THREE.RGBAFormat};const t=(ms&&gl2&&THREE.WebGLMultisampleRenderTarget)?new THREE.WebGLMultisampleRenderTarget(w,h,o):new THREE.WebGLRenderTarget(w,h,o);if(ms&&t.samples!==undefined)t.samples=4;t.texture.colorSpace=THREE.SRGBColorSpace;return t};
  const cam2=new THREE.OrthographicCamera(-1,1,1,-1,0,1),geo=new THREE.PlaneGeometry(2,2),scn=new THREE.Scene(),quad=new THREE.Mesh(geo);quad.frustumCulled=false;scn.add(quad);

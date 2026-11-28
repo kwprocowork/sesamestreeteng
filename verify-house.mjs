@@ -197,13 +197,13 @@ assert(html.includes('id="frontStart">START</button>'));
 assert(html.indexOf('id="houseControls"')<html.indexOf('id="world"'));
 assert.match(fs.readFileSync('dist/town.css','utf8'),/#frontStart\{justify-content:center/);
 const moves=[];
-const elements=Object.fromEntries(['houseControls','world','townHud','townToolbar','targetLabel'].map(id=>[id,{id,append(...children){moves.push([id,...children.map(child=>child.id)]);}}]));
-const hud=vm.createContext({$:id=>elements[id],document:{body:{classList:{toggle(){}}}}});
+const elements=Object.fromEntries(['houseControls','world','townHud','townToolbar','targetLabel','topNotices'].map(id=>[id,{id,prepend(...children){moves.push([id,...children.map(child=>child.id)]);},append(...children){moves.push([id,...children.map(child=>child.id)]);}}]));
+const hud=vm.createContext({townView:'town',$:id=>elements[id],document:{body:{classList:{toggle(){}}}}});
 const controlsStart=source.indexOf('function setHouseControls(');
 vm.runInContext(source.slice(controlsStart,source.indexOf('function syncTownToolbar(',controlsStart)),hud);
 vm.runInContext('setHouseControls(true);setHouseControls(false)',hud);
 assert.deepEqual(moves,[
- ['houseControls','townHud','townToolbar','targetLabel'],
- ['world','townHud','townToolbar','targetLabel']
+ ['houseControls','townHud','townToolbar'],['topNotices','targetLabel'],
+ ['houseControls','townHud','townToolbar'],['topNotices','targetLabel']
 ]);
 console.log('PASS: furniture and gate collision, all house station routes, exterior-wall door, posters, rotating Sesame Street collectibles, all word shelf pages, bedtime route, enclosed shell, shop purchases, rotation, storage, and bedding persistence.');

@@ -107,3 +107,12 @@ body.in-town.social-open #dialogueDock{display:block!important;flex:0 0 auto;max
 body.social-open #townHud,body.social-open #townToolbar,body.social-open #townRadar,body.social-open #targetLabel{display:none!important}
 
 body.social-open #speakingBanner,body.social-open #stepTime{display:none!important}
+
+/* Guidance belongs in the page flow, above the playfield. */
+#topNotices{position:relative;z-index:8;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.35rem;padding:0 .6rem;background:#eff8e7;color:#31564f;flex:0 0 auto}#topNotices:has(#targetLabel[hidden]):not(:has(#toast.show)){display:none}#topNotices #targetLabel,#topNotices #toast{position:static;inset:auto;transform:none;max-width:100%;margin:0;padding:.45rem .7rem;border:0;border-radius:.65rem;font-size:.9rem;box-shadow:none;background:#fff5cf;color:#38574f;pointer-events:none}#topNotices #toast{display:none}#topNotices #toast.show{display:block;opacity:1}#topNotices #targetLabel[hidden]{display:none!important}body.social-open #topNotices #targetLabel{display:none!important}.neighbour-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}.neighbour-actions button,.neighbour-actions select,.home-food-picker select{font:inherit;min-height:2.8rem;border:1px solid #9bbfb0;border-radius:.75rem;background:#fffdf0;padding:.45rem .7rem;color:#31564f}.neighbour-actions label,.home-food-picker{display:grid;gap:.2rem;font-size:.9rem;font-weight:800}.home-food-picker[hidden]{display:none}body.social-open #quest{display:block!important}body.social-open #dialogueDock{max-height:36svh}body.social-open #listening{display:none!important}
+
+body.social-open #guidePortrait{display:none}body.social-open #speakerName{font-weight:900;color:#3a7868}
+
+#houseControls:has(#townHud[hidden]):has(#townToolbar[hidden]),body.social-open #houseControls{display:none!important}
+
+#topNotices #stepTime,#topNotices #townTravel{position:static;inset:auto;transform:none;max-width:100%;width:auto;min-width:0;margin:0;padding:.35rem .65rem;border:0;border-radius:.6rem;background:#fff3cf;color:#415f50;box-shadow:none;font-size:.875rem}#topNotices #townTravel{display:flex;gap:.4rem;align-items:center}#topNotices #townTravel progress{width:6rem;margin:0}#topNotices:has(#targetLabel[hidden]):not(:has(#toast.show)):has(#stepTime[hidden]):has(#townTravel[hidden]){display:none}#topNotices:has(#stepTime:not([hidden])),#topNotices:has(#townTravel:not([hidden])){display:flex}

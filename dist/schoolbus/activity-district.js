@@ -1,13 +1,15 @@
-import {SchoolTHREE as THREE} from './core.js?v=74a';
-import {parkKit} from './park-kit.js?v=74a';
-import {createVenue as school} from './venue-ballet.js?v=74a';
-import {createVenue as fair} from './venue-amusement.js?v=74a';
-import {createVenue as traffic} from './venue-traffic.js?v=74a';
-import {buildTownFacade} from '../town-architecture.js?v=74a';
-import {DISTRICTS,DEFAULT_DISTRICT} from '../activity-districts.js?v=74a';
+import {SchoolTHREE as THREE} from './core.js?v=75a';
+import {parkKit} from './park-kit.js?v=75a';
+import {createVenue as school} from './venue-ballet.js?v=75a';
+import {createVenue as fair} from './venue-amusement.js?v=75a';
+import {createVenue as traffic} from './venue-traffic.js?v=75a';
+import {buildTownFacade} from '../town-architecture.js?v=75a';
+import {DISTRICTS,DEFAULT_DISTRICT} from '../activity-districts.js?v=75a';
+import {addLivingFacilities} from './living-facilities.js?v=75a';
 const library={};
 export function createActivityDistrict(parent,id,kit){
  const profile=DISTRICTS[id]||DEFAULT_DISTRICT,root=new THREE.Group();root.name=profile.title;parent.add(root);const grass=new THREE.Mesh(new THREE.PlaneGeometry(700,700),new THREE.MeshStandardMaterial({color:0xb8d69c,roughness:1}));grass.rotation.x=-Math.PI/2;grass.position.set(0,-.3,-25);grass.receiveShadow=true;root.add(grass);const k=parkKit(root),floor=k.paving(profile.tint),data={floor,seats:[],spinners:[]};
+ const details=addLivingFacilities(root,kit,{accent:profile.accent});data.living=details.motions;
  // Each chapter gets its own connected, open courtyard with a clear central learning plaza.
  for(const x of [-48,48])for(const z of [-68,-48,-28,-8,12,32])k.tree(x,z,1.45);for(const x of [-26,26])for(const z of [-46,-26,-6,15])k.tree(x,z,1.2+(z%3)*.05);
  for(const [x,z,yaw]of [[-16,-13,0],[16,-13,0],[-21,7,Math.PI/2],[21,7,-Math.PI/2],[-16,-33,0],[16,-33,0]]){data.seats.push(k.bench(x,z,yaw));k.planter(x+3,z,1.8);k.lamp(x-3,z);}

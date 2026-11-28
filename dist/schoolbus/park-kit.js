@@ -1,5 +1,5 @@
 // Adapted from the v223 traffic-park bench/tree/lamp and ballet-school planter builders.
-import {SchoolTHREE as THREE,schoolBox as B,schoolMaterial as M} from './core.js?v=74a';
+import {SchoolTHREE as THREE,schoolBox as B,schoolMaterial as M} from './core.js?v=75a';
 export function parkKit(P){
  const box=(w,h,d,x,y,z,c,p=P)=>{const m=new THREE.Mesh(B(w,h,d),M(c));m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;p.add(m);return m;};
  const orb=(r,x,y,z,c,p=P)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(r,12,10),M(c));m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;p.add(m);return m;};

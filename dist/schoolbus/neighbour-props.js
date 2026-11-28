@@ -1,4 +1,4 @@
-import {SchoolTHREE as THREE,schoolBox,schoolMaterial,schoolRod} from './core.js?v=74a';
+import {SchoolTHREE as THREE,schoolBox,schoolMaterial,schoolRod} from './core.js?v=75a';
 // Functional book, brush, bottle and parcel props use the same rounded Schoolbus construction kit.
 export function giveNeighbourJob(e,job){if(e.job===job&&e.jobProp)return;e.jobProp?.removeFromParent();e.jobStation?.removeFromParent();e.job=job;const g=e.jobProp=new THREE.Group();g.name=job+' activity prop';(e.kb?.bones[6]||e.armR||e.g).add(g);const box=(w,h,d,x,y,z,c)=>{const m=new THREE.Mesh(schoolBox(w,h,d),schoolMaterial(c));m.position.set(x,y,z);g.add(m);return m;};
  if(job==='read'){box(.48,.06,.34,0,-.04,.1,0x81b9c8);box(.42,.035,.29,0,0,.1,0xfff4df);box(.02,.02,.29,0,.025,.1,0xe3bd78);}

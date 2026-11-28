@@ -1,6 +1,6 @@
 import * as THREE from './assets/three.module.js';
-import {BODY_WORDS,validBodyWords} from './body.js?v=74a';
-import {shuffled} from './learning.js?v=74a';
+import {BODY_WORDS,validBodyWords} from './body.js?v=75a';
+import {shuffled} from './learning.js?v=75a';
 export const PAIRED_PARTS=new Set(['eye','ear','eyebrow','cheek','shoulder','arm','elbow','hand','finger','hip','leg','knee','ankle','foot','toe']);
 export const FACE_PARTS=new Set(['hair','head','eye','ear','eyebrow','forehead','nose','cheek','lip','mouth','tooth','tongue','chin']);
 export function missionLabel(m){return `${m.side?m.side+' ':''}${m.word}`;}

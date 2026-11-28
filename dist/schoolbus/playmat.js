@@ -1,8 +1,8 @@
 // Selected Schoolbus v223 PLAYMAT builders and animations. No house/room layout is imported.
-import {SchoolTHREE as THREE,schoolBox as B,schoolMaterial as M} from './core.js?v=74a';
+import {SchoolTHREE as THREE,schoolBox as B,schoolMaterial as M} from './core.js?v=75a';
 export const PLAYMAT_IDS=["piano", "kitchen", "teach", "lego", "fruit", "cars", "zoo"];
 import {PLAYMAT_REFERENCE} from './layout.js';
-import {HOME_ACTIVITIES} from './activity-catalog.js?v=74a';
+import {HOME_ACTIVITIES} from './activity-catalog.js?v=75a';
 export function createSchoolPlaymat(S,{onSound=()=>{}}={}){
 const G={E:new THREE.Group()};S.add(G.E);const P=G.E,TAU=Math.PI*2,V=(x,y,z)=>new THREE.Vector3(x,y,z),lp=(a,b,u)=>a+(b-a)*u,cl=(x,a,b)=>Math.max(a,Math.min(b,x));
 let seed=11;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};

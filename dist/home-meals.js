@@ -1,0 +1,2 @@
+export const HOME_FOODS=[{word:'egg',request:'I would like an egg, please.',label:'Egg · free',drink:false},{word:'milk',request:'I would like some milk, please.',label:'Milk · free',drink:true},{word:'bread',request:'I would like some bread, please.',label:'Bread · free',drink:false},{word:'apple',request:'I would like an apple, please.',label:'Apple · free',drink:false}];
+export const MEAL_LINES={choose:'Open the fridge. Choose an egg, milk, bread or an apple from the list. What would you like?',food:'Thank you for the tasty food!',drink:'Thank you for the tasty drink!'};

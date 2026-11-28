@@ -1,5 +1,5 @@
 // Exact Schoolbus v223 ballet scene builders, isolated from its game state/private media.
-import {SchoolTHREE as THREE} from './core.js?v=74a';
+import {SchoolTHREE as THREE} from './core.js?v=75a';
 export function createVenue(parent){let floor=null;const S=parent,G={},girl={body:new THREE.Group()},GY=new THREE.Group();parent.add(GY);
 const $=id=>document.getElementById(id),TAU=Math.PI*2,lp=(a,b,u)=>a+(b-a)*u,V=(x,y,z)=>new THREE.Vector3(x,y,z),cl=(v,a,b)=>Math.max(a,Math.min(b,v));
 let seed=11;

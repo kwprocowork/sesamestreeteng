@@ -1,5 +1,5 @@
 // Source-built models ported from Schoolbus v223; no private photos/audio.
-import {SchoolTHREE as THREE} from './core.js?v=74a';
+import {SchoolTHREE as THREE} from './core.js?v=75a';
 export function createSchoolActor(S){
  const G={},R=null,innerWidth=globalThis.innerWidth||1280,innerHeight=globalThis.innerHeight||720;const localStorage={getItem:()=>null};
 const $=id=>document.getElementById(id),TAU=Math.PI*2,lp=(a,b,u)=>a+(b-a)*u,V=(x,y,z)=>new THREE.Vector3(x,y,z),cl=(v,a,b)=>Math.max(a,Math.min(b,v));
