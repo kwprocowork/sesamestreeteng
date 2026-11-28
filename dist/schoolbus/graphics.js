@@ -1,5 +1,5 @@
-import {SchoolTHREE as THREE,SCHOOL_RENDER} from './core.js?v=71f';
-import {createSchoolFX} from './post.js?v=71f';
+import {SchoolTHREE as THREE,SCHOOL_RENDER} from './core.js?v=72a';
+import {createSchoolFX} from './post.js?v=72a';
 // Values come from the Schoolbus v223 rig. r187 needs a photometric conversion.
 export class SchoolGraphics{
  constructor(scene,renderer,camera){this.scene=scene;this.renderer=renderer;this.camera=camera;this.sourceLights=[];this.originalRender=renderer.render.bind(renderer);this.inPass=false;

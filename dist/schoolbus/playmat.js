@@ -1,8 +1,9 @@
 // Selected Schoolbus v223 PLAYMAT builders and animations. No house/room layout is imported.
-import {SchoolTHREE as THREE,schoolBox as B,schoolMaterial as M} from './core.js?v=71f';
+import {SchoolTHREE as THREE,schoolBox as B,schoolMaterial as M} from './core.js?v=72a';
 export const PLAYMAT_IDS=["piano", "kitchen", "teach", "lego", "fruit", "cars", "zoo"];
-import {HOME_ACTIVITIES} from './activity-catalog.js?v=71f';
-export function createSchoolPlaymat(S){
+import {PLAYMAT_REFERENCE} from './layout.js';
+import {HOME_ACTIVITIES} from './activity-catalog.js?v=72a';
+export function createSchoolPlaymat(S,{onSound=()=>{}}={}){
 const G={E:new THREE.Group()};S.add(G.E);const P=G.E,TAU=Math.PI*2,V=(x,y,z)=>new THREE.Vector3(x,y,z),lp=(a,b,u)=>a+(b-a)*u,cl=(x,a,b)=>Math.max(a,Math.min(b,x));
 let seed=11;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
 function add(g,m,x,y,z,p=P){const o=new THREE.Mesh(g,m);o.position.set(x||0,y||0,z||0);o.castShadow=o.receiveShadow=true;p.add(o);return o;}
@@ -12,6 +13,14 @@ function add(g,m,x,y,z,p=P){const o=new THREE.Mesh(g,m);o.position.set(x||0,y||0
  const bx=(w,h,d,x,y,z,col,par,o)=>add(B(w,h,d),typeof col==='number'?M(col,o||{roughness:.7}):col,x,y,z,par||P);
  const cyl=(r1,r2,h,x,y,z,col,par)=>add(new THREE.CylinderGeometry(r1,r2,h,12),M(col,{roughness:.7}),x,y,z,par||P);
  const sph=(r,x,y,z,col,par,sx,sy,sz)=>{const q=add(new THREE.SphereGeometry(r,10,8),M(col,{roughness:.7}),x,y,z,par||P);q.scale.set(sx||1,sy||1,sz||1);return q};
+ const matT=cvt(256,256,(g,w,h)=>{g.fillStyle='#d3d4d6';g.fillRect(0,0,w,h);g.strokeStyle='#aeb0b3';g.lineWidth=4;g.strokeRect(0,0,w,h);g.beginPath();g.moveTo(w/2,0);g.lineTo(w/2,h);g.stroke()},3,2);
+ pl(6.1,7.5,0,.012,-.95,0,mt(cvt(256,256,matT.image?((g,w,h)=>{g.drawImage(matT.image,0,0)}):()=>{},3,3.6),{roughness:.9}),-Math.PI/2);
+ /* white fence panels (front, left and right) with a gate */
+ const fw=M(0xf4f1ea,{roughness:.55}),fb=M(0xe5dfd2,{roughness:.55});
+ const panel=(x,z,ry,gate)=>{const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=ry;P.add(g);g.name='Schoolbus playmat fence';g.userData.playmatFence=true;if(gate)P.userData.gate=g;const m=gate?fb:fw;bx(.98,.1,.1,0,1.05,0,m,g);bx(.98,.1,.1,0,.18,0,m,g);for(let i=-2;i<=2;i++)bx(.1,.9,.08,i*.19,.62,0,m,g);bx(.06,1.0,.1,-.5,.6,0,m,g)};
+ for(let i=0;i<6;i++)panel(-2.5+i,2.95,0,i===1);
+ for(let i=0;i<5;i++){if(i!==2)panel(-3.05,2.45-i,Math.PI/2);panel(3.05,2.45-i,Math.PI/2)}
+ panel(-3.05,-2.55,Math.PI/2);
  /* back-left: white toy kitchen with sink, hob, oven and shelves */
  {const k=new THREE.Group();k.position.set(-1.7,0,-3.8);P.add(k);const W=0xf3f1ec;
   bx(2.3,1.0,.9,0,.5,0,W,k);bx(2.34,.07,.94,0,1.03,0,0xc9a46a,k);bx(.8,.05,.55,-.55,1.075,.03,0x25262a,k);cyl(.03,.03,.4,-.55,1.28,-.28,0x333333,k);
@@ -71,7 +80,7 @@ const EP={keys:[],plush:[],fish:[],bub:[],fx:[],tx:{},pot:null,spoon:null};
   x.fillStyle='#9aa0a6';[[120,40],[150,70],[70,360]].forEach(q=>{x.beginPath();x.ellipse(q[0],q[1],16,11,.3,0,7);x.fill()});
   x.fillStyle='#fff';[[110,170],[150,330]].forEach(q=>{x.beginPath();x.ellipse(q[0],q[1],9,7,0,0,7);x.fill();x.beginPath();x.ellipse(q[0]-3,q[1]-11,3,8,0,0,7);x.ellipse(q[0]+3,q[1]-11,3,8,0,0,7);x.fill()});
   x.fillStyle='rgba(255,255,255,.85)';x.fillRect(0,0,360,6);x.fillRect(0,474,360,6);x.fillRect(0,0,6,480);x.fillRect(354,0,6,480);
-  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;const mat=new THREE.Mesh(new THREE.PlaneGeometry(1.0,1.75),new THREE.MeshStandardMaterial({map:t,roughness:.95}));mat.rotation.x=-Math.PI/2;mat.receiveShadow=true;g.add(mat);
+  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;const mat=new THREE.Mesh(new THREE.PlaneGeometry(1.0,1.75),new THREE.MeshStandardMaterial({map:t,roughness:.95,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1}));mat.rotation.x=-Math.PI/2;mat.receiveShadow=true;g.add(mat);
   const W=(car,wx,wz)=>{const w=add(new THREE.CylinderGeometry(.026,.026,.02,12),M(0x1b1b1e),wx,.026,wz,car);w.rotation.x=Math.PI/2;add(new THREE.CylinderGeometry(.012,.012,.022,8),M(0xcfd3d8),wx,.026,wz,car).rotation.x=Math.PI/2};
   const wheels=(car,L,Wd)=>[[-1,-1],[-1,1],[1,-1],[1,1]].forEach(q=>W(car,q[0]*L*.32,q[1]*Wd*.5));
   const mk=kind=>{const car=new THREE.Group();const b=(w,h,d,x0,y0,z0,col,o)=>add(B(w,h,d),M(col,o||{roughness:.35,metalness:.25}),x0,y0,z0,car);
@@ -185,13 +194,14 @@ function zooInit(){if(EP.zoo)return EP.zoo;const P=G.E,g=new THREE.Group();g.pos
  const lab=new THREE.Sprite(new THREE.SpriteMaterial({transparent:true,depthTest:false}));lab.scale.set(.34,.085,1);lab.renderOrder=9;lab.visible=false;g.add(lab);const lc=document.createElement('canvas');lc.width=512;lc.height=128;lab.material.map=new THREE.CanvasTexture(lc);
  EP.zoo={g,cells,tray,an:[],lab,lc};return EP.zoo}
 const satTx=(w,h,fn,rx,ry)=>{const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'),w,h,c);const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;if(rx)t.repeat.set(rx,ry||rx);t.anisotropy=4;return t};
-let girl=null,sayE=null,sayT=0,caption='',done=false;const off=new THREE.Vector3(),AU={ctx:null,mus:false},OUT={cur:'clothes'},EZ=1;
+let girl=null,sayE=null,sayT=0,caption='',done=false;const off=new THREE.Vector3(),AU={ctx:{currentTime:0},mus:true},OUT={cur:'clothes'},EZ=1;
 const HCAM={pos:new THREE.Vector3(),base:new THREE.Vector3(),tgt:new THREE.Vector3()};
 
-const tone=()=>{},wcSnd=()=>{},setTimeout=fn=>fn();
+const tone=(midi,at,duration,volume,type)=>onSound({midi,duration,volume,type}),wcSnd=()=>{},setTimeout=fn=>fn();
 const $=()=>({set innerHTML(v){caption=String(v).replace(/<[^>]+>/g,' ').trim().replace(/^your friend\s*/, '').replace(/^[^A-Za-z0-9]+/,'').trim();}});
 function faceTo(e,x,z){e.yaw=Math.atan2(x-e.pos.x,z-e.pos.z);}
-function eaEnd(){EA.on=false;done=true;girl.g.visible=true;girl.sit=false;girl.pose=null;}
+function eaEnd(){EA.on=false;done=true;girl.g.visible=true;girl.sit=false;girl.pose=null;girl.lean=0;girl.waveT=0;girl.mv=0;girl.body.rotation.set(0,0,0);girl.pos.y=0;EP.spoon.visible=false;EP.cut.kn.visible=false;EP.cut.g.visible=false;EP.legoT.forEach(b=>b.visible=false);EP.keys.forEach(m=>m.visible=false);EP.plush.forEach(p=>{p.g.position.y=0;p.g.visible=false;p.g.scale.setScalar(.001);p.pop=0;});EP.zoo.lab.visible=false;}
+
 const EA={on:false,id:null,cfg:null,t:0,sb:0,ni:-1,kt:[0,0,0,0,0,0,0,0],ht:0,pt:0};
 const EMEL=[0,0,4,4,5,5,4,3,3,2,2,1,1,0],ESCL=[60,62,64,65,67,69,71,72];
 const ZOO_AN={hippo:['Hippopotamus','🦛'],tiger:['Tiger','🐯'],shark:['Baby shark','🦈'],lion:['Lion','🦁'],elephant:['Elephant','🐘'],giraffe:['Giraffe','🦒'],panda:['Panda','🐼'],polar:['Polar bear','🐻‍❄️'],redpanda:['Red panda','🦊'],rabbit:['Rabbit','🐰'],shoebill:['Shoebill bird','🐦'],croc:['Crocodile','🐊'],seal:['Seal','🦭'],cheetah:['Cheetah','🐆'],rhino:['Rhinoceros','🦏'],dino:['Dinosaur','🦖'],beetle:['Stag beetle','🪲'],dog:['Shiba dog','🐕'],hamster:['Hamster','🐹']};
@@ -241,7 +251,12 @@ if(k==='piano'){girl.pose='recv';girl.body.rotation.z=Math.sin(t*3)*.05;const i=
   if(A.sb===0&&t>12.2){A.sb=1;say('All my cars in a long line, one behind the other! Brum brum!',2.4);for(let n=0;n<5;n++)efx('heart',.74,.4+n*.08,.12+(n-2)*.3)}}
 if(t>=c.dur)eaEnd();}
 
-zooInit();const EACT=Object.fromEntries(Object.entries(HOME_ACTIVITIES).filter(([id])=>PLAYMAT_IDS.includes(id)));return {root:G.E,extras:EP,animal:zooAnimal,activities:EACT,camera:HCAM,
-start(id,actor){const cfg=EACT[id];if(!cfg||EA.on)return false;girl=actor;Object.assign(EA,{on:true,id,cfg,t:0,sb:0,ni:-1,pt:0,kt:[0,0,0,0,0,0,0,0],cn:-1});done=false;caption=cfg.txt;girl.pos.set(...cfg.sp);girl.yaw=Math.atan2(cfg.face[0]-cfg.sp[0],cfg.face[1]-cfg.sp[2]);HCAM.base.set(...cfg.cam);HCAM.pos.copy(HCAM.base);HCAM.tgt.set(...cfg.look);EP.spoon.visible=id==='kitchen';EP.cut.g.visible=id==='fruit';EP.cut.kn.visible=id==='fruit';EP.cut.bw.visible=true;EP.cut.bs.forEach(q=>q.forEach(o=>o.visible=false));EP.plush.forEach(p=>p.pop=0);EP.legoT.forEach(b=>b.visible=false);EP.carReset();if(id==='zoo')zooStart();return true;},
-tick(dt,seconds,{reduced=false}={}){if(!girl)return {done:false,caption:''};if(EA.on){eaTick(reduced?Math.min(dt*3,1):dt);girl.g.visible=true;}tickFX(reduced?1:dt);return {done,caption,pose:girl.pose,active:EA.on};},
-get active(){return EA.on;},stop(){EA.on=false;if(girl)girl.g.visible=true;}};}
+zooInit();
+const referenceItems={};for(const [id,v]of Object.entries(PLAYMAT_REFERENCE)){const object=id==='castle'?EP.zoo.g:id==='cars'?EP.carG:id==='lego'?EP.lego:id==='fruit'?EP.cut.g:P.children.find(o=>o.position.distanceTo(V(...v))<.00001);if(!object)throw Error('Missing Schoolbus reference prop: '+id);object.name='Schoolbus '+id;object.userData.referenceProp=id;referenceItems[id]=object;}
+const focusObjects=id=>id==='kitchen'?[referenceItems.kitchen,EP.spoon]:id==='teach'?EP.plush.map(p=>p.g):id==='cars'?EP.cars:id==='lego'?[EP.legoTw]:id==='fruit'?[EP.cut.g]:id==='zoo'?[EP.zoo.g]:[referenceItems.piano];
+const EACT=Object.fromEntries(Object.entries(HOME_ACTIVITIES).filter(([id])=>PLAYMAT_IDS.includes(id)));return {root:G.E,extras:EP,animal:zooAnimal,activities:EACT,camera:HCAM,referenceItems,focusObjects,
+start(id,actor){const cfg=EACT[id];if(!cfg||EA.on)return false;girl=actor;Object.assign(EA,{on:true,id,cfg,t:0,sb:0,ni:-1,ht:0,pt:0,kt:[0,0,0,0,0,0,0,0],cn:-1});done=false;caption=cfg.txt;Object.assign(girl,{mv:0,pose:null,waveT:0,lean:0,sit:false});girl.pos.set(...cfg.sp);girl.yaw=Math.atan2(cfg.face[0]-cfg.sp[0],cfg.face[1]-cfg.sp[2]);HCAM.base.set(...cfg.cam);HCAM.pos.copy(HCAM.base);HCAM.tgt.set(...cfg.look);
+if(['lego','cars','fruit'].includes(id)){girl.sit=true;girl.pos.y=.012+.12-.5*girl.g.scale.x;girl.lean=id==='cars'?.28:.3;}
+EP.spoon.visible=id==='kitchen';EP.cut.g.visible=id==='fruit';EP.cut.kn.visible=id==='fruit';EP.cut.ap.visible=true;EP.cut.sb.visible=true;EP.cut.aL.position.x=EP.cut.aR.position.x=0;EP.cut.sL.position.x=EP.cut.sR.position.x=0;EP.cut.aL.rotation.z=EP.cut.aR.rotation.z=0;EP.cut.ba.position.y=.08;EP.cut.bw.visible=true;EP.cut.bs.forEach(q=>q.forEach(o=>o.visible=false));EP.plush.forEach(p=>{p.pop=0;p.g.visible=false;p.g.scale.setScalar(.001);});EP.legoT.forEach(b=>b.visible=false);EP.carReset();if(id==='zoo')zooStart();return true;},
+tick(dt,seconds,{reduced=false}={}){AU.ctx.currentTime=seconds;if(!girl)return {done:false,caption:''};if(EA.on){eaTick(dt);girl.g.visible=true;}tickFX(reduced?1:dt);return {done,caption,pose:girl.pose,active:EA.on};},
+get active(){return EA.on;},stop(){if(girl)eaEnd();}};}

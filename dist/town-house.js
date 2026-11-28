@@ -1,3 +1,4 @@
+import {PLAYMAT_BLOCKS,ROUTINE_BLOCKS} from './schoolbus/layout.js?v=72a';
 import {detailTexture} from './graphics.js?v=49';
 import {HOME_ITEM,slotById} from './home-goods.js?v=44';
 import {homeModel} from './home-models.js?v=44';
@@ -42,12 +43,7 @@ const HOUSE_BLOCKS=[
   [WARDROBE.x-WARDROBE.depth*.55,WARDROBE.x+WARDROBE.depth*.64,
     WARDROBE.z-WARDROBE.width*.54,WARDROBE.z+WARDROBE.width*.54],
   [BED.x-1.91,BED.x+1.91,BED.z-2.11,BED.z+2.23], [17.63,19.04,-12.81,-11.19],
-  [-6.65,-4.36,-3.1,-1.5], [-1.47,.62,-3.05,-1.65], [3.72,5.94,-3.05,-.74],
-  [PEN.left-fenceMargin,PEN.left+fenceMargin,PEN.back,PEN.front],
-  [PEN.right-fenceMargin,PEN.right+fenceMargin,PEN.back,PEN.front],
-  [PEN.left,PEN.right,PEN.back-fenceMargin,PEN.back+fenceMargin],
-  [PEN.left,-PEN.gap,PEN.front-fenceMargin,PEN.front+fenceMargin],
-  [PEN.gap,PEN.right,PEN.front-fenceMargin,PEN.front+fenceMargin],
+  ...PLAYMAT_BLOCKS,...ROUTINE_BLOCKS,
 ];
 
 export const HOUSE_CAMERA_ZOOM=.5;
@@ -203,35 +199,7 @@ function posterWall(kit){
   };
 }
 
-function playArea({house:g,box,cyl,orb}){
-  const w=PEN.right-PEN.left,d=PEN.front-PEN.back;
-  box(PLAY_MAT_COLOR,(PEN.left+PEN.right)/2,.052,(PEN.back+PEN.front)/2,w-.08,.13,d-.08,g);
-  const rail=0xfff8ed;
-  function panel(x1,z1,x2,z2){
-    const span=Math.hypot(x2-x1,z2-z1),alongZ=x1===x2;
-    const n=Math.ceil(span/.59);
-    for(let i=0;i<=n;i++){
-      const f=i/n;
-      box(rail,x1+(x2-x1)*f,.58,z1+(z2-z1)*f,.14,1.02,.14,g);
-    }
-    for(const y of [.19,1.08])box(rail,(x1+x2)/2,y,(z1+z2)/2,alongZ?.18:span,.14,alongZ?span:.18,g);
-  }
-  for(const x of [PEN.left,PEN.right])panel(x,PEN.back,x,PEN.front);
-  panel(PEN.left,PEN.back,PEN.right,PEN.back);
-  for(const z of [PEN.front]){
-    panel(PEN.left,z,-PEN.gap,z);
-    panel(PEN.gap,z,PEN.right,z);
-    for(const x of [-PEN.gap,PEN.gap]){
-      box(rail,x,.59,z,.24,1.18,.26,g);
-      orb(0xf7c961,x,1.23,z,.16,.13,.16,g);
-    }
-  }
-  // A hinged leaf folded open beside the wide front entrance.
-  for(const y of [.2,1.02])box(0x9ad0c8,PEN.gap+.98,y,PEN.front-.13,1.95,.14,.13,g);
-  for(let i=0;i<5;i++)box(0x9ad0c8,PEN.gap+.19+i*.4,.6,PEN.front-.13,.1,.82,.13,g);
-  // Fixed playmat props are now the original Schoolbus builders, inside this unchanged V69 enclosure.
-
-}
+function playArea(){/* Exact Schoolbus playmat surface, fences and props are attached by SchoolWorld. */}
 
 function activityCorner({house:g,box,cyl,orb,board}){
   const x=ROOM.corner[0],z=-11.46;

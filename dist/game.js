@@ -1,25 +1,25 @@
-import {schoolBox,SCHOOL_RENDER} from './schoolbus/core.js?v=71f';
-import {SchoolGraphics} from './schoolbus/graphics.js?v=71f';
-import {SchoolWorld,SCHOOL_HOME_START,SCHOOL_VENUES} from './schoolbus/world.js?v=71f';
-import {DailyLife,LIFE_LINES,easySubset,randomPick,HEALTHY,lifeDay} from './daily-life.js?v=71f';
+import {schoolBox,SCHOOL_RENDER} from './schoolbus/core.js?v=72a';
+import {SchoolGraphics} from './schoolbus/graphics.js?v=72a';
+import {SchoolWorld,SCHOOL_HOME_START,SCHOOL_VENUES} from './schoolbus/world.js?v=72a';
+import {DailyLife,LIFE_LINES,easySubset,randomPick,HEALTHY,lifeDay} from './daily-life.js?v=72a';
 import {TaskCamera} from './task-camera.js?v=68';
 import {StoryNarrator} from './narrator.js?v=67';
 import {AutoCamera,STORY_DISTANCE,DETAIL_DISTANCE} from './camera-rig.js?v=62';
 import {atlasSVG,atlasProject} from './town-atlas.js?v=61';
 import {ChapterIntro,CHAPTER_INTROS} from './chapter-intros.js?v=63';
-import {ToyPlayWorld,normalizeToyPlay,takeShelfToy,placeMatToy,putAwayToy} from './toy-play.js?v=59';
+import {ToyPlayWorld,MAT_SLOTS,normalizeToyPlay,takeShelfToy,placeMatToy,putAwayToy} from './toy-play.js?v=72a';
 import {DiscoveryRoom,EXTRA_PLACES} from './discovery-room.js?v=58';
 import {AdventureWorkshop,WORKSHOPS} from './adventure-workshop.js?v=58';
 import {SceneGraphics} from './graphics.js?v=71b';
 import {HOME_GOODS, HOUSE_SLOTS, HOME_ITEM, canPlaceOnFloor, placeHouseItem, chooseBedItem} from './home-goods.js?v=49';
-import {HOUSE_STATIONS, HOUSE_CAMERA_ZOOM, clampHouseCamera, houseRoute, shelfPageCount, shelfPageWords} from './town-house.js?v=71f';
-import {TownWorld, HOME, ROOM, TOWN_SPINE, TOWN_LOOP, TOWN_NAME, PLAY_LIMIT, TRAVEL_TIME, playBudget, townDestinations, townBounds, routeTo, routePoint} from './town.js?v=71f';
+import {HOUSE_STATIONS, HOUSE_CAMERA_ZOOM, clampHouseCamera, houseRoute, shelfPageCount, shelfPageWords} from './town-house.js?v=72a';
+import {TownWorld, HOME, ROOM, TOWN_SPINE, TOWN_LOOP, TOWN_NAME, PLAY_LIMIT, TRAVEL_TIME, playBudget, townDestinations, townBounds, routeTo, routePoint} from './town.js?v=72a';
 import {loadFamilyStories,pairMac,syncFamilyStories,readFamilyStory} from './family-stories.js?v=36';
 import {STATIONERY,StationeryWorld} from './stationery.js?v=63';
 import {TRANSPORTATION,TransportationWorld} from './transportation.js';
 import {FAMILY_GALLERY,FAMILY_GALLERY_INTRO,VENUE_BOUNDS,createFamilyGalleryRound,FamilyGalleryWorld} from './family-gallery.js?v=57-four';
 import {createHouseLabel} from './playhouse-design.js?v=60';
-import {RABBIT_STORY,DELIVERY_STEPS,createRabbitRoute,RabbitDeliveryWorld} from './rabbit-delivery.js?v=71f';
+import {RABBIT_STORY,DELIVERY_STEPS,createRabbitRoute,RabbitDeliveryWorld} from './rabbit-delivery.js?v=72a';
 import {PARADES,ParadeHome,visitParades} from './comparison.js?v=35';
 import {CatStoryWorld,CAT_TURNS} from './cat-story.js?v=58';
 import {SOUND_MODELS} from './sound-models.js?v=20';
@@ -29,7 +29,7 @@ import {PhonicsWorld} from './phonics-world.js?v=23';
 import {addSignatureHair,chooseGuideName,replaceGuideText} from './character-design.js?v=34';
 import {BODY_GROUPS,BODY_WORDS,BODY_START,validBodyWords,NOTE_CATEGORIES,noteMatches,reviewTags} from './body.js?v=21';
 import {BodyMissionWorld,FACE_PARTS,createBodyMissions,missionLabel,missionSentence,missionQuestion,matchesBodyPart} from './body-world.js?v=16';
-import {SchoolTHREE as THREE} from './schoolbus/core.js?v=71f';
+import {SchoolTHREE as THREE} from './schoolbus/core.js?v=72a';
 import {ART,artPath,loadArt} from './character-art.js?v=31';
 import {LESSONS,ALPHABET_STEPS,letterMatches,shuffled,grantExperience,mysteryCandidates,claimMystery} from './learning.js?v=49';
 import {VOCABULARY,wordPicture,reviewChoices,rememberWord,saveWordSet} from './vocabulary.js?v=17';
@@ -37,7 +37,7 @@ import {GardenMusic} from './music.js?v=21';
 import {SHOP_ITEMS,isWearable,normalizeShop,awardStickers,buyItem,equipItem,stickerSVG,itemSVG,attachAccessory,clearAccessory,updateAccessoryPose} from './shop.js?v=49';
 import {ParkTrailer,TRAILER_DURATION,parkShotAt,ACTION_TITLES} from './park-trailer.js?v=31';
 import {createVocabularyRound} from './learning.js?v=49';
-import {WANT_ITEMS,wantQuestion,wantOptions,wantAnswer,createWantRound,WantWorld} from './wants.js?v=71f';
+import {WANT_ITEMS,wantQuestion,wantOptions,wantAnswer,createWantRound,WantWorld} from './wants.js?v=72a';
 const $=id=>document.getElementById(id);
 const narrator=new StoryNarrator({onUnavailable:()=>toast('Voice recording unavailable. Tap Repeat to try again.')});
 window.addEventListener('pointerdown',()=>narrator.unlock(),{once:true});
@@ -785,7 +785,7 @@ function openHouseCollection(view='storage',fromShop=false,message=''){
   return `<article class="shop-item"><div class="shop-item-picture">${itemSVG(item.id)}</div><h3>${item.name}</h3><p>${toys?(data.carriedToy===item.id?'Carrying to the mat':data.playmatToys.includes(item.id)?'On the playmat':'On the toy shelf'):used?'On the bed':where?HOUSE_SLOTS.find(spot=>spot.id===where.slot)?.name:'In storage'}</p>${action}</article>`;
  }).join('');
  showModal('house-collection',`${closeHTML}<h2 id="modalTitle">${toys?'Toy Cupboard':'Store Room'}</h2><p>${toys?'Take an owned toy from this cupboard, walk to the playmat, and use the hand to place it. Tap a toy on the mat to play. Visit the cupboard to take one out.':'Pick an owned item, choose a spot along a wall. It will face the open floor.'}</p><p role="status">${escapeHTML(message)}</p>${cards?`<div class="shop-grid">${cards}</div>`:`<p>${toys?'Buy a toy in the Sticker Shop to fill your cupboard.':'Buy furniture, decorations or bedding in the Sticker Shop to fill your storeroom.'}</p><button id="collectionsShop" class="primary">Sticker Shop</button>`}${toys?'':placement}<button id="collectionsDone" class="secondary">${fromShop?'Back to shop':'Done'}</button>`,true);
- $('modal').querySelectorAll('[data-take-toy]').forEach(button=>button.onclick=()=>{if(townView!=='house'||phase!=='town-free'||townNear?.id!=='toy-cupboard'||!takeShelfToy(data,button.dataset.takeToy))return;save();syncToyPlay();closeModal();beacon.position.set(0,0,6.3);beacon.visible=true;toast('Carry your toy through the playmat gate, then use the hand to place it.');});
+ $('modal').querySelectorAll('[data-take-toy]').forEach(button=>button.onclick=()=>{if(townView!=='house'||phase!=='town-free'||townNear?.id!=='toy-cupboard'||!takeShelfToy(data,button.dataset.takeToy))return;save();syncToyPlay();closeModal();const pad=MAT_SLOTS[Math.min(data.playmatToys.length,MAT_SLOTS.length-1)];beacon.position.set(pad[0],0,pad[1]);beacon.visible=true;toast('Carry your toy to the marker beside the playmat, then use the hand to place it.');});
  $('modal').querySelectorAll('[data-put-toy]').forEach(button=>button.onclick=()=>{if(putAwayToy(data,button.dataset.putToy)){save();syncToyPlay();openHouseCollection(view,fromShop,'Toy returned to its shelf.');}});
  const redraw=text=>openHouseCollection(view,fromShop,text);
  const finish=()=>fromShop?renderShop():closeModal();
@@ -1615,6 +1615,7 @@ function syncTownToolbar(){
  $('townHome').hidden=inHouse;if($('townPanorama'))$('townPanorama').hidden=inHouse;
 }
 function showTownView(view,position,{night=false}={}){if(typeof chapterIntro!=='undefined')chapterIntro?.stop();introContinue=null;
+ if(typeof schoolWorld!=='undefined'&&(schoolWorld?.activity||schoolWorld?.toyView))schoolWorld.cancel(player);
  sessionToken++;
  phase=night?'town-night':'town-free';
  stopSpeech();stopInput();closeModal();
@@ -1699,7 +1700,7 @@ function animateTown(dt,elapsed,t){
    townPlaces.filter(p=>p.id===HOME.id||LESSONS[p.id]||p.action).map(p=>({...p,point:[p.x,p.doorZ]}));
   townNear=spots.find(p=>Math.hypot(player.position.x-p.point[0],player.position.z-p.point[1])<(p.id==='exit'||p.id===HOME.id?3.4:townView==='house'?1.65:2.1));
   if(toyNear&&!data.carriedToy)townNear={id:'playmat-toy',toy:toyNear,name:'Playmat',action:'Play with '+HOME_ITEM.get(toyNear).name};
-  if(typeof schoolNearest==='function'&&!toyNear)townNear=schoolNearest()||townNear;$('actionButton').disabled=!townNear;
+  if(typeof schoolNearest==='function'&&!toyNear)townNear=schoolNearest()||townNear;if(townView==='house'&&data.carriedToy&&MAT_SLOTS.some(([x,z])=>Math.hypot(player.position.x-x,player.position.z-z)<2.5))townNear={id:'playmat',name:'My toy play area',action:'Place my toy'};$('actionButton').disabled=!townNear;
   $('actionLabel').textContent=townNear?.id==='playmat'&&data.carriedToy?'Place my toy':townNear?(townNear.action||'Enter '+townNear.name):'Walk closer';
   if(townView==='town')updateTownWayfinding(t);
   else updateHouseWayfinding();
@@ -1948,7 +1949,7 @@ function tickChapterIntro(dt){if(!chapterIntro?.active||introToken!==sessionToke
 function finishChapterIntro(){if(phase!=='chapter-intro'||introToken!==sessionToken||!introContinue)return;const next=introContinue;introContinue=null;chapterIntro.stop();stopSpeech();bodyTools();player.position.copy(introSaved.position);player.rotation.copy(introSaved.rotation);rosita.visible=introSaved.guide;ball.visible=introSaved.ball;phase=introSaved.phase;next();}
 function syncToyPlay(){if(!townWorld)return;normalizeToyPlay(data);if(!toyPlayWorld)toyPlayWorld=new ToyPlayWorld(townWorld.house,{cube,cyl,orb});toyPlayWorld.sync(data);townWorld.syncHomeItems(data);}
 function tapHouseToy(x,y){if(townView!=='house'||phase!=='town-free'||!$('modalShade').hidden||!toyPlayWorld)return;const r=renderer.domElement.getBoundingClientRect(),ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2((x-r.left)/r.width*2-1,-(y-r.top)/r.height*2+1),camera);const id=toyPlayWorld.pick(ray);if(id){playHouseToy(id);return true;}return false;}
-function playHouseToy(id){if(townView!=='house'||phase!=='town-free'||!$('modalShade').hidden||!toyPlayWorld?.play(id,player.position)){toast('Walk closer to your toy, or let its animation finish.');return;}const lines={'toy-train':'Choo choo! My train is moving.','toy-bus':'My bus is going for a ride.','toy-rocket':'Three, two, one! My rocket can fly!','toy-blocks':'My blocks can jump and stack.','toy-duck':'My duck can waddle and hop.','toy-drum':'Tap, tap! I can play my drum.'};speak(lines[id]);toast(lines[id]);}
+function playHouseToy(id){if(townView!=='house'||phase!=='town-free'||!$('modalShade').hidden||!toyPlayWorld?.play(id,player.position)){toast('Walk closer to your toy, or let its animation finish.');return;}schoolWorld?.startToyView(id,toyPlayWorld.toys.get(id).anchor);const lines={'toy-train':'Choo choo! My train is moving.','toy-bus':'My bus is going for a ride.','toy-rocket':'Three, two, one! My rocket can fly!','toy-blocks':'My blocks can jump and stack.','toy-duck':'My duck can waddle and hop.','toy-drum':'Tap, tap! I can play my drum.'};speak(lines[id]);toast(lines[id]);}
 
 $('townPanorama').onclick=()=>{if(townView!=='town'||phase!=='town-free')return;townPanorama=!townPanorama;Object.assign(cameraOrbit,{yaw:0,pitch:0,zoom:1});$('townPanorama').textContent=townPanorama?'Follow camera':'Panorama';};
 $('townRadar').onclick=()=>openTownMap();
@@ -1960,7 +1961,7 @@ let schoolWorld=null,dailyLife=new DailyLife(readSchoolDay()),schoolRiding=false
 const schoolRoutes={};
 function readSchoolDay(){try{return JSON.parse(localStorage.getItem(SCHOOL_DAY_KEY)||'{}');}catch{return {};}}
 function saveSchoolDay(){try{localStorage.setItem(SCHOOL_DAY_KEY,JSON.stringify(dailyLife.state));}catch{}}
-function ensureSchoolWorld(world){if(!schoolWorld)schoolWorld=new SchoolWorld(scene,world,{cube,cyl,orb,rod,labelBoard});return schoolWorld;}
+function ensureSchoolWorld(world){if(!schoolWorld)schoolWorld=new SchoolWorld(scene,world,{cube,cyl,orb,rod,labelBoard,onPlaymatTone:({midi,duration,volume})=>{if(music.enabled&&music.ctx)music.note(midi,music.ctx.currentTime+.01,duration,volume,'triangle');}});return schoolWorld;}
 function schoolEnterHome(){schoolRiding=false;showTownView('house',SCHOOL_HOME_START);if(dailyLife.state.stage==='done')schoolSummary();else if(['night','continue'].includes(dailyLife.state.stage))schoolAfterReward();else{if(dailyLife.state.stage==='story')dailyLife.state.stage='home';schoolLifeUI();}}
 function schoolTickBudget(){if(!townSession)return;if(dailyLife.state.day!==lifeDay()&&!townStoryActive){dailyLife=new DailyLife();schoolWarnedHome=false;schoolEnterHome();}const now=performance.now(),dt=schoolTickAt?Math.min(.1,(now-schoolTickAt)/1000):0;schoolTickAt=now;const paused=document.hidden||!$('modalShade').hidden||phase==='town-travel'||['rating','reward','easy-show','family-end'].includes(phase);const moving=!!schoolMove||Math.hypot(joy.x,joy.y)>.1||['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].some(k=>keys.has(k));dailyLife.tick(dt,{paused,moving,riding:schoolRiding&&moving,story:townStoryActive});
  if(!paused&&townView==='house'&&dailyLife.state.stage==='home'&&dailyLife.state.homeSeconds>=180&&!schoolWarnedHome){schoolWarnedHome=true;beacon.position.copy(schoolWorld.homeDoor);beacon.visible=true;speak(LIFE_LINES.departure);}
@@ -1968,7 +1969,7 @@ function schoolTickBudget(){if(!townSession)return;if(dailyLife.state.day!==life
  if(now-schoolSaving>1000){schoolSaving=now;saveSchoolDay();schoolLifeUI();}
  $('townClock').textContent=dailyLife.state.stage==='home'?Math.max(0,180-Math.floor(dailyLife.state.homeSeconds))+'s home time':dailyLife.state.completed.length+' / 2 stories';
 }
-function schoolLifeUI(){const hud=$('lifeHUD');if(!hud)return;hud.hidden=!townSession||['landing','chapter'].includes(phase);$('lifeEnergy').value=dailyLife.state.energy;$('lifeHygiene').value=dailyLife.state.hygiene;$('lifeHint').textContent=dailyLife.healthy?(schoolMission&&dailyLife.state.stage==='journey'?'Destination: '+schoolMission.name:'Ready to play together'):'Visit home for food, tooth brushing and face washing.';
+function schoolLifeUI(){const hud=$('lifeHUD');if(!hud)return;hud.hidden=!townSession||['landing','chapter'].includes(phase)||!!(schoolWorld?.activity||schoolWorld?.toyView);$('lifeEnergy').value=dailyLife.state.energy;$('lifeHygiene').value=dailyLife.state.hygiene;$('lifeHint').textContent=dailyLife.healthy?(schoolMission&&dailyLife.state.stage==='journey'?'Destination: '+schoolMission.name:'Ready to play together'):'Visit home for food, tooth brushing and face washing.';
  $('schoolHomePlay').hidden=townView!=='house';$('schoolRoutine').hidden=townView!=='house';$('schoolRide').hidden=townView!=='town'||dailyLife.state.stage!=='journey';$('schoolRide').textContent=schoolRiding?'Get off bicycle':'Ride bicycle';$('schoolTogether').hidden=!!townView||phase!=='explore';
  $('schoolHomePlay').onclick=schoolHomeMenu;$('schoolRoutine').onclick=schoolRoutineMenu;$('schoolRide').onclick=()=>{if(!schoolWorld?.bike)return;const distance=player.position.distanceTo(schoolWorld.bike.position);if(!schoolRiding&&distance>5){schoolMove={kind:'town',to:schoolWorld.bike.position.clone(),ride:true};toast('Walk together to the bicycle.');return;}schoolRiding=!schoolRiding;schoolLifeUI();};$('schoolTogether').onclick=schoolWalkTogether;
 }
@@ -1989,9 +1990,9 @@ function schoolAfterReward(){if(dailyLife.state.stage==='continue'){showModal('s
 function schoolNight(){if(dailyLife.state.stage==='done'){schoolSummary();return;}schoolRiding=false;townStoryActive=false;dailyLife.state.stage=dailyLife.state.stage==='done'?'done':'night';showTownView('house',SCHOOL_HOME_START);speak(LIFE_LINES.night);schoolRoutineMenu();saveSchoolDay();}
 function schoolSleep(){if(!dailyLife.sleep()){schoolRoutineMenu();return;}saveSchoolDay();$('activityFade').hidden=true;bedtimeStart=houseRoute(ROOM.sleepStart,ROOM.bed,townWorld.houseObstacles)||[ROOM.sleepStart,ROOM.bed];townSleepElapsed=0;showTownView('house',ROOM.sleepStart,{night:true});bedtimeStart=houseRoute(ROOM.sleepStart,ROOM.bed,townWorld.houseObstacles)||[ROOM.sleepStart,ROOM.bed];speak(LIFE_LINES.sleep);schoolSummary();}
 function schoolSummary(){showModal('school-summary',`<div class="eyebrow">A LOVELY DAY OF PLAY</div><h2 id="modalTitle">Good night, ${escapeHTML(selected||'friend')}!</h2><p>${dailyLife.state.completed.length} stories completed · ${dailyLife.state.neighbours.length} neighbours helped.</p><div class="learning-card"><strong>${dailyLife.state.earned} stickers earned today</strong><span>${dailyLife.state.spent} sticker used for delays · ${data.stickers} available in your shop.</span></div><button id="schoolNightShop" class="primary">See my shop rewards</button><button id="schoolNightClose" class="secondary">Ready to sleep</button>`);$('schoolNightShop').onclick=()=>openShop('shop');$('schoolNightClose').onclick=closeModal;}
-function schoolHomeCamera(view,blend){if(!schoolWorld||(view!=='house'||!schoolWorld.activity)&&!schoolWorld.neighbourActivity||phase==='town-night')return false;schoolWorld.camera(cameraGoal,lookGoal,player);camera.zoom=1;camera.updateProjectionMatrix();camera.position.lerp(cameraGoal,blend);lookCurrent.lerp(lookGoal,blend);camera.lookAt(lookCurrent);return true;}
+function schoolHomeCamera(view,blend){if(!schoolWorld||(view!=='house'||!schoolWorld.activity&&!schoolWorld.toyView)&&!schoolWorld.neighbourActivity||phase==='town-night')return false;schoolWorld.camera(cameraGoal,lookGoal,player,camera);camera.zoom=1;camera.updateProjectionMatrix();camera.position.lerp(cameraGoal,blend);lookCurrent.lerp(lookGoal,blend);camera.lookAt(lookCurrent);camera.updateMatrixWorld(true);if((schoolWorld.activity||schoolWorld.toyView)&&schoolWorld.view.avatarBlocks(camera)){schoolWorld.camera(cameraGoal,lookGoal,player,camera,true);camera.position.copy(cameraGoal);lookCurrent.copy(lookGoal);camera.lookAt(lookCurrent);camera.updateMatrixWorld(true);}schoolWorld.clearView(camera,player);return true;}
 function schoolTickWorld(dt,t,active,moving){if(!schoolWorld)return;schoolLifeUI();if(schoolMove&&active){const dir=schoolMove.to.clone().sub(player.position);dir.y=0;if(dir.length()<.3){const end=schoolMove;schoolMove=null;if(end.ride)schoolRiding=true;if(end.depart)schoolDepart();}else{const step=Math.min(dir.length(),dt*(schoolMove.kind==='town'?9:6));dir.normalize();player.position.addScaledVector(dir,step);player.rotation.y=Math.atan2(dir.x,dir.z);}}
- const done=schoolWorld.tick(dt,t,player,{active,reduced:reducedTownMotion.matches,riding:schoolRiding});if(schoolWorld.caption&&schoolWorld.caption!==schoolLastCaption){schoolLastCaption=schoolWorld.caption;$('townDistrict').textContent=schoolLastCaption;speak(schoolLastCaption);}if(done?.startsWith('neighbour-'))schoolNeighbourReward(Number(done.slice(10)));if(done==='fridge'){dailyLife.eat();saveSchoolDay();speak(LIFE_LINES.ready);}if(done==='wash'){dailyLife.wash();saveSchoolDay();speak(LIFE_LINES.ready);}
+ const done=schoolWorld.tick(dt,t,player,{active,reduced:reducedTownMotion.matches,riding:schoolRiding,moving});if(schoolWorld.caption&&schoolWorld.caption!==schoolLastCaption){schoolLastCaption=schoolWorld.caption;$('townDistrict').textContent=schoolLastCaption;speak(schoolLastCaption);}if(done?.startsWith('neighbour-'))schoolNeighbourReward(Number(done.slice(10)));if(done==='fridge'){dailyLife.eat();saveSchoolDay();speak(LIFE_LINES.ready);}if(done==='wash'){dailyLife.wash();saveSchoolDay();speak(LIFE_LINES.ready);}
  if(active&&townView==='house'&&dailyLife.state.stage==='home'&&dailyLife.state.homeSeconds>=180&&player.position.clone().setY(0).distanceTo(schoolWorld.homeDoor.clone().setY(0))<2)schoolDepart();
 }
 function schoolOralModel(){if(phase==='easy-show')return schoolLastModel;let model=schoolLastModel;

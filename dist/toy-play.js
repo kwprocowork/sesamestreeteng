@@ -1,7 +1,7 @@
 import * as THREE from './assets/three.module.js';
 import {homeModel} from './home-models.js?v=44';
 import {HOME_ITEM} from './home-goods.js?v=59';
-export const MAT_SLOTS=[[-3.4,0],[0,0],[3.4,0],[-3.4,3.5],[0,3.5],[3.4,3.5]];
+export const MAT_SLOTS=[[-5.8,-1.6],[5.8,-1.6],[-5.8,1.9],[5.8,1.9],[-5.8,5.4],[5.8,5.4]];
 const ownedToy=(s,id)=>s.ownedItems?.includes(id)&&HOME_ITEM.get(id)?.kind==='toy';
 export function normalizeToyPlay(s){s.playmatToys=[...new Set(Array.isArray(s.playmatToys)?s.playmatToys:[])].filter(id=>ownedToy(s,id)).slice(0,MAT_SLOTS.length);if(!ownedToy(s,s.carriedToy)||s.playmatToys.includes(s.carriedToy))s.carriedToy=null;return s;}
 export function takeShelfToy(s,id){normalizeToyPlay(s);if(!ownedToy(s,id)||s.carriedToy||s.playmatToys.includes(id))return false;s.carriedToy=id;return true;}
@@ -15,7 +15,7 @@ export function poseToy(model,id,u,reduced=false){const wave=reduced?0:Math.sin(
  if(id==='toy-drum'){model.scale.y=1-Math.abs(turn)*.13;model.children.slice(-2).forEach((o,i)=>o.rotation.z=turn*(i?1:-1)*.6);}
 }
 export class ToyPlayWorld{
- constructor(house,kit){this.root=new THREE.Group();house.add(this.root);this.kit=kit;this.toys=new Map();this.signature='';this.effect=null;this.carried=null;}
+ constructor(house,kit){this.root=new THREE.Group();this.root.name='Owned playmat toys';house.add(this.root);this.kit=kit;this.toys=new Map();this.signature='';this.effect=null;this.carried=null;}
  sync(state){normalizeToyPlay(state);const signature=JSON.stringify([state.playmatToys,state.carriedToy]);if(signature===this.signature)return;this.signature=signature;this.root.clear();this.toys.clear();this.effect=null;this.carried=null;
  state.playmatToys.forEach((id,i)=>{const anchor=new THREE.Group();anchor.position.set(MAT_SLOTS[i][0],.055,MAT_SLOTS[i][1]);this.root.add(anchor);const scale=new THREE.Group();scale.scale.setScalar(2.2);anchor.add(scale);const model=homeModel(id,this.kit);scale.add(model);model.traverse(o=>o.userData.playToy=id);this.toys.set(id,{anchor,model});});
  if(state.carriedToy){this.carried=homeModel(state.carriedToy,this.kit);this.carried.scale.setScalar(1.5);this.root.add(this.carried);}
