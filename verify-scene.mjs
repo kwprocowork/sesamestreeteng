@@ -68,7 +68,7 @@ console.log('PASS: '+taskChecks+' close-task compositions with all actual select
 const kitchen=vm.runInContext('wantWorld',ctx);kitchen.root.visible=true;kitchen.fridgeOpen=true;kitchen.door.rotation.y=-2.65;
 let shelfChecks=0;
 for(let run=0;run<12;run++){
- const round=createWantRound();kitchen.reset(round);kitchen.door.rotation.y=-2.65;kitchen.root.updateMatrixWorld(true);
+ const round=createWantRound();kitchen.reset(round);kitchen.fridgeOpen=true;kitchen.door.rotation.y=-2.65;kitchen.root.updateMatrixWorld(true);
  const view=new THREE.PerspectiveCamera(48,1.6,.1,100);view.position.set(.9,2.9,1.5);view.lookAt(3.1,1.8,-4.5);view.updateMatrixWorld(true);
  for(const item of round.filter(item=>item.location==='fridge')){
   const food=kitchen.stations.get(item.word).food,bounds=new THREE.Box3().setFromObject(food);

@@ -229,21 +229,7 @@ function playArea({house:g,box,cyl,orb}){
   // A hinged leaf folded open beside the wide front entrance.
   for(const y of [.2,1.02])box(0x9ad0c8,PEN.gap+.98,y,PEN.front-.13,1.95,.14,.13,g);
   for(let i=0;i<5;i++)box(0x9ad0c8,PEN.gap+.19+i*.4,.6,PEN.front-.13,.1,.82,.13,g);
-  const toyX=-5.47,toyZ=-2.36;
-  box(0xefa07d,toyX,.55,toyZ,1.94,1.02,1.15,g);
-  box(PALE,toyX,1.1,toyZ,2.03,.16,1.25,g);
-  box(0x82b9b1,toyX,1.62,toyZ-.47,2.03,1.08,.16,g);
-  for(const dx of [-.46,.22])cyl(0x4d6270,toyX+dx,1.21,toyZ+.1,.21,.035,g);
-  for(const x of [-5.88,-5.39,-4.93])box(0xffedbe,x,.57,toyZ+.594,.39,.55,.08,g);
-  const busX=4.83,busZ=-2.05;
-  cyl(0xffd58a,busX,.24,busZ,1.07,.36,g);
-  box(0x5ab0cf,busX,.55,busZ,1.02,.21,.63,g);
-  box(0xf5bd57,busX-.1,.74,busZ,.64,.23,.62,g);
-  for(const dx of [-.32,.32])for(const dz of [-.32,.32])
-    cyl(INK,busX+dx,.46,busZ+dz,.16,.13,g).rotation.x=Math.PI/2;
-  box(0xb187c8,-.44,.52,-2.46,1.85,1,.73,g);
-  for(let i=0;i<8;i++)box(PALE,-1.22+i*.21,.98,-2.13,.185,.1,.46,g);
-  for(const i of [0,1,3,4,5])box(INK,-1.12+i*.21,1.05,-2.22,.108,.08,.27,g);
+  // Fixed playmat props are now the original Schoolbus builders, inside this unchanged V69 enclosure.
 
 }
 

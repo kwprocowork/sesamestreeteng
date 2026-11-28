@@ -1,0 +1,674 @@
+{
+  "source_sha256": "ae3921add0c7fbe4e9f8a5ccb8c6b290c36393094c38c31663f23764ee1319a0",
+  "source_version": 223,
+  "gltf_files": 0,
+  "sesame_baseline_commit": "adf2e15dd435095f9b717c336e37bb3c8fc72097",
+  "groups": {
+    "home": {
+      "unknown": [],
+      "symbols": [
+        "const $=id=>document.getElementById(id),TAU=Math.PI*2,lp=(a,",
+        "let seed=11;",
+        "const rnd=()=>",
+        "const M=(c,o)=>new THREE.MeshStandardMaterial(Object.assign(",
+        "function add(g,m,x,y,z,p)",
+        "const BXC=new Map(),B=(w,h,d)=>",
+        "(function()",
+        "const EP=",
+        "(function()",
+        "function dwTx(w,h,fn)",
+        "function dwInit()",
+        "const ZTX=",
+        "function zTex(k)",
+        "function zooAnimal(k)",
+        "function zooInit()",
+        "const satTx=(w,h,fn,rx,ry)=>"
+      ],
+      "bytes": 65715
+    },
+    "park": {
+      "unknown": [
+        "Int32Array",
+        "e",
+        "err"
+      ],
+      "symbols": [
+        "const $=id=>document.getElementById(id),TAU=Math.PI*2,lp=(a,",
+        "let seed=11;",
+        "const rnd=()=>",
+        "const M=(c,o)=>new THREE.MeshStandardMaterial(Object.assign(",
+        "function add(g,m,x,y,z,p)",
+        "function rod(a,b,r,mat,p)",
+        "const BXC=new Map(),B=(w,h,d)=>",
+        "const KTX=(function()",
+        "const KSH=(()=>",
+        "const KBD=(()=>",
+        "const KBON=(()=>",
+        "function kbGeo(v,lo)",
+        "function kbMake(o,e,GH,mats)",
+        "function kid(o)",
+        "function hqRim(m,col,str)",
+        "function kidHQ(e,o)",
+        "function kmKey(m)",
+        "function kidMerge(e,b0,i0)",
+        "function kidUnskin(e)",
+        "const girl=kid(",
+        "const satTx=(w,h,fn,rx,ry)=>",
+        "function satPl(P,w,h,x,y,z,ry,m,rx)",
+        "function satBx(P,w,h,d,x,y,z,m)",
+        "const SPK=",
+        "(function()"
+      ],
+      "bytes": 48986
+    },
+    "pool": {
+      "unknown": [],
+      "symbols": [
+        "const $=id=>document.getElementById(id),TAU=Math.PI*2,lp=(a,",
+        "const M=(c,o)=>new THREE.MeshStandardMaterial(Object.assign(",
+        "const satTx=(w,h,fn,rx,ry)=>",
+        "function satPl(P,w,h,x,y,z,ry,m,rx)",
+        "function satBx(P,w,h,d,x,y,z,m)",
+        "function sunMatte(P,k)",
+        "function sunSignTx(txt,fill,stroke,w,h,fs)",
+        "function sunMergeStatic(P)",
+        "const PL=",
+        "function plTex(t,rx,ry)",
+        "(function()"
+      ],
+      "bytes": 21605
+    },
+    "actor": {
+      "unknown": [
+        "Int32Array",
+        "e",
+        "err",
+        "v"
+      ],
+      "symbols": [
+        "const $=id=>document.getElementById(id),TAU=Math.PI*2,lp=(a,",
+        "const cam=new THREE.PerspectiveCamera(55,innerWidth/innerHei",
+        "const M=(c,o)=>new THREE.MeshStandardMaterial(Object.assign(",
+        "function add(g,m,x,y,z,p)",
+        "function rod(a,b,r,mat,p)",
+        "const BXC=new Map(),B=(w,h,d)=>",
+        "const KTX=(function()",
+        "const KSH=(()=>",
+        "const KBD=(()=>",
+        "const KBON=(()=>",
+        "function kbGeo(v,lo)",
+        "function kbMake(o,e,GH,mats)",
+        "const _kbv=new THREE.Vector3();",
+        "const KBE=",
+        "function kbPose(e,dt)",
+        "function kid(o)",
+        "function hqRim(m,col,str)",
+        "function kidHQ(e,o)",
+        "function kmKey(m)",
+        "function kidMerge(e,b0,i0)",
+        "function kidUnskin(e)",
+        "function hqTick(e,dt)",
+        "function anim(e,dt,t)",
+        "const girl=kid(",
+        "let girlGo=false,warnCd=0,ret=false,thanked=",
+        "let tk=null,lastTalk='',sayE=null,sayT=0;"
+      ],
+      "bytes": 36657
+    }
+  },
+  "school_symbols": [
+    {
+      "line": 128,
+      "end_line": 128,
+      "head": "const $=id=>document.getElementById(id),TAU=Math.PI*2,lp=(a,b,u)=>a+(b-a)*u,V=(x,y,z)=>new THREE.Vec"
+    },
+    {
+      "line": 129,
+      "end_line": 129,
+      "head": "let seed=11;"
+    },
+    {
+      "line": 129,
+      "end_line": 129,
+      "head": "const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};"
+    },
+    {
+      "line": 148,
+      "end_line": 148,
+      "head": "const M=(c,o)=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.75},o||{}));"
+    },
+    {
+      "line": 149,
+      "end_line": 149,
+      "head": "function add(g,m,x,y,z,p){const o=new THREE.Mesh(g,m);o.position.set(x||0,y||0,z||0);o.castShadow=o."
+    },
+    {
+      "line": 151,
+      "end_line": 156,
+      "head": "const BXC=new Map(),B=(w,h,d)=>{const key=w.toFixed(3)+','+h.toFixed(3)+','+d.toFixed(3);let g=BXC.g"
+    },
+    {
+      "line": 1081,
+      "end_line": 1202,
+      "head": "(function(){const P=G.E=new THREE.Group();P.position.set(300,0,-300);P.visible=false;S.add(P);  cons"
+    },
+    {
+      "line": 1204,
+      "end_line": 1204,
+      "head": "const EP={keys:[],plush:[],fish:[],bub:[],fx:[],tx:{},pot:null,spoon:null,tank:null};"
+    },
+    {
+      "line": 1205,
+      "end_line": 1401,
+      "head": "(function(){const P=G.E;  const bx=(w,h,d,x,y,z,col,par,o)=>add(B(w,h,d),typeof col==='number'?M(col"
+    },
+    {
+      "line": 3047,
+      "end_line": 3047,
+      "head": "function dwTx(w,h,fn){const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext("
+    },
+    {
+      "line": 3048,
+      "end_line": 3105,
+      "head": "function dwInit(){if(EP.dw)return EP.dw;const P=G.E;  const g=new THREE.Group();g.position.set(3.33,"
+    },
+    {
+      "line": 3126,
+      "end_line": 3126,
+      "head": "const ZTX={};"
+    },
+    {
+      "line": 3127,
+      "end_line": 3135,
+      "head": "function zTex(k){if(ZTX[k])return ZTX[k];let R=7;const r=()=>{R=(R*9301+49297)%233280;return R/23328"
+    },
+    {
+      "line": 3136,
+      "end_line": 3160,
+      "head": "function zooAnimal(k){const g=new THREE.Group(),mm=(c,o)=>{if(c&&c.isMaterial)return c;const q=new T"
+    },
+    {
+      "line": 3161,
+      "end_line": 3174,
+      "head": "function zooInit(){if(EP.zoo)return EP.zoo;const P=G.E,g=new THREE.Group();g.position.set(1.62,.012,"
+    },
+    {
+      "line": 3741,
+      "end_line": 3741,
+      "head": "const satTx=(w,h,fn,rx,ry)=>{const c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getC"
+    },
+    {
+      "line": 150,
+      "end_line": 150,
+      "head": "function rod(a,b,r,mat,p){const d=b.clone().sub(a),L=d.length(),m=new THREE.Mesh(new THREE.CylinderG"
+    },
+    {
+      "line": 158,
+      "end_line": 163,
+      "head": "const KTX=(function(){const mk=(w,h,f)=>{const c=document.createElement('canvas');c.width=w;c.height"
+    },
+    {
+      "line": 173,
+      "end_line": 173,
+      "head": "const KSH=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2"
+    },
+    {
+      "line": 175,
+      "end_line": 256,
+      "head": "const KBD=(()=>{  /* bone ids */  const BT=0,UAL=1,FAL=2,HL=3,UAR=4,FAR=5,HR=6,THL=7,SHL=8,FTL=9,THR"
+    },
+    {
+      "line": 259,
+      "end_line": 259,
+      "head": "const KBON=(()=>{try{return localStorage.getItem('kbOff')!=='1'}catch(e){return true}})(),KBG={},KB_"
+    },
+    {
+      "line": 260,
+      "end_line": 261,
+      "head": "function kbGeo(v,lo){const key=v+(lo?'_lo':'');if(KBG[key])return KBG[key];const o=v==='dress'?{dres"
+    },
+    {
+      "line": 262,
+      "end_line": 275,
+      "head": "function kbMake(o,e,GH,mats){const add0=(p,c)=>THREE.Object3D.prototype.add.call(p,c);const J=KBD.J,"
+    },
+    {
+      "line": 289,
+      "end_line": 326,
+      "head": "function kid(o){  const s=o.s||1,g=new THREE.Group(),body=new THREE.Group();g.add(body);  const sk=M"
+    },
+    {
+      "line": 329,
+      "end_line": 329,
+      "head": "function hqRim(m,col,str){if(!m||!m.isMeshStandardMaterial||m.userData.rim)return;m.userData.rim=1;m"
+    },
+    {
+      "line": 330,
+      "end_line": 351,
+      "head": "function kidHQ(e,o){const kidC=(o.s||1)<1.25,fem=o.dress||o.girl||o.bun||o.long||o.pony;const b=e.bo"
+    },
+    {
+      "line": 353,
+      "end_line": 353,
+      "head": "function kmKey(m){return [m.type,m.color&&m.color.getHex(),m.roughness,m.metalness,m.map&&m.map.uuid"
+    },
+    {
+      "line": 354,
+      "end_line": 361,
+      "head": "function kidMerge(e,b0,i0){const b=b0||e.body,keep=new Set([...(e.lids||[]),e.mo,...(e.bagParts||[])"
+    },
+    {
+      "line": 363,
+      "end_line": 364,
+      "head": "function kidUnskin(e){const cache=new Map();const fix=m=>{if(!m||!m.skinning)return m;let c=cache.ge"
+    },
+    {
+      "line": 395,
+      "end_line": 395,
+      "head": "const girl=kid({dress:1,top:0xffffff,hair:0x3b2416,girl:1,bow:0x2e9b4f,bag:0x2e9b4f,trim:0x2e9b4f});"
+    },
+    {
+      "line": 3743,
+      "end_line": 3743,
+      "head": "function satPl(P,w,h,x,y,z,ry,m,rx){const o=new THREE.Mesh(new THREE.PlaneGeometry(w,h),m);o.positio"
+    },
+    {
+      "line": 3744,
+      "end_line": 3744,
+      "head": "function satBx(P,w,h,d,x,y,z,m){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.se"
+    },
+    {
+      "line": 5015,
+      "end_line": 5015,
+      "head": "const SPK={curve:null,P:[],T:[],N:600,W:2.4,lights:[],zebras:[],riders:[],ped:[],scoot:null,helm:nul"
+    },
+    {
+      "line": 5016,
+      "end_line": 5128,
+      "head": "(function(){const P=GN,K=SPK;  /* lap route (clockwise, keep left like Hong Kong), with a roundabout"
+    },
+    {
+      "line": 5226,
+      "end_line": 5226,
+      "head": "function sunMatte(P,k){const seen=new Set();P.traverse(o=>{if(o.isMesh&&o.material&&!Array.isArray(o"
+    },
+    {
+      "line": 5243,
+      "end_line": 5243,
+      "head": "function sunSignTx(txt,fill,stroke,w,h,fs){return satTx(w||1024,h||256,(g,W,H)=>{g.clearRect(0,0,W,H"
+    },
+    {
+      "line": 5287,
+      "end_line": 5292,
+      "head": "function sunMergeStatic(P){P.updateMatrixWorld(true);const inv=new THREE.Matrix4().copy(P.matrixWorl"
+    },
+    {
+      "line": 6004,
+      "end_line": 6004,
+      "head": "const PL={WY:-.25,FY:-1.6,PY:-1.85,P:[{x0:-11,x1:11,z0:-28,z1:-10,ind:1},{x0:-20,x1:20,z0:8,z1:30,in"
+    },
+    {
+      "line": 6005,
+      "end_line": 6005,
+      "head": "function plTex(t,rx,ry){const q=t.clone();q.needsUpdate=true;q.repeat.set(rx,ry);return q}"
+    },
+    {
+      "line": 6006,
+      "end_line": 6110,
+      "head": "(function(){const P=GO,tx=satTx,T=PL;  const SG=new THREE.Group();SG.userData.static=1;P.add(SG);  c"
+    },
+    {
+      "line": 142,
+      "end_line": 142,
+      "head": "const cam=new THREE.PerspectiveCamera(55,innerWidth/innerHeight,.1,600);"
+    },
+    {
+      "line": 276,
+      "end_line": 276,
+      "head": "const _kbv=new THREE.Vector3();"
+    },
+    {
+      "line": 276,
+      "end_line": 276,
+      "head": "const KBE={tbr:[-.1,-.1],bridge:[-.15,-.15],hold:[-1.25,-1.25],swim:[-.45,-.45],paddle:[-.6,-.6],rid"
+    },
+    {
+      "line": 277,
+      "end_line": 288,
+      "head": "function kbPose(e,dt){const K=e.kb,b=K.bones,k=Math.min(1,dt*10);  if(K.dress){const dv=K.skirt.visi"
+    },
+    {
+      "line": 365,
+      "end_line": 366,
+      "head": "function hqTick(e,dt){e.bk-=dt;const on=e.sleep||(e.bk<0&&e.bk>-.14);e.lids.forEach(l=>{l.visible=on"
+    },
+    {
+      "line": 368,
+      "end_line": 390,
+      "head": "function anim(e,dt,t){  if(e.blob)e.blob.visible=!e.sit&&!e.noBlob;  if(e.waveT>0){e.waveT-=dt;e.pos"
+    },
+    {
+      "line": 1855,
+      "end_line": 1855,
+      "head": "let girlGo=false,warnCd=0,ret=false,thanked={t:0,h:0},gWait=false,walkSt=0,giftDone=false,giftS=0,gi"
+    },
+    {
+      "line": 2110,
+      "end_line": 2110,
+      "head": "let tk=null,lastTalk='',sayE=null,sayT=0;"
+    }
+  ],
+  "sesame_symbols": {
+    "dist/town-architecture.js": {
+      "functions": [
+        "solid",
+        "round",
+        "ball",
+        "ring",
+        "beam",
+        "signLines",
+        "sign",
+        "windowPane",
+        "canopy",
+        "dome",
+        "star",
+        "facade",
+        "fountain",
+        "facility",
+        "arch",
+        "arcade",
+        "tree",
+        "lamp",
+        "buildTownscape"
+      ],
+      "classes": [],
+      "geometry": [
+        "CylinderGeometry",
+        "ExtrudeGeometry",
+        "PlaneGeometry",
+        "ShapeGeometry",
+        "SphereGeometry",
+        "TorusGeometry"
+      ]
+    },
+    "dist/discovery-room.js": {
+      "functions": [],
+      "classes": [
+        "DiscoveryRoom"
+      ],
+      "geometry": [
+        "TorusGeometry"
+      ]
+    },
+    "dist/sound-models.js": {
+      "functions": [],
+      "classes": [],
+      "geometry": []
+    },
+    "dist/chapter-intros.js": {
+      "functions": [],
+      "classes": [
+        "is",
+        "ChapterIntro"
+      ],
+      "geometry": [
+        "ConeGeometry"
+      ]
+    },
+    "dist/fantasy-town.js": {
+      "functions": [
+        "townWaterBlocked",
+        "buildFantasyTown"
+      ],
+      "classes": [],
+      "geometry": [
+        "BoxGeometry",
+        "BufferGeometry",
+        "ConeGeometry",
+        "CylinderGeometry",
+        "IcosahedronGeometry",
+        "SphereGeometry",
+        "TorusGeometry"
+      ]
+    },
+    "dist/toy-play.js": {
+      "functions": [
+        "normalizeToyPlay",
+        "takeShelfToy",
+        "placeMatToy",
+        "putAwayToy",
+        "poseToy"
+      ],
+      "classes": [
+        "ToyPlayWorld"
+      ],
+      "geometry": []
+    },
+    "dist/playhouse-design.js": {
+      "functions": [
+        "faceSurfaceZ",
+        "createFamilyCharacter",
+        "orb",
+        "curve",
+        "mouth",
+        "setFamilyHappy",
+        "fitLabelFont",
+        "createHouseLabel",
+        "faceHouseLabels"
+      ],
+      "classes": [],
+      "geometry": [
+        "BoxGeometry",
+        "CylinderGeometry",
+        "PlaneGeometry",
+        "SphereGeometry",
+        "TubeGeometry"
+      ]
+    },
+    "dist/town-house.js": {
+      "functions": [
+        "clampHouseCamera",
+        "canWalkInHouse",
+        "houseRoute",
+        "pickCabinetFigures",
+        "canvasPanel",
+        "textLine",
+        "pickHousePosters",
+        "loadPoster",
+        "posterFrame",
+        "posterWall",
+        "playArea",
+        "panel",
+        "activityCorner",
+        "displayCabinet",
+        "stationGroup",
+        "computerDesk",
+        "wordLibrary",
+        "wardrobe",
+        "bedroom",
+        "mainDoor",
+        "buildStorage",
+        "homeInventoryViews",
+        "buildHouseInterior",
+        "wall"
+      ],
+      "classes": [],
+      "geometry": [
+        "CircleGeometry",
+        "PlaneGeometry",
+        "TorusGeometry"
+      ]
+    },
+    "dist/town-navigation.js": {
+      "functions": [
+        "findWorldRoute"
+      ],
+      "classes": [],
+      "geometry": []
+    },
+    "dist/graphics.js": {
+      "functions": [
+        "detailTexture"
+      ],
+      "classes": [
+        "SceneGraphics"
+      ],
+      "geometry": [
+        "PlaneGeometry"
+      ]
+    },
+    "dist/town-terrain.js": {
+      "functions": [],
+      "classes": [],
+      "geometry": []
+    },
+    "dist/town.js": {
+      "functions": [
+        "playBudget",
+        "townDestinations",
+        "townBounds",
+        "routeTo",
+        "routePoint"
+      ],
+      "classes": [
+        "TownWorld"
+      ],
+      "geometry": []
+    },
+    "dist/character-design.js": {
+      "functions": [
+        "chooseGuideName",
+        "replaceGuideText",
+        "addSignatureHair",
+        "bob",
+        "dressFriends",
+        "plaidMaterial",
+        "babyBear",
+        "fairy",
+        "fairyPigtail",
+        "fairyDress"
+      ],
+      "classes": [],
+      "geometry": [
+        "BufferGeometry",
+        "SphereGeometry",
+        "TubeGeometry"
+      ]
+    },
+    "dist/character-art.js": {
+      "functions": [
+        "matteBorder",
+        "loadArt"
+      ],
+      "classes": [],
+      "geometry": []
+    },
+    "dist/town-atlas.js": {
+      "functions": [
+        "atlasProject",
+        "atlasSVG"
+      ],
+      "classes": [],
+      "geometry": []
+    },
+    "dist/phonics-world.js": {
+      "functions": [],
+      "classes": [
+        "PhonicsWorld"
+      ],
+      "geometry": [
+        "ConeGeometry",
+        "PlaneGeometry",
+        "TorusGeometry"
+      ]
+    },
+    "dist/adventure-workshop.js": {
+      "functions": [],
+      "classes": [
+        "AdventureWorkshop"
+      ],
+      "geometry": []
+    },
+    "dist/body-world.js": {
+      "functions": [
+        "missionLabel",
+        "missionSentence",
+        "missionQuestion",
+        "createBodyMissions",
+        "matchesBodyPart"
+      ],
+      "classes": [
+        "BodyMissionWorld"
+      ],
+      "geometry": [
+        "SphereGeometry",
+        "TorusGeometry"
+      ]
+    },
+    "dist/home-models.js": {
+      "functions": [
+        "homeModel"
+      ],
+      "classes": [],
+      "geometry": [
+        "TorusGeometry"
+      ]
+    }
+  },
+  "runtime_selection": {
+    "layout": "Version 69 house and town coordinates, enclosure and chapter worlds",
+    "schoolbus_house_scope": "playmat props only; no Schoolbus rooms, walls, door, dining room or annex",
+    "activities": [
+      "piano",
+      "kitchen",
+      "teach",
+      "lego",
+      "fruit",
+      "cars",
+      "zoo"
+    ],
+    "retained_parameters": [
+      "FOV 55",
+      "near 0.1 / far 600",
+      "ACESFilmic",
+      "0.94 indoor / 0.97 outdoor exposure",
+      "DPR cap 2",
+      "source bloom/grading",
+      "source rounded-box cache and smooth segment policy"
+    ],
+    "compatibility": [
+      "Single existing Three r187 engine; r128 legacy soft-shadow constant maps to current PCF implementation",
+      "Light intensity adapted to current photometric engine",
+      "Native Sesame characters and purchased toys remain"
+    ],
+    "new_files": [
+      "dist/schoolbus/core.js",
+      "dist/schoolbus/playmat.js",
+      "dist/schoolbus/activity-catalog.js",
+      "dist/schoolbus/actor.js",
+      "dist/schoolbus/bicycle.js",
+      "dist/schoolbus/graphics.js",
+      "dist/schoolbus/post.js",
+      "dist/schoolbus/world.js",
+      "dist/schoolbus/voice-lines.json",
+      "dist/daily-life.js"
+    ],
+    "audit_counts": {
+      "gltf_files": 0,
+      "sesame_zip_backups_checked": 27,
+      "zip_crc_failures": 0,
+      "playmat_meshes": 532,
+      "npc_skin_bones": 13
+    },
+    "state_machine": {
+      "home": "180 active seconds; playmat, collection, wardrobe, food and washing",
+      "journey": "same V69 map; bicycle, marker, maximum two rewarded neighbours; one bounded delay deduction",
+      "story": "original V69 scene and intro; shorter selected route; one optional speaking pattern",
+      "continue": "offer a second story or home",
+      "night": "return home after the second story; washing if needed, sleep, daily stickers and shop",
+      "done": "persist completion until the next Hong Kong play day"
+    },
+    "relative_imports_checked": 121,
+    "missing_relative_imports": []
+  }
+}

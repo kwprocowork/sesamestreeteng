@@ -17,9 +17,9 @@ while(ctx.phase!=='family-end'){
  const index=ctx.familyIndex,s=DELIVERY_STEPS[index];
  assert.equal(world.current,s);assert.equal([...world.zones.values()].filter(g=>g.visible).length,1);
  player.position.set(8,0,7);ctx.interactRabbit();assert.equal(world.taps,0,'distant presses cannot progress');
- for(let n=0;n<s.count;n++){
-  player.position.copy(world.target());ctx.interactRabbit();actions++;assert.equal(world.taps,n+1);
-  ctx.interactRabbit();assert.equal(world.taps,n+1,'duplicate presses cannot skip actions');
+ for(let n=0;n<1;n++){
+  player.position.copy(world.target());ctx.interactRabbit();actions++;assert.equal(world.taps,s.count);
+  ctx.interactRabbit();assert.equal(world.taps,s.count,'duplicate presses cannot skip actions');
   const timer=world.timer;world.tick(.5,player,true);assert.equal(world.timer,timer,'parent panel pauses effects');
   for(let frame=0;frame<40;frame++){if(world.tick(.05,player))ctx.rabbitActionDone();}
  }
@@ -29,7 +29,7 @@ while(ctx.phase!=='family-end'){
  if(index===12)assert(world.hasCarrot&&!world.delivered,'all three encounters preserve the gift');
  if(index===16)assert(world.delivered,'actual gift handover');
 }
-assert.equal(DELIVERY_STEPS.length,22);assert(actions>30);assert(spoken>=10);
+assert.equal(DELIVERY_STEPS.length,22);assert.equal(actions,22);assert(spoken>=10);
 assert.deepEqual([...new Set(DELIVERY_STEPS.map(s=>s.page))],[2,3,4,5,6,7,8,9,10,11,12,13,14,15]);
 assert(DELIVERY_STEPS.find(s=>s.action==='Knock').count===3);
 world.reset();assert(!world.delivered&&!world.hasCarrot&&!world.notes.visible);assert.equal(world.grass.scale.y,1);

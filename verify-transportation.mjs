@@ -16,7 +16,7 @@ const $=id=>{
   return elements.get(id);
 };
 let ratings=0;
-const ctx=vm.createContext({
+const ctx=vm.createContext({schoolNextIndex:(key,current,total)=>current+1,
   TRANSPORTATION,transportationWorld,player,phase:'explore',familyIndex:0,
   cameraOrbit:{},beacon:{},$,helpCount:0,guideName:'Grover',
   document:{body:{classList:{remove(){}}}},

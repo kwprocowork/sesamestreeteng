@@ -1,15 +1,15 @@
-import * as THREE from './assets/three.module.js';
+import {SchoolTHREE as THREE,schoolBox,schoolMaterial} from './schoolbus/core.js?v=71f';
 import {homeModel} from './home-models.js?v=44';
 import {TERRAIN} from './town-terrain.js?v=61';
-import {buildTownFacade,buildTownFacility,townSign} from './town-architecture.js?v=62';
-const BOX=new THREE.BoxGeometry(1,1,1),LEAF=new THREE.IcosahedronGeometry(1,1),TRUNK=new THREE.CylinderGeometry(1,1,1,9),CONE=new THREE.ConeGeometry(1,1,10),MAT=new Map();
+import {buildTownFacade,buildTownFacility,townSign} from './town-architecture.js?v=71f';
+const BOX=new THREE.BoxGeometry(1,1,1),LEAF=new THREE.SphereGeometry(1,8,6),TRUNK=new THREE.CylinderGeometry(1,1,1,9),CONE=new THREE.ConeGeometry(1,1,10),MAT=new Map();
 export const CANAL={x:-8,half:5};
 export function townWaterBlocked(x,z,places,cachedLanes=null){if(Math.abs(x-CANAL.x)>=CANAL.half)return false;const lanes=cachedLanes||places.map(p=>p.lane);if(z>Math.max(...lanes)+5||z<Math.min(...lanes)-6)return false;return !lanes.some(lane=>Math.abs(z-lane)<4.65);}
 export const DISTRICT_PALETTES={ 'Friendship Harbour':0xf4d5a1,'Discovery Quarter':0x95d9d5,'Enchanted Gardens':0xdab4dc,'Adventure Heights':0xacd49d,'Storybook Village':0xb7bee8 };
 export function buildFantasyTown(world,places,g,{spine,loop}){
  const {left,right,top,bottom}=world.bounds,mid=(top+bottom)/2,lanes=[...new Set(places.map(p=>p.lane))].sort((a,b)=>a-b),animations=[],lastLane=lanes.at(-1);
- const mesh=(geo,c,x,y,z,sx,sy,sz,parent=g)=>{if(!MAT.has(c))MAT.set(c,new THREE.MeshStandardMaterial({color:c,roughness:.8}));const m=new THREE.Mesh(geo,MAT.get(c));m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;};
- const box=(c,x,y,z,w,h,d,p=g)=>mesh(BOX,c,x,y,z,w,h,d,p),orb=(c,x,y,z,a,b=a,d=a,p=g)=>mesh(LEAF,c,x,y,z,a,b,d,p),cyl=(c,x,y,z,r,h,p=g)=>mesh(TRUNK,c,x,y,z,r,h,r,p);
+ const mesh=(geo,c,x,y,z,sx,sy,sz,parent=g)=>{if(!MAT.has(c))MAT.set(c,new THREE.MeshStandardMaterial({color:c,roughness:.75}));const m=new THREE.Mesh(geo,MAT.get(c));m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;};
+ const box=(c,x,y,z,w,h,d,p=g)=>mesh(schoolBox(w,h,d),c,x,y,z,1,1,1,p),orb=(c,x,y,z,a,b=a,d=a,p=g)=>mesh(LEAF,c,x,y,z,a,b,d,p),cyl=(c,x,y,z,r,h,p=g)=>mesh(TRUNK,c,x,y,z,r,h,r,p);
  const label=(text,x,y,z,w=7)=>{const sign=new THREE.Group();sign.position.set(x,y,z);sign.scale.setScalar(w>10?1:.7);g.add(sign);townSign(text,0,0,0,w,sign,world.cube,{green:true});};
  const terrain=new THREE.BufferGeometry();terrain.setAttribute('position',new THREE.Float32BufferAttribute(TERRAIN.vertices,3));terrain.setAttribute('color',new THREE.Float32BufferAttribute(TERRAIN.colors,3));terrain.setIndex(TERRAIN.indices);terrain.computeVertexNormals();const land=new THREE.Mesh(terrain,new THREE.MeshStandardMaterial({vertexColors:true,roughness:1}));land.receiveShadow=true;land.userData.townOwned=true;g.add(land);
  if(top< -260)box(0x79a76c,0,-.28,(top-260)/2,310,.2,-260-top+20);

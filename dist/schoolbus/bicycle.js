@@ -1,0 +1,15 @@
+import {SchoolTHREE as THREE,schoolMaterial as M} from './core.js?v=71f';
+const TAU=Math.PI*2,V=(x,y,z)=>new THREE.Vector3(x,y,z);
+export const createSchoolBicycle=()=>{const g=new THREE.Group(),pk=M(0xf3b9b4,{roughness:.45}),bk=M(0x1e1e20,{roughness:.7}),gy=M(0x9aa0a6,{roughness:.4,metalness:.5}),ye=M(0xffc21a,{roughness:.5}),or=M(0xff9a1a,{roughness:.6});
+  const tube=(a,b,r,m)=>{const A=V(a[0],a[1],a[2]),Bv=V(b[0],b[1],b[2]),d=Bv.clone().sub(A),L=d.length(),t=new THREE.Mesh(new THREE.CylinderGeometry(r,r,L,10),m);t.position.copy(A).add(Bv).multiplyScalar(.5);t.quaternion.setFromUnitVectors(V(0,1,0),d.normalize());g.add(t);return t};
+  const wheel=(z,r)=>{const w=new THREE.Group();w.position.set(0,r,z);g.add(w);const ty=new THREE.Mesh(new THREE.TorusGeometry(r-.03,.032,8,28),bk);ty.rotation.y=Math.PI/2;w.add(ty);const rim=new THREE.Mesh(new THREE.TorusGeometry(r-.065,.008,5,24),gy);rim.rotation.y=Math.PI/2;w.add(rim);
+   for(let i=0;i<8;i++){const sp=new THREE.Mesh(new THREE.BoxGeometry(.004,(r-.07)*2,.004),gy);sp.rotation.x=i*Math.PI/8;w.add(sp)}const hb=new THREE.Mesh(new THREE.CylinderGeometry(.022,.022,.06,10),gy);hb.rotation.z=Math.PI/2;w.add(hb);return w};
+  const wr=wheel(-.31,.21),wf=wheel(.33,.21);
+  tube([0,.5,.25],[0,.66,.29],.03,pk);tube([0,.5,.25],[0,.21,.33],.02,pk);tube([0,.5,.25],[0,.24,.0],.03,pk);tube([0,.24,.0],[0,.2,-.04],.03,pk);tube([0,.2,-.04],[0,.5,-.15],.028,pk);tube([0,.2,-.04],[0,.21,-.31],.018,pk);tube([0,.45,-.13],[0,.21,-.31],.016,pk);
+  tube([0,.66,.29],[0,.76,.25],.016,bk);tube([-.2,.76,.25],[.2,.76,.25],.014,bk);[-1,1].forEach(sd=>{tube([sd*.15,.76,.25],[sd*.22,.76,.25],.024,bk);tube([sd*.12,.765,.27],[sd*.17,.74,.33],.009,ye)});
+  const bell=new THREE.Mesh(new THREE.SphereGeometry(.03,10,8,0,TAU,0,Math.PI/2),bk);bell.position.set(.08,.785,.25);g.add(bell);
+  tube([0,.5,-.15],[0,.56,-.17],.014,bk);const sd=new THREE.Mesh(new THREE.SphereGeometry(.1,14,8),bk);sd.scale.set(.75,.22,1.15);sd.position.set(0,.585,-.18);g.add(sd);
+  const gd=new THREE.Mesh(new THREE.CylinderGeometry(.085,.085,.02,18),bk);gd.rotation.z=Math.PI/2;gd.position.set(.04,.2,-.04);g.add(gd);tube([.04,.2,-.04],[.04,.21,-.31],.012,bk);
+  const cr=new THREE.Group();cr.position.set(0,.2,-.04);g.add(cr);[-1,1].forEach(s_=>{const arm=new THREE.Mesh(new THREE.BoxGeometry(.015,.02,.1),gy);arm.position.set(s_*.07,0,s_*.05);cr.add(arm);const pd=new THREE.Mesh(new THREE.BoxGeometry(.07,.02,.045),or);pd.position.set(s_*.1,0,s_*.1);cr.add(pd)});
+  [-1,1].forEach(s_=>{const tw=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,.03,14),bk);tw.rotation.z=Math.PI/2;tw.position.set(s_*.2,.065,-.36);g.add(tw);tube([s_*.2,.065,-.36],[s_*.05,.24,-.3],.009,bk)});
+  g.scale.setScalar(1.45);g.userData={wr,wf,cr};return g};

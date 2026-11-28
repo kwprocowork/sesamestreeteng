@@ -91,7 +91,7 @@ export class RabbitDeliveryWorld{
  }
  target(){const s=this.current;if(['March','Walk home'].includes(s.action)){const p=[[-3,2],[3,0],[0,-2]][Math.min(this.taps,2)];return new THREE.Vector3(p[0],0,p[1]);}return new THREE.Vector3(s.at[0],0,s.at[1]);}
  progress(){return this.current.count>1?' · '+this.taps+'/'+this.current.count:'';}
- interact(position){if(this.timer||this.effectTime||position.clone().setY(0).distanceTo(this.target())>=1.75)return false;this.taps++;this.effectTime=.8;const i=this.index;
+ interact(position,{completeStop=false}={}){if(this.timer||this.effectTime||position.clone().setY(0).distanceTo(this.target())>=1.75)return false;if(completeStop)this.taps=Math.max(this.taps,this.current.count-1);this.taps++;this.effectTime=.8;const i=this.index;
   if(i===0){this.water.visible=true;this.plant.scale.setScalar(.3+this.taps*.23);}
   if(i===1)this.plant.position.y=-.25+this.taps*.35;
   if(i===4){this.tableGift.visible=false;this.tableBow.visible=true;}

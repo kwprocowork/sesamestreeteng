@@ -59,7 +59,9 @@ def bake(limit=None):
     model=ROOT.parent/'.voice-models';dest=ROOT/'dist/assets/narration';dest.mkdir(parents=True,exist_ok=True)
     texts=catalog();print(json.dumps({'dialogue_segments':len(texts),'engine':'Kokoro af_heart en-US','mode':'Mac-local cached generation'}),flush=True)
     if limit is not None:texts=texts[:limit]
-    manifest={'schema':1,'engine':'Kokoro-82M','voice':'af_heart','accent':'en-US','clips':{}}
+    prior_path=ROOT/'dist/narration-manifest.json'
+    prior=json.loads(prior_path.read_text()) if prior_path.exists() else {}
+    manifest={'schema':1,'engine':'Kokoro-82M','voice':'af_heart','accent':'en-US','clips':dict(prior.get('clips',{}))}
     start=time.monotonic();k=None
     for index,text in enumerate(texts):
         mood,speed=delivery(text);key=normalize(text).lower()

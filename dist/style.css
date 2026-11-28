@@ -73,8 +73,26 @@ body.gallery-photo-story.speaking-turn #world{height:auto;min-height:190px;flex:
 body.gallery-photo-story.speaking-turn #dialogueDock{height:auto;gap:0;padding-block:8px}
 body.gallery-photo-story.speaking-turn #quest{flex:0 0 auto;width:min(100%,760px)}
 body.gallery-photo-story #listenDetail{max-width:none}
+#lifeHUD{position:absolute;top:3.6rem;right:1rem;z-index:22;background:rgba(255,253,242,.94);border:1px solid #dbd4bd;border-radius:1rem;padding:.6rem .8rem;max-width:min(420px,calc(100% - 2rem));box-shadow:0 4px 18px #263c4922;font-size:.8rem}#lifeHUD[hidden]{display:none}.life-bars{display:flex;gap:.8rem}.life-bars label{display:grid;gap:.2rem;font-weight:700}.life-bars progress{width:8rem;height:.65rem;accent-color:#69aa86}#lifeHUD small{display:block;margin:.35rem 0;max-width:26rem}#lifeHUD button{font-size:.75rem;min-height:2rem;padding:.35rem .55rem;margin:.1rem}#lifeHUD>div:last-child{display:flex;flex-wrap:wrap;gap:.15rem}@media(max-width:740px){#lifeHUD{top:3.4rem;right:.5rem;max-width:calc(100% - 1rem)}.life-bars progress{width:6rem}#lifeHUD button{font-size:.7rem}#lifeHUD small{font-size:.7rem}}
 
-.short-pattern{display:flex;flex-direction:column;align-items:flex-start;gap:.3rem;padding:.65rem 1rem;border-radius:1rem;background:#e3f1f2;color:#24475b;max-width:100%;}
-.short-pattern small{font-size:.75rem;letter-spacing:.08em;font-weight:700;}
-.short-pattern strong{font-size:clamp(1.1rem,2.8vw,1.55rem);line-height:1.3;overflow-wrap:anywhere;}
-.short-pattern span{font-size:.9rem;line-height:1.35;}
+#lifeHUD{font-size:.875rem}#lifeHUD button{font-size:.875rem;min-height:2.75rem}#lifeHUD small{font-size:.8125rem}@media(max-width:740px){#lifeHUD button{font-size:.875rem}#lifeHUD small{font-size:.8125rem}}
+/* Keep the speaking model and all three choices in view on an iPad or a short desktop. */
+body.speaking-turn #app{height:100svh;min-height:0;display:flex;flex-direction:column}
+body.speaking-turn :is(header,#speakingBanner,#dialogueDock){flex:0 0 auto}
+body.speaking-turn #world{height:auto;min-height:160px;flex:1 1 auto;max-height:none}
+body.speaking-turn #dialogueDock{height:auto;padding:8px 16px;gap:0}
+body.speaking-turn #quest{width:min(100%,900px);flex:0 0 auto}
+body.speaking-turn .speech-card h2{font-size:16px;line-height:1.3}
+body.speaking-turn .speech-card p{font-size:14px}
+body.speaking-turn #listening{margin:5px auto 0;padding:8px 10px;gap:0}
+body.speaking-turn #listening :is(.speaking-turn-label,.model-sentence){display:none}
+body.speaking-turn .speaking-actions{grid-template-columns:repeat(3,minmax(0,1fr))}
+body.speaking-turn .speaking-actions button{min-height:44px!important;font-size:14px!important;padding:8px!important}
+body.speaking-turn .short-phrase-button{grid-column:auto;background:#f2eddc;border:1px solid #d8d6bd;color:#365c45}
+body.speaking-turn .want-speaking-picture{display:none}
+@media(max-width:520px){body.speaking-turn #dialogueDock{padding:6px 8px}body.speaking-turn .speaking-actions button{font-size:13px!important}body.speaking-turn .speech-card p{font-size:13px}}
+body.playing #app{height:100svh;min-height:0;display:flex;flex-direction:column}
+body.playing :is(header,#houseControls,#speakingBanner,#dialogueDock){flex:0 0 auto}
+body.playing #world{height:auto!important;max-height:none;min-height:160px;flex:1 1 0}
+body.playing #dialogueDock{height:auto;min-height:104px}
+body.playing #bodyMissionTools button{min-height:44px;font-size:14px}

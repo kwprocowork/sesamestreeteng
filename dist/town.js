@@ -1,9 +1,9 @@
 import {placedHouseBlocks} from './home-goods.js?v=46';
 import * as THREE from './assets/three.module.js';
 
-import {buildHouseInterior,canWalkInHouse} from './town-house.js?v=62';
-export {ROOM} from './town-house.js?v=62';
-import {buildFantasyTown,townWaterBlocked} from './fantasy-town.js?v=62';
+import {buildHouseInterior,canWalkInHouse} from './town-house.js?v=71f';
+export {ROOM} from './town-house.js?v=71f';
+import {buildFantasyTown,townWaterBlocked} from './fantasy-town.js?v=71f';
 import {findWorldRoute} from './town-navigation.js?v=61';
 
 export const TOWN_NAME = 'Sesame Street Town';

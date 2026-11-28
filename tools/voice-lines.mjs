@@ -1,4 +1,6 @@
-import {shortPublicLines} from '../dist/short-adventures.js';
+import fs from 'node:fs';
+import {LIFE_LINES} from '../dist/daily-life.js';
+import {HOME_ACTIVITIES} from '../dist/schoolbus/activity-catalog.js';
 // Public speech catalog: demos, short models, NPC replies and generated story beats.
 import {BODY_WORDS} from '../dist/body.js';
 import {PAIRED_PARTS,missionSentence,missionQuestion,missionLabel} from '../dist/body-world.js';
@@ -18,9 +20,14 @@ import {PARADES} from '../dist/comparison.js';
 import {WANT_ITEMS,wantAnswer,wantQuestion} from '../dist/wants.js';
 const fields=new Set(['sentence','starter','reply','clue','prompt','intro','ending','description','voice','talk','question','answer','short','model','caption','word','lines']);
 export function publicVoiceLines(){
- const lines=new Set([...Object.keys(VOCABULARY),...shortPublicLines()]);
- for(const word of BODY_WORDS)lines.add(`I can touch my ${word}.`);
- for(const word of PHONICS_WORDS)lines.add(`I can see ${/^[aeiou]/i.test(word)?'an':'a'} ${word}.`);
+ const lines=new Set(Object.keys(VOCABULARY));
+ for(const line of JSON.parse(fs.readFileSync(new URL('../dist/schoolbus/voice-lines.json',import.meta.url),'utf8')))lines.add(line);
+ for(const text of [...Object.values(LIFE_LINES),...Object.values(HOME_ACTIVITIES).map(a=>a.txt),'I like it.','I found the ball.','I helped my friend.','Where is the cat?','Here is the carrot.'])lines.add(text);
+ for(const word of BODY_WORDS)lines.add('I can touch my '+word+'.');
+ for(const word of PHONICS_WORDS)lines.add('I can see '+(/^[aeiou]/i.test(word)?'an':'a')+' '+word+'.');
+ for(const word of Object.keys(VOCABULARY)){lines.add('I have '+(/^[aeiou]/i.test(word)?'an':'a')+' '+word+'.');lines.add('This is '+(/^[aeiou]/i.test(word)?'an':'a')+' '+word+'.');}
+ for(const word of ['mother','father','sister','brother','grandmother','grandfather','family','mom','dad','grandma','grandpa','aunt','uncle','cousin'])lines.add('This is my '+word+'.');
+ for(const word of ['big','small','fast','slow','tall','short','long'])lines.add('It is '+word+'.');
  const visit=(value,key='')=>{
   if(typeof value==='string'){if(fields.has(key)&&value.trim())lines.add(value);return;}
   if(Array.isArray(value)){value.forEach(v=>visit(v,key));return;}

@@ -1,4 +1,4 @@
-import * as THREE from './assets/three.module.js';
+import {SchoolTHREE as THREE,schoolMaterial} from './schoolbus/core.js?v=71f';
 
 const INK=0x17375a, CREAM=0xffeabe, GOLD=0xffca50;
 const PALETTE=[0xf15f64,0xffa94a,0xffd962,0x58bb87,0x46a6dc,0xa878da];
@@ -9,7 +9,7 @@ const MATERIALS=new Map();
 const BALL=new THREE.SphereGeometry(1,24,16);
 const GLASS=new THREE.MeshBasicMaterial({color:0x6dd5ec,transparent:true,opacity:.26,side:THREE.DoubleSide,depthWrite:false});
 function solid(geo,color,x,y,z,group,sx=1,sy=1,sz=1){
-  if(!MATERIALS.has(color))MATERIALS.set(color,new THREE.MeshStandardMaterial({color,roughness:.64}));
+  if(!MATERIALS.has(color))MATERIALS.set(color,schoolMaterial(color));
   const mesh=new THREE.Mesh(geo,MATERIALS.get(color));
   mesh.position.set(x,y,z);mesh.scale.set(sx,sy,sz);mesh.receiveShadow=true;mesh.castShadow=true;
   group.add(mesh);return mesh;
