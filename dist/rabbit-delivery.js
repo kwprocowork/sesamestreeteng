@@ -1,5 +1,5 @@
 import * as THREE from './assets/three.module.js';
-import {PhonicsWorld} from './phonics-world.js?v=75a';
+import {PhonicsWorld} from './phonics-world.js?v=76a';
 
 // Authored from all 15 supplied photographs, checked directly against the pages.
 // Targets are actions in the scene; speaking never substitutes for an action.

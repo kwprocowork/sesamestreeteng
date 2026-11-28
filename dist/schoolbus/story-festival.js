@@ -1,13 +1,13 @@
-import {tickLivingFacilities} from './living-facilities.js?v=75a';
-import {createActivityDistrict} from './activity-district.js?v=75a';
-import {giveNeighbourJob,tickNeighbourJob,jobPose} from './neighbour-props.js?v=75a';
-import {neighbourIdentity,neighbourAppearance} from '../neighbour-life.js?v=75a';
-import {SchoolTHREE as THREE,schoolMaterial} from './core.js?v=75a';
-import {createSchoolActor} from './actor.js?v=75a';
-import {STORY_STYLE,ORAL_ANIMATION_SECONDS} from '../story-pace.js?v=75a';
-import {homeModel} from '../home-models.js?v=75a';
-import {poseToy} from '../toy-play.js?v=75a';
-import {ActivityCamera} from './activity-camera.js?v=75a';
+import {tickLivingFacilities} from './living-facilities.js?v=76a';
+import {createActivityDistrict} from './activity-district.js?v=76a';
+import {giveNeighbourJob,tickNeighbourJob,jobPose} from './neighbour-props.js?v=76a';
+import {neighbourIdentity,neighbourAppearance} from '../neighbour-life.js?v=76a';
+import {SchoolTHREE as THREE,schoolMaterial} from './core.js?v=76a';
+import {createSchoolActor} from './actor.js?v=76a';
+import {STORY_STYLE,ORAL_ANIMATION_SECONDS} from '../story-pace.js?v=76a';
+import {homeModel} from '../home-models.js?v=76a';
+import {poseToy} from '../toy-play.js?v=76a';
+import {ActivityCamera} from './activity-camera.js?v=76a';
 export class StoryFestival{
  constructor(scene,kit){this.scene=scene;this.kit=kit;this.root=new THREE.Group();this.root.name='Schoolbus story district';this.root.visible=false;scene.add(this.root);this.cache=new Map();this.castFactory=createSchoolActor(scene);this.guard=new ActivityCamera();this.time=0;this.reaction=null;this.originals=[];}
  start(id,toy='toy-blocks'){

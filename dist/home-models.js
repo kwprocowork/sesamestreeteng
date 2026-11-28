@@ -1,5 +1,5 @@
 import * as THREE from './assets/three.module.js';
-import { HOME_ITEM } from './home-goods.js?v=75a';
+import { HOME_ITEM } from './home-goods.js?v=76a';
 
 export function homeModel(id,{cube:box,cyl,orb}){
   const item=HOME_ITEM.get(id);

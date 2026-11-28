@@ -1,4 +1,4 @@
-import {HOME_GOODS,normalizeHouseInventory} from './home-goods.js?v=75a';
+import {HOME_GOODS,normalizeHouseInventory} from './home-goods.js?v=76a';
 import * as THREE from './assets/three.module.js';
 const wearableItems=[
  {id:'bow',name:'Sunshine bow',price:2,kind:'wear',color:'#ef858d',description:'A cheerful bow beside your friend’s head.'},

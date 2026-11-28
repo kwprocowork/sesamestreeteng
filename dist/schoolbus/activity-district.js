@@ -1,11 +1,11 @@
-import {SchoolTHREE as THREE} from './core.js?v=75a';
-import {parkKit} from './park-kit.js?v=75a';
-import {createVenue as school} from './venue-ballet.js?v=75a';
-import {createVenue as fair} from './venue-amusement.js?v=75a';
-import {createVenue as traffic} from './venue-traffic.js?v=75a';
-import {buildTownFacade} from '../town-architecture.js?v=75a';
-import {DISTRICTS,DEFAULT_DISTRICT} from '../activity-districts.js?v=75a';
-import {addLivingFacilities} from './living-facilities.js?v=75a';
+import {SchoolTHREE as THREE} from './core.js?v=76a';
+import {parkKit} from './park-kit.js?v=76a';
+import {createVenue as school} from './venue-ballet.js?v=76a';
+import {createVenue as fair} from './venue-amusement.js?v=76a';
+import {createVenue as traffic} from './venue-traffic.js?v=76a';
+import {buildTownFacade} from '../town-architecture.js?v=76a';
+import {DISTRICTS,DEFAULT_DISTRICT} from '../activity-districts.js?v=76a';
+import {addLivingFacilities} from './living-facilities.js?v=76a';
 const library={};
 export function createActivityDistrict(parent,id,kit){
  const profile=DISTRICTS[id]||DEFAULT_DISTRICT,root=new THREE.Group();root.name=profile.title;parent.add(root);const grass=new THREE.Mesh(new THREE.PlaneGeometry(700,700),new THREE.MeshStandardMaterial({color:0xb8d69c,roughness:1}));grass.rotation.x=-Math.PI/2;grass.position.set(0,-.3,-25);grass.receiveShadow=true;root.add(grass);const k=parkKit(root),floor=k.paving(profile.tint),data={floor,seats:[],spinners:[]};

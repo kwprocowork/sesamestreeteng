@@ -116,3 +116,5 @@ body.social-open #guidePortrait{display:none}body.social-open #speakerName{font-
 #houseControls:has(#townHud[hidden]):has(#townToolbar[hidden]),body.social-open #houseControls{display:none!important}
 
 #topNotices #stepTime,#topNotices #townTravel{position:static;inset:auto;transform:none;max-width:100%;width:auto;min-width:0;margin:0;padding:.35rem .65rem;border:0;border-radius:.6rem;background:#fff3cf;color:#415f50;box-shadow:none;font-size:.875rem}#topNotices #townTravel{display:flex;gap:.4rem;align-items:center}#topNotices #townTravel progress{width:6rem;margin:0}#topNotices:has(#targetLabel[hidden]):not(:has(#toast.show)):has(#stepTime[hidden]):has(#townTravel[hidden]){display:none}#topNotices:has(#stepTime:not([hidden])),#topNotices:has(#townTravel:not([hidden])){display:flex}
+/* Family replies remain easy to read in the existing scene dock. */
+body.social-open #instruction{font-size:1rem;line-height:1.4}body.social-open .speech-card .speaker{font-size:.85rem;line-height:1.3;letter-spacing:.04em}

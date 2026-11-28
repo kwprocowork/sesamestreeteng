@@ -1,4 +1,4 @@
-import {HOME_SECONDS} from './story-pace.js?v=75a';
+import {HOME_SECONDS} from './story-pace.js?v=76a';
 export const LIFE_LINES={departure:"Little child, it's time to start your adventure!",continue:'Do you want to continue your adventure?',food:'Let us have some food before we go out.',wash:'Brush your teeth and wash your face.',ready:'You are ready for your adventure.',route:'Follow the yellow marker to your story.',bike:'You can walk or ride your bicycle.',neighbours:'You have helped two neighbours. Let us go to our story.',delay:'It is time to go to our story. You may lose one sticker if we keep waiting.',thanks:'Well done! Thank you for helping.',night:'We are home. Let us get ready to sleep.',sleep:'Good night, my friend.'};
 export const HEALTHY=35,RECOVER_TO=75;
 export function lifeDay(now=new Date()){const date=new Date(now.getTime()-6*3600000);return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Hong_Kong',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);}

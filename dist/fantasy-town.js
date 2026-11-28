@@ -1,7 +1,7 @@
-import {SchoolTHREE as THREE,schoolBox,schoolMaterial} from './schoolbus/core.js?v=75a';
-import {homeModel} from './home-models.js?v=75a';
-import {TERRAIN} from './town-terrain.js?v=75a';
-import {buildTownFacade,buildTownFacility,townSign} from './town-architecture.js?v=75a';
+import {SchoolTHREE as THREE,schoolBox,schoolMaterial} from './schoolbus/core.js?v=76a';
+import {homeModel} from './home-models.js?v=76a';
+import {TERRAIN} from './town-terrain.js?v=76a';
+import {buildTownFacade,buildTownFacility,townSign} from './town-architecture.js?v=76a';
 const BOX=new THREE.BoxGeometry(1,1,1),LEAF=new THREE.SphereGeometry(1,8,6),TRUNK=new THREE.CylinderGeometry(1,1,1,9),CONE=new THREE.ConeGeometry(1,1,10),MAT=new Map();
 export const CANAL={x:-8,half:5};
 export function townWaterBlocked(x,z,places,cachedLanes=null){if(Math.abs(x-CANAL.x)>=CANAL.half)return false;const lanes=cachedLanes||places.map(p=>p.lane);if(z>Math.max(...lanes)+5||z<Math.min(...lanes)-6)return false;return !lanes.some(lane=>Math.abs(z-lane)<4.65);}

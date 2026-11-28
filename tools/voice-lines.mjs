@@ -1,3 +1,4 @@
+import {FAMILY_CHATS,FAMILY_LINES} from '../dist/home-family.js';
 import {MINI_LINES,MINI_TASKS} from '../dist/neighbour-mini.js';
 import {HOME_FOODS,MEAL_LINES} from '../dist/home-meals.js';
 import {SOCIAL_LINES,JOBS,GREETINGS} from '../dist/neighbour-life.js';
@@ -24,7 +25,7 @@ import {PARADES} from '../dist/comparison.js';
 import {WANT_ITEMS,wantAnswer,wantQuestion} from '../dist/wants.js';
 const fields=new Set(['sentence','starter','reply','clue','prompt','intro','ending','description','voice','talk','question','answer','short','model','caption','word','lines']);
 export function publicVoiceLines(){
- const lines=new Set(Object.keys(VOCABULARY));for(const g of GREETINGS){lines.add(g.model);lines.add(g.reply);}for(const t of Object.values(MINI_TASKS)){lines.add(t.instruction);lines.add(t.model);}for(const line of [...Object.values(MINI_LINES),...Object.values(MEAL_LINES)])lines.add(line);for(const f of HOME_FOODS)lines.add(f.request);for(const turn of CAT_TURNS)if(turn.resultPrompt)lines.add(turn.resultPrompt);
+ const lines=new Set(Object.keys(VOCABULARY));for(const line of Object.values(FAMILY_LINES))lines.add(line);for(const row of Object.values(FAMILY_CHATS).flat()){lines.add(row.model);lines.add(row.reply);}for(const g of GREETINGS){lines.add(g.model);lines.add(g.reply);}for(const t of Object.values(MINI_TASKS)){lines.add(t.instruction);lines.add(t.model);}for(const line of [...Object.values(MINI_LINES),...Object.values(MEAL_LINES)])lines.add(line);for(const f of HOME_FOODS)lines.add(f.request);for(const turn of CAT_TURNS)if(turn.resultPrompt)lines.add(turn.resultPrompt);
  for(const line of JSON.parse(fs.readFileSync(new URL('../dist/schoolbus/voice-lines.json',import.meta.url),'utf8')))lines.add(line);
  for(const text of [...Object.values(LIFE_LINES),...Object.values(SOCIAL_LINES),...Object.values(JOBS).flatMap(j=>[j.answer,j.model]),...Object.values(ADVENTURE_LINES),...Object.values(TASK_GUIDANCE),...Object.values(HOME_ACTIVITIES).map(a=>a.txt),'I like it.','I found the ball.','I helped my friend.','Where is the cat?','Here is the carrot.'])lines.add(text);
  for(const word of BODY_WORDS)lines.add('I can touch my '+word+'.');

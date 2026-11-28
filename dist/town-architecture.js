@@ -1,4 +1,4 @@
-import {SchoolTHREE as THREE,schoolMaterial} from './schoolbus/core.js?v=75a';
+import {SchoolTHREE as THREE,schoolMaterial} from './schoolbus/core.js?v=76a';
 
 const INK=0x17375a, CREAM=0xffeabe, GOLD=0xffca50;
 const PALETTE=[0xf15f64,0xffa94a,0xffd962,0x58bb87,0x46a6dc,0xa878da];
